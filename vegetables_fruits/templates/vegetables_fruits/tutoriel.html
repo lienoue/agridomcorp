@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Tutoriel - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">🎓 Tutoriel</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tuto-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .tuto-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        border-left: 4px solid #2d6a4f;
+    }
+    .tuto-card .step-number {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        background: #2d6a4f;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 35px;
+        font-weight: 700;
+        margin-right: 10px;
+    }
+    .tuto-card .emoji-big {
+        font-size: 2.5rem;
+    }
+    .tuto-card h3 {
+        color: #2d6a4f;
+        margin-bottom: 15px;
+    }
+    .tuto-card ul {
+        list-style: none;
+        padding: 0;
+    }
+    .tuto-card ul li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .tuto-card ul li:last-child {
+        border-bottom: none;
+    }
+    .tuto-card .btn-tuto {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 25px;
+        background: #2d6a4f;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    .tuto-card .btn-tuto:hover {
+        background: #1b4332;
+        transform: translateY(-2px);
+    }
+    .tuto-progress {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    .tuto-progress .step-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #6c757d;
+        transition: 0.3s;
+    }
+    .tuto-progress .step-dot.active {
+        background: #2d6a4f;
+        color: white;
+    }
+    .tuto-progress .step-dot.done {
+        background: #28a745;
+        color: white;
+    }
+    .tuto-progress .step-line {
+        width: 30px;
+        height: 2px;
+        background: #e9ecef;
+        align-self: center;
+    }
+    .tuto-progress .step-line.done {
+        background: #28a745;
+    }
+
+    /* ============================================================ */
+    /* MODE JUNIOR - ORANGE POUR TOUS LES MINEURS */
+    /* ============================================================ */
+    body.mode-junior .tuto-card {
+        border-left-color: #ff6b35;
+    }
+    body.mode-junior .tuto-card .step-number {
+        background: #ff6b35;
+    }
+    body.mode-junior .tuto-card h3 {
+        color: #ff6b35;
+    }
+    body.mode-junior .tuto-card .btn-tuto {
+        background: #ff6b35;
+    }
+    body.mode-junior .tuto-card .btn-tuto:hover {
+        background: #e55a2b;
+    }
+    body.mode-junior .tuto-progress .step-dot.active {
+        background: #ff6b35;
+    }
+
+    /* Bandeau de bienvenue Junior */
+    .junior-welcome-banner {
+        background: linear-gradient(135deg, #ff6b35 0%, #ffa726 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 25px 30px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.25);
+    }
+    .junior-welcome-banner h1 {
+        margin: 0 0 8px 0;
+        font-size: 1.9rem;
+        color: white;
+    }
+    .junior-welcome-banner p {
+        margin: 0;
+        opacity: 0.95;
+    }
+    .junior-welcome-banner .mascotte {
+        font-size: 4rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="tuto-container">
+
+    {# ============================================================ #}
+    {# DÉTECTION DU PROFIL #}
+    {# ============================================================ #}
+
+    {# Mineur en classe (élève) #}
+    {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+        {% with profil="eleve" %}{% endwith %}
+    {% endif %}
+
+    {# --- En-tête --- #}
+    {% if user|mineur %}
+        <!-- Bandeau Junior -->
+        <div class="junior-welcome-banner">
+            <div>
+                <h1>🧒 Bienvenue dans le Mode Junior !</h1>
+                <p>
+                    {% if user.profil_eleve and user.profil_eleve.classe %}
+                        Découvre ton espace élève et tes missions
+                    {% else %}
+                        Découvre ton espace personnel et deviens un super jardinier
+                    {% endif %}
+                </p>
+            </div>
+            <div class="mascotte">🧑‍🌾</div>
+        </div>
+    {% else %}
+        <!-- En-tête adulte / enseignant -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2d6a4f; font-size: 2.2rem;">
+                {% if user.is_enseignant %}👨‍🏫 Bienvenue, Enseignant !
+                {% elif user.abonnement.plan.nom == 'PREMIUM' %}🌳 Bienvenue dans l'aventure Premium !
+                {% else %}🌱 Bienvenue sur Agriculture 2.0 !{% endif %}
+            </h1>
+            <p style="color: #6c757d; font-size: 1.1rem;">
+                Découvre les fonctionnalités adaptées à ton profil
+            </p>
+        </div>
+    {% endif %}
+
+    <!-- Progression -->
+    <div class="tuto-progress">
+        <div class="step-dot active">1</div>
+        <div class="step-line"></div>
+        <div class="step-dot">2</div>
+        <div class="step-line"></div>
+        <div class="step-dot">3</div>
+        <div class="step-line"></div>
+        <div class="step-dot">4</div>
+        <div class="step-line"></div>
+        <div class="step-dot">5</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ÉTAPE 1 : CRÉER UNE PARCELLE -->
+    <!-- ============================================================ -->
+    <div class="tuto-card">
+        <h3>
+            <span class="step-number">1</span>
+            {% if user|mineur %}🌱 Crée ta première parcelle !
+            {% else %}🌱 Créez votre première parcelle{% endif %}
+        </h3>
+        <p>
+            {% if user|mineur %}
+            Pour commencer, dessine ta parcelle sur la carte. C'est là que tu vas planter tes cultures !
+            {% else %}
+            Commencez par délimiter votre jardin sur la carte interactive.
+            {% endif %}
+        </p>
+        <ul>
+            <li>📍 Dessine ta parcelle sur la carte</li>
+            <li>🏷️ Donne-lui un nom (ex: "Mon potager")</li>
+            <li>🌱 Ajoute tes premières cultures</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-tuto">
+            ✏️ Créer ma parcelle
+        </a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ÉTAPE 2 : CULTURES -->
+    <!-- ============================================================ -->
+    <div class="tuto-card">
+        <h3>
+            <span class="step-number">2</span>
+            {% if user|mineur %}🌿 Plante et fais pousser !
+            {% else %}🌿 Gérez vos cultures{% endif %}
+        </h3>
+        <p>
+            {% if user|mineur %}
+            Choisis tes légumes et fruits préférés, plante-les et regarde-les pousser !
+            {% else %}
+            Planifiez vos semis, suivez la croissance de vos plantes et récoltez au bon moment.
+            {% endif %}
+        </p>
+        <ul>
+            <li>📅 Consulte le <strong>calendrier des semis</strong></li>
+            <li>📖 Utilise le <strong>guide des cultures</strong></li>
+            <li>📈 Suis la <strong>progression</strong> de tes plantes</li>
+            <li>💧 Vérifie les <strong>besoins en eau</strong></li>
+            {% if user|mineur %}
+            <li>🌼 Plante des <strong>fleurs pollinisatrices</strong> pour attirer les abeilles</li>
+            {% endif %}
+        </ul>
+        <a href="{% url 'vegetables_fruits:cultures' %}" class="btn-tuto">
+            📅 Voir mes cultures
+        </a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ÉTAPE 3 : SPÉCIFIQUE AU PROFIL -->
+    <!-- ============================================================ -->
+    <div class="tuto-card">
+        <h3>
+            <span class="step-number">3</span>
+            {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+                🏅 Gagne des points et des badges !
+            {% elif user|mineur %}
+                🏅 Deviens un super jardinier !
+            {% elif user.is_enseignant %}
+                🏫 Gérez votre classe
+            {% elif user.abonnement.plan.nom == 'PREMIUM' %}
+                🌍 Explorez l'Écologie & Climat
+            {% else %}
+                📓 Suivez votre progression
+            {% endif %}
+        </h3>
+
+        {# --- ÉLÈVE (mineur en classe) --- #}
+        {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+        <p>Chaque action te rapporte des points. Plus tu jardines, plus tu progresses !</p>
+        <ul>
+            <li>⭐ <strong>Points</strong> : gagnes-en en plantant, récoltant et faisant des quiz</li>
+            <li>🏅 <strong>Badges</strong> : débloque-les en atteignant des objectifs</li>
+            <li>🎯 <strong>Missions</strong> : accomplis-les pour gagner des récompenses</li>
+            <li>🌳 <strong>Arbre de compétences</strong> : débloque de nouvelles compétences</li>
+            <li>🏆 <strong>Classement de classe</strong> : compare-toi à tes camarades</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}" class="btn-tuto">
+            🎯 Voir mes missions
+        </a>
+
+        {# --- MINEUR PARTICULIER (hors classe) --- #}
+        {% elif user|mineur %}
+        <p>Découvre comment t'amuser avec ton jardin tout en apprenant !</p>
+        <ul>
+            <li>🌱 <strong>Plante</strong> des légumes, des fruits et des fleurs</li>
+            <li>📓 <strong>Note</strong> tes observations dans ton carnet</li>
+            <li>📸 <strong>Partage</strong> tes plus belles photos dans la galerie</li>
+            <li>💡 <strong>Découvre</strong> les suggestions de cultures adaptées à ta région</li>
+            <li>🌤️ <strong>Suis</strong> la météo pour prendre soin de tes plantes</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:suggestions_personnalisees' %}" class="btn-tuto">
+            💡 Voir mes suggestions
+        </a>
+
+        {# --- ENSEIGNANT --- #}
+        {% elif user.is_enseignant %}
+        <p>Créez des classes, gérez vos élèves et créez des défis pour les motiver.</p>
+        <ul>
+            <li>🏫 <strong>Créer une classe</strong> : générez un code d'invitation</li>
+            <li>👨‍🎓 <strong>Élèves</strong> : suivez leurs progrès</li>
+            <li>🎯 <strong>Défis</strong> : créez des défis pour votre classe</li>
+            <li>📊 <strong>Tableau de bord</strong> : visualisez les performances</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:dashboard_enseignant' %}" class="btn-tuto">
+            👩‍🏫 Aller au dashboard
+        </a>
+
+        {# --- PREMIUM --- #}
+        {% elif user.abonnement.plan.nom == 'PREMIUM' %}
+        <p>Profitez de toutes les fonctionnalités avancées pour optimiser votre jardin.</p>
+        <ul>
+            <li>🌍 <strong>Bilan carbone</strong> : mesurez votre impact écologique</li>
+            <li>🏠 <strong>Autosuffisance</strong> : calculez votre autonomie alimentaire</li>
+            <li>💧 <strong>Plan d'irrigation</strong> : optimisez votre consommation d'eau</li>
+            <li>🌤️ <strong>Dashboard climat</strong> : visualisez votre impact</li>
+            <li>📊 <strong>Statistiques avancées</strong> : suivez vos performances</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:ecologie' %}" class="btn-tuto">
+            🌍 Découvrir l'Écologie
+        </a>
+
+        {# --- ADULTE GRATUIT/BASIQUE --- #}
+        {% else %}
+        <p>Suivez l'évolution de votre jardin et progressez à votre rythme.</p>
+        <ul>
+            <li>📓 <strong>Journal de bord</strong> : notez vos observations</li>
+            <li>📊 <strong>Statistiques</strong> : visualisez vos récoltes</li>
+            <li>🌱 <strong>Suggestions</strong> : recevez des conseils personnalisés</li>
+        </ul>
+        <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn-tuto">
+            📓 Ouvrir le journal
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ÉTAPE 4 : COMMUNAUTÉ -->
+    <!-- ============================================================ -->
+    <div class="tuto-card">
+        <h3>
+            <span class="step-number">4</span>
+            {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+                👥 Partage avec ta classe !
+            {% elif user|mineur %}
+                📸 Montre tes belles récoltes !
+            {% else %}
+                👥 Rejoins la communauté
+            {% endif %}
+        </h3>
+        <p>
+            {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+                Partage tes photos, participe aux défis et compare-toi à tes camarades !
+            {% elif user|mineur %}
+                Prends des photos de tes plantes, de tes fleurs et de tes récoltes pour les montrer !
+            {% else %}
+                Échange avec d'autres jardiniers, partage tes photos et participe aux discussions.
+            {% endif %}
+        </p>
+        <ul>
+            <li>📸 <strong>Galerie</strong> : publie tes plus belles récoltes</li>
+
+            {# Forum seulement pour élèves en classe et adultes #}
+            {% if user|mineur and user.profil_eleve and user.profil_eleve.classe %}
+                <li>💬 <strong>Forum école</strong> : pose des questions à ta classe</li>
+                <li>🏆 <strong>Classement</strong> : compare-toi à ta classe</li>
+            {% elif user|mineur %}
+                <li>🌟 <strong>Découvre</strong> les photos des autres jardiniers</li>
+                <li>❤️ <strong>Aime</strong> et commente les photos de la galerie</li>
+            {% else %}
+                <li>💬 <strong>Forum</strong> : pose des questions et partage des conseils</li>
+                <li>🏆 <strong>Classements</strong> : compare-toi aux autres jardiniers</li>
+            {% endif %}
+        </ul>
+        <a href="{% url 'vegetables_fruits:galerie_index' %}" class="btn-tuto">
+            📸 Voir la galerie
+        </a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ÉTAPE 5 : FIN -->
+    <!-- ============================================================ -->
+    <div class="tuto-card" style="border-left-color: #ffc107;">
+        <h3>
+            <span class="step-number">5</span>
+            🚀 C'est parti !
+        </h3>
+        <p style="font-size: 1.1rem;">
+            {% if user|mineur %}
+            Tu es prêt à devenir un super jardinier ! 🌱
+            {% else %}
+            Vous êtes prêt à cultiver votre passion ! 🌿
+            {% endif %}
+        </p>
+        <ul>
+            <li>💡 Explore toutes les fonctionnalités</li>
+            <li>🌱 Plante, cultive et récolte</li>
+            <li>📈 Suis ta progression</li>
+            <li>👥 Partage avec la communauté</li>
+        </ul>
+        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+            {% if user|mineur and not user.profil_eleve or not user.profil_eleve.classe %}
+                {# Mineur particulier → dashboard junior #}
+                <a href="{% url 'vegetables_fruits:dashboard_junior' %}" class="btn-tuto" style="background: #28a745;">
+                    🏠 Aller à mon espace
+                </a>
+            {% else %}
+                <a href="{% url 'vegetables_fruits:profile' %}" class="btn-tuto" style="background: #28a745;">
+                    🏠 Aller au profil
+                </a>
+            {% endif %}
+            <a href="{% url 'vegetables_fruits:index' %}" class="btn-tuto" style="background: #ffc107; color: #333;">
+                🌱 Accueil
+            </a>
+            <form method="post" action="{% url 'vegetables_fruits:terminer_tutoriel' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-tuto" style="background: #ff6b35; border: none; cursor: pointer;">
+                    ✅ J'ai compris, passer à l'appli
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

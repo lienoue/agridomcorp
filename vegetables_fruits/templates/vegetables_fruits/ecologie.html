@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}🌍 Écologie & Climat - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">🌍 Écologie & Climat</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    {# ============================================================ #}
+    {# EN-TÊTE AVEC CARTE RÉCAPITULATIVE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body text-center py-4">
+            <div class="d-flex align-items-center justify-content-center gap-2" style="display: inline-flex; margin: 0 auto;">
+                <span style="font-size: 2.5rem; line-height: 1;">🌍</span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: #2d6a4f; line-height: 1;">Écologie & Climat</span>
+            </div>
+            <p class="text-muted mb-3 mt-2">
+                🌱 Gérez l'impact environnemental de votre jardin et suivez les conditions climatiques
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <span class="badge bg-success p-2">🌳 Bilan carbone</span>
+                <span class="badge bg-info p-2">🏠 Autosuffisance</span>
+                <span class="badge bg-primary p-2">💧 Besoins en eau</span>
+                <span class="badge bg-warning p-2 text-dark">💧 Plan irrigation</span>
+                {% if user.abonnement.plan.nom == 'PREMIUM' or user.profil_eleve and user.profil_eleve.classe %}
+                    <span class="badge bg-dark p-2">🌤️ Dashboard climat</span>
+                    <span class="badge bg-secondary p-2">🌡️ Prévisions 7j</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+
+    {# ============================================================ #}
+    {# ONGLETS #}
+    {# ============================================================ #}
+    <!-- ✅ BILAN CARBONE : Premium, Enseignant OU Élève en classe -->
+    {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.profil_eleve %}
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'bilan_carbone' %}active{% endif %}"
+               href="{% url 'vegetables_fruits:bilan_carbone' %}"
+               style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                🌳 Bilan carbone
+            </a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#" style="color: #999; cursor: not-allowed;">
+                🌳 Bilan carbone <span class="badge bg-secondary ms-1">🔒 Premium</span>
+            </a>
+        </li>
+    {% endif %}
+
+    <!-- ✅ AUTOSUFFISANCE : Premium, Enseignant OU Élève en classe -->
+    {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.profil_eleve %}
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'autosuffisance' %}active{% endif %}"
+               href="{% url 'vegetables_fruits:autosuffisance' %}"
+                style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                🏠 Autosuffisance
+            </a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#" style="color: #999; cursor: not-allowed;">
+                🏠 Autosuffisance <span class="badge bg-secondary ms-1">🔒 Premium</span>
+            </a>
+        </li>
+    {% endif %}
+
+    <!-- ✅ BESOINS EN EAU : Premium, Enseignant OU Élève en classe -->
+    {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.profil_eleve %}
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'besoins_eau' %}active{% endif %}"
+               href="{% url 'vegetables_fruits:besoins_eau' %}"
+               style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                💧 Besoins en eau
+            </a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#" style="color: #999; cursor: not-allowed;">
+                💧 Besoins en eau <span class="badge bg-secondary ms-1">🔒 Premium</span>
+            </a>
+        </li>
+    {% endif %}
+
+    <!-- ✅ PLAN IRRIGATION : Premium, Enseignant OU Élève en classe -->
+    {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.profil_eleve %}
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'plan_irrigation' %}active{% endif %}"
+               href="{% url 'vegetables_fruits:plan_irrigation' %}"
+               style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                💧 Plan irrigation
+            </a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#" style="color: #999; cursor: not-allowed;">
+                💧 Plan irrigation <span class="badge bg-secondary ms-1">🔒 Premium</span>
+            </a>
+        </li>
+    {% endif %}
+
+        {# ============================================================ #}
+        {# ONGLETS PREMIUM / ENSEIGNANT #}
+        {# ============================================================ #}
+        {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.profil_eleve and user.profil_eleve.classe %}
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'dashboard_climat' %}active{% endif %}"
+                   href="{% url 'vegetables_fruits:dashboard_climat' %}{% if selected_figure_id %}?figure_id={{ selected_figure_id }}{% endif %}"
+                   style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                    🌤️ Dashboard climat
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'previsions_meteo' %}active{% endif %}"
+                   href="{% url 'vegetables_fruits:previsions_meteo' %}{% if selected_figure_id %}?figure_id={{ selected_figure_id }}{% endif %}"
+                   style="color: #2d6a4f; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600;">
+                    🌡️ Prévisions 7j
+                </a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#"
+                   style="color: #999; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600; cursor: not-allowed;">
+                    🌤️ Dashboard climat <span class="badge bg-secondary ms-1">🔒 Premium</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#"
+                   style="color: #999; border: none; border-radius: 0; padding: 10px 20px; font-weight: 600; cursor: not-allowed;">
+                    🌡️ Prévisions 7j <span class="badge bg-secondary ms-1">🔒 Premium</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+<br>
+    {# ============================================================ #}
+    {# CONTENU DES ONGLETS #}
+    {# ============================================================ #}
+    <div id="ecologie-tab-content">
+        {% block ecologie_content %}
+        <div class="row g-3">
+
+            {# Résumé des statistiques #}
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">🌱 Émissions</h6>
+                        <h3 class="mb-0">{{ stats.total_emission|default:"0" }} kg</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">🌳 Séquestration</h6>
+                        <h3 class="mb-0">{{ stats.total_sequestration|default:"0" }} kg</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">⚖️ Bilan net</h6>
+                        <h3 class="mb-0">{{ stats.total_bilan|default:"0" }} kg</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">🏠 Autosuffisance</h6>
+                        <h3 class="mb-0">{{ stats.autosuffisance|default:"0" }}%</h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endblock %}
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const parcelleSelect = document.getElementById('parcelle-select-ecologie');
+    if (parcelleSelect) {
+        parcelleSelect.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('parcelle_id', this.value);
+            window.location.href = url.toString();
+        });
+    }
+});
+</script>
+{% endblock %}

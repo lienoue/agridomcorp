@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if user.mode_junior %}
+        🌟 Bravo ! Résultat du quiz
+    {% else %}
+        Résultat du quiz - Agriculture 2.0
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if user.mode_junior %}
+    {# VERSION JUNIOR - FÉLICITATIONS COLORÉES #}
+    <div class="quiz-junior min-vh-100 py-5">
+        <div class="container text-center">
+            <!-- Confettis animés -->
+            <div class="confettis"></div>
+            
+            <div class="result-card bg-white rounded-4 p-5 shadow-lg">
+                {% if pourcentage == 100 %}
+                <div class="display-1 mb-3">🏆🎉🌟</div>
+                <h1 class="display-4 text-warning">PARFAIT !</h1>
+                <p class="lead">Tu es un vrai jardinier en herbe !</p>
+                {% elif pourcentage >= 70 %}
+                <div class="display-1 mb-3">👍🌱🍅</div>
+                <h1 class="display-5 text-success">Très bien !</h1>
+                <p class="lead">Continue comme ça, tu progresses !</p>
+                {% else %}
+                <div class="display-1 mb-3">📚🌱💪</div>
+                <h1 class="display-5">Bien essayé !</h1>
+                <p class="lead">Continue à apprendre avec Titou !</p>
+                {% endif %}
+                
+                <!-- Score -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3">
+                            <h3>✅ Bonnes réponses</h3>
+                            <p class="display-6">{{ score }}/{{ total }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3">
+                            <h3>⭐ Points gagnés</h3>
+                            <p class="display-6">{{ points_gagnes }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded p-3">
+                            <h3>🏅 Niveau</h3>
+                            <p class="display-6">{{ user.eleve.niveau }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Badges débloqués -->
+                {% if nouveaux_badges %}
+                <div class="mt-4">
+                    <h3>🎖️ Nouveaux badges débloqués !</h3>
+                    <div class="d-flex justify-content-center gap-3">
+                        {% for badge in nouveaux_badges %}
+                        <div class="text-center">
+                            <div class="display-3">{{ badge.emoji }}</div>
+                            <p>{{ badge.nom }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Message de Titou -->
+                <div class="alert alert-info mt-4">
+                    <img src="{% static 'vegetables_fruits/images/titou.png' %}" 
+                         style="width: 50px;" class="rounded-circle me-2">
+                    <strong>Titou dit :</strong> 
+                    {% if pourcentage >= 80 %}
+                    "Tu deviens un pro ! Prêt pour le prochain défi ?"
+                    {% elif pourcentage >= 50 %}
+                    "Pas mal ! Veux-tu réviser ensemble ?"
+                    {% else %}
+                    "Ne baisse pas les bras ! On va y arriver ensemble !"
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{% url 'vegetables_fruits:quiz' %}" class="btn btn-warning btn-lg me-2">
+                        🔄 Rejouer
+                    </a>
+                    <a href="{% url 'vegetables_fruits:profile' %}" class="btn btn-outline-secondary btn-lg">
+                        🏠 Retour au jardin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% else %}
+    {# VERSION ADULTE - RAPPORT SOBRE #}
+    <div class="quiz-adulte min-vh-100 py-5">
+        <div class="container">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0">Résultat du quiz</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Score -->
+                    <div class="text-center mb-4">
+                        <h4>Note obtenue</h4>
+                        <div class="display-1">{{ score }}/{{ total }}</div>
+                        <p class="text-muted">Soit {{ pourcentage }}% de bonnes réponses</p>
+                    </div>
+                    
+                    <!-- Points gagnés -->
+                    <div class="alert alert-success">
+                        <strong>🏆 Points gagnés :</strong> {{ points_gagnes }} points
+                        {% if bonus_tout_juste %}
+                        <span class="badge bg-warning">+5 bonus sans-faute !</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Détail des réponses -->
+                    <h5 class="mt-4">Détail des questions :</h5>
+                    {% for detail in reponses_details %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <p class="mb-1">
+                            <strong>Question {{ forloop.counter }} :</strong> {{ detail.texte }}
+                        </p>
+                        <p class="mb-1 {% if detail.correct %}text-success{% else %}text-danger{% endif %}">
+                            {% if detail.correct %}✓{% else %}✗{% endif %}
+                            Votre réponse : {{ detail.reponse_utilisateur }}
+                        </p>
+                        {% if not detail.correct %}
+                        <p class="small text-muted">
+                            ✅ Réponse correcte : {{ detail.reponse_correcte }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Boutons -->
+                    <div class="mt-4">
+                        <a href="{% url 'vegetables_fruits:quiz' %}" class="btn btn-primary">
+                            Refaire le quiz
+                        </a>
+                        <a href="{% url 'vegetables_fruits:dashboard_particulier' %}" class="btn btn-secondary">
+                            Retour au tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

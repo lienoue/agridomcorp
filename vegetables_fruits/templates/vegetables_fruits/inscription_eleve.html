@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0">🧒 Inscription élève</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger small">
+                                    {{ field.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <button type="submit" class="btn btn-success w-100">
+                            🚀 S'inscrire
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <p class="text-center mb-0">
+                        Tu as déjà un compte ?
+                        <a href="{% url 'vegetables_fruits:login' %}">Connecte-toi ici</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    Tu es professeur ? <a href="{% url 'vegetables_fruits:dashboard_enseignant' %}">Accède à ton tableau de bord</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Amélioration du style des champs de formulaire */
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Guide du Junior - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">🧒 Guide Junior</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .guide-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    /* Bandeau d'accueil */
+    .guide-hero {
+        background: linear-gradient(135deg, #ff6b35 0%, #ffa726 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 35px 40px;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.25);
+    }
+    .guide-hero .hero-text h1 {
+        margin: 0 0 8px 0;
+        font-size: 2rem;
+        color: white;
+    }
+    .guide-hero .hero-text p {
+        margin: 0;
+        opacity: 0.95;
+        font-size: 1.05rem;
+    }
+    .guide-hero .hero-mascotte {
+        font-size: 4.5rem;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+    }
+
+    /* Section */
+    .guide-section {
+        margin-bottom: 40px;
+    }
+    .guide-section-title {
+        font-size: 1.3rem;
+        color: #ff6b35;
+        margin-bottom: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Grille de cartes */
+    .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .guide-card {
+        background: white;
+        border-radius: 16px;
+        padding: 22px;
+        border-left: 5px solid #ffa726;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .guide-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+    }
+    .guide-card .card-emoji {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    .guide-card .card-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 8px;
+    }
+    .guide-card .card-desc {
+        font-size: 0.92rem;
+        color: #555;
+        line-height: 1.5;
+        flex: 1;
+        margin-bottom: 15px;
+    }
+    .guide-card .card-link {
+        display: inline-block;
+        background: linear-gradient(135deg, #ff6b35 0%, #ffa726 100%);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.88rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-align: center;
+    }
+    .guide-card .card-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 53, 0.35);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Encart astuce */
+    .guide-astuce {
+        background: linear-gradient(135deg, #fff9f0 0%, #fff3e0 100%);
+        border: 2px dashed #ffa726;
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .guide-astuce .astuce-emoji {
+        font-size: 3rem;
+    }
+    .guide-astuce .astuce-text {
+        flex: 1;
+    }
+    .guide-astuce .astuce-title {
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    .guide-astuce .astuce-desc {
+        color: #555;
+        margin: 0;
+    }
+
+    /* Encart différence avec élève */
+    .guide-info {
+        background: #fff3e0;
+        border-left: 4px solid #ff6b35;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .guide-info .info-emoji {
+        font-size: 1.8rem;
+        line-height: 1;
+    }
+    .guide-info .info-text {
+        color: #555;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .guide-info .info-text strong {
+        color: #ff6b35;
+    }
+
+    @media (max-width: 768px) {
+        .guide-hero .hero-text h1 {
+            font-size: 1.5rem;
+        }
+        .guide-hero .hero-mascotte {
+            font-size: 3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="guide-container">
+
+    <!-- ============================================================ -->
+    <!-- BANDEAU D'ACCUEIL -->
+    <!-- ============================================================ -->
+    <div class="guide-hero">
+        <div class="hero-text">
+            <h1>🧒 Guide du Junior</h1>
+            <p>Bienvenue dans ton espace jardinier personnel ! Voici tout ce que tu peux faire.</p>
+        </div>
+        <div class="hero-mascotte">🧑‍🌾</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ENCART INFO : DIFFÉRENCE AVEC L'ESPACE ÉLÈVE -->
+    <!-- ============================================================ -->
+    <div class="guide-info">
+        <div class="info-emoji">💡</div>
+        <div class="info-text">
+            Tu n'es pas dans une classe ? Pas de souci ! Ici, tu jardines
+            <strong>en toute liberté</strong>. Tu ne participes juste pas aux
+            défis de classe ni au forum école.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MON JARDIN -->
+    <!-- ============================================================ -->
+    <div class="guide-section">
+        <h2 class="guide-section-title">🌱 Mon jardin</h2>
+        <div class="guide-grid">
+
+            <div class="guide-card">
+                <div class="card-emoji">🌱</div>
+                <div class="card-title">Mes parcelles</div>
+                <div class="card-desc">
+                    Dessine tes parcelles sur la carte et
+                    donne-leur un nom rigolo !
+                </div>
+                <a href="{% url 'vegetables_fruits:view_figure' %}" class="card-link">Voir mes parcelles →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">✏️</div>
+                <div class="card-title">Dessiner une parcelle</div>
+                <div class="card-desc">
+                    Utilise l'outil de dessin pour créer une nouvelle
+                    zone à cultiver.
+                </div>
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="card-link">Dessiner →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">🌿</div>
+                <div class="card-title">Mes cultures</div>
+                <div class="card-desc">
+                    Plante des légumes, des fruits et des fleurs.
+                    Suis leur progression jusqu'à la récolte !
+                </div>
+                <a href="{% url 'vegetables_fruits:cultures' %}" class="card-link">Voir mes cultures →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">📅</div>
+                <div class="card-title">Calendrier des semis</div>
+                <div class="card-desc">
+                    Découvre les bons moments pour semer et
+                    récolter selon ta région.
+                </div>
+                <a href="{% url 'vegetables_fruits:calendrier_semis' %}" class="card-link">Voir le calendrier →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">🌸</div>
+                <div class="card-title">Fleurs pollinisatrices</div>
+                <div class="card-desc">
+                    Plante des fleurs pour attirer les abeilles
+                    et aider tes cultures à pousser.
+                </div>
+                <a href="{% url 'vegetables_fruits:view_figure' %}" class="card-link">Planter une fleur →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">💧</div>
+                <div class="card-title">Besoins en eau</div>
+                <div class="card-desc">
+                    Découvre combien d'eau tes plantes ont besoin
+                    chaque semaine.
+                </div>
+                <a href="{% url 'vegetables_fruits:besoins_eau' %}" class="card-link">Voir les besoins →</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MON CARNET -->
+    <!-- ============================================================ -->
+    <div class="guide-section">
+        <h2 class="guide-section-title">📓 Mon carnet</h2>
+        <div class="guide-grid">
+
+            <div class="guide-card">
+                <div class="card-emoji">📓</div>
+                <div class="card-title">Mon journal</div>
+                <div class="card-desc">
+                    Note tes observations, la météo du jour et
+                    ajoute des photos de tes plantes.
+                </div>
+                <a href="{% url 'vegetables_fruits:journal_liste' %}" class="card-link">Ouvrir le journal →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">📸</div>
+                <div class="card-title">Mes photos</div>
+                <div class="card-desc">
+                    Prends en photo tes plus belles plantes
+                    et partage-les dans la galerie.
+                </div>
+                <a href="{% url 'vegetables_fruits:galerie_upload' %}" class="card-link">Publier une photo →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">🔔</div>
+                <div class="card-title">Mes rappels</div>
+                <div class="card-desc">
+                    Programme des rappels pour arroser, semer
+                    ou récolter au bon moment.
+                </div>
+                <a href="{% url 'vegetables_fruits:mes_rappels' %}" class="card-link">Voir mes rappels →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">🌤️</div>
+                <div class="card-title">Alertes météo</div>
+                <div class="card-desc">
+                    Reçois des alertes en cas de gel, canicule
+                    ou forte pluie.
+                </div>
+                <a href="{% url 'vegetables_fruits:mes_alertes_meteo' %}" class="card-link">Voir les alertes →</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MES DÉCOUVERTES -->
+    <!-- ============================================================ -->
+    <div class="guide-section">
+        <h2 class="guide-section-title">💡 Mes découvertes</h2>
+        <div class="guide-grid">
+
+            <div class="guide-card">
+                <div class="card-emoji">🌱</div>
+                <div class="card-title">Suggestions</div>
+                <div class="card-desc">
+                    Découvre les cultures adaptées à ta région
+                    et à la saison en cours.
+                </div>
+                <a href="{% url 'vegetables_fruits:suggestions_personnalisees' %}" class="card-link">Voir les suggestions →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">📖</div>
+                <div class="card-title">Guide des cultures</div>
+                <div class="card-desc">
+                    Apprends tout sur tes légumes et fruits préférés :
+                    semis, arrosage, récolte.
+                </div>
+                <a href="{% url 'vegetables_fruits:guide_cultures' %}" class="card-link">Ouvrir le guide →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">🎓</div>
+                <div class="card-title">Quiz jardinage</div>
+                <div class="card-desc">
+                    Teste tes connaissances sur le jardinage
+                    et apprends de nouvelles choses !
+                </div>
+                <a href="{% url 'vegetables_fruits:quiz' %}" class="card-link">Faire un quiz →</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MA COMMUNAUTÉ -->
+    <!-- ============================================================ -->
+    <div class="guide-section">
+        <h2 class="guide-section-title">👥 Ma communauté</h2>
+        <div class="guide-grid">
+
+            <div class="guide-card">
+                <div class="card-emoji">📸</div>
+                <div class="card-title">Galerie publique</div>
+                <div class="card-desc">
+                    Découvre les photos de tous les jardiniers
+                    et admire leurs plus belles récoltes.
+                </div>
+                <a href="{% url 'vegetables_fruits:galerie_index' %}" class="card-link">Voir la galerie →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">❤️</div>
+                <div class="card-title">Aimer et commenter</div>
+                <div class="card-desc">
+                    Encourage les autres jardiniers en aimant
+                    et en commentant leurs photos.
+                </div>
+                <a href="{% url 'vegetables_fruits:galerie_photos' %}" class="card-link">Voir les photos →</a>
+            </div>
+
+            <div class="guide-card">
+                <div class="card-emoji">⭐</div>
+                <div class="card-title">Ma progression</div>
+                <div class="card-desc">
+                    Retrouve ton profil, tes infos et
+                    l'historique de tes activités.
+                </div>
+                <a href="{% url 'vegetables_fruits:profile' %}" class="card-link">Voir mon profil →</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ENCART ASTUCE -->
+    <!-- ============================================================ -->
+    <div class="guide-astuce">
+        <div class="astuce-emoji">💡</div>
+        <div class="astuce-text">
+            <div class="astuce-title">Astuce du jour</div>
+            <p class="astuce-desc">
+                Prends soin de tes plantes chaque jour : arrose-les,
+                enlève les mauvaises herbes et observe-les pousser.
+                Ton jardin te remerciera avec de belles récoltes !
+            </p>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

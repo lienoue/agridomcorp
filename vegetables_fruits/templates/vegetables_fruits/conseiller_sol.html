@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Conseiller Sol</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌍 Conseiller Sol Premium
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Recevez des conseils personnalisés pour améliorer votre sol en fonction de vos cultures.
+                </p>
+
+                <!-- Sélecteur de parcelle -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex align-items-center gap-2">
+                            <label class="fw-bold me-2">Parcelle :</label>
+                            <select name="parcelle_id" class="form-select" onchange="this.form.submit()" style="max-width: 250px;">
+                                <option value="">-- Sélectionnez --</option>
+                                {% for parcelle in parcelles %}
+                                    <option value="{{ parcelle.id }}" 
+                                            {% if parcelle.id == selected_parcelle.id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6 text-end">
+                        <br>
+                        <span class="badge bg-info fs-6">
+                            🌱 Type de sol : {{ selected_parcelle.get_type_sol_display|default:"Non renseigné" }}
+                        </span>
+                    </div>
+                </div>
+<br>
+                {% if selected_parcelle %}
+                    <!-- Cultures présentes -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="mb-2">🌱 Cultures sur <strong>{{ selected_parcelle.nom }}</strong></h6>
+                                <br>
+                                {% if cultures_parcelle %}
+                                    {% for culture in cultures_parcelle %}
+                                        <span class="badge bg-success me-1">{{ culture }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted mb-0">Aucune culture sur cette parcelle.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+<br>
+                    <!-- Conseils -->
+                    {% if conseils %}
+                        <h5 class="mb-3">💡 Conseils personnalisés</h5>
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for conseil in conseils %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span style="font-size: 1.5rem;">🌱</span>
+                                            <h5 class="card-title mb-0">{{ conseil.culture }}</h5>
+                                        </div>
+                                        <p class="card-text">{{ conseil.conseil }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Aucun conseil disponible pour cette parcelle.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">
+                        Veuillez sélectionner une parcelle pour obtenir des conseils.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

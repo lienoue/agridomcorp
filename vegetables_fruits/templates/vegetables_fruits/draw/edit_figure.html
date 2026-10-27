@@ -1,0 +1,645 @@
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Edit Figure</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    :root {
+        --primary: #28a745;
+        --primary-dark: #218838;
+        --secondary: #6c757d;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --light: #f8f9fa;
+        --dark: #343a40;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--warning), #fd7e14);
+        color: white;
+        padding: 2rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .main-container {
+        display: flex;
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .map-column {
+        flex: 2;
+    }
+
+    #map-container {
+        height: 600px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+
+    .control-column {
+        flex: 1;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+
+    .selector-group {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .selector-group h4 {
+        margin-bottom: 10px;
+        color: var(--primary);
+    }
+
+    .culture-select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .btn-add {
+        width: 100%;
+        padding: 10px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-add:disabled {
+        background: var(--secondary);
+        cursor: not-allowed;
+    }
+
+    .placements-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        margin: 20px 0;
+        padding: 10px;
+    }
+
+    .placement-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .placement-emoji {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+    .placement-info {
+        flex: 1;
+    }
+
+    .placement-remove {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-success { background: #28a745; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+
+    .option-fruit { color: #2d6a4f; }
+    .option-variete { color: #6c757d; padding-left: 15px; font-style: italic; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>✏️ Placer des cultures sur "{{ figure.name }}"</h1>
+</div>
+
+    <div class="main-container">
+        <!-- Carte -->
+        <div class="map-column">
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <div class="control-column">
+            <div class="form-card">
+                <h3>🌱 Ajouter des cultures</h3>
+
+                <!-- Sélecteur de fruits -->
+                <div class="selector-group">
+                    <h4>🍎 Fruits</h4>
+                    <select id="fruit-select" class="culture-select">
+                        <option value="">-- Choisir un fruit --</option>
+                        {% for fruit in fruits %}
+                        <optgroup label="🍎 {{ fruit.nom }}">
+                            <!-- Option fruit générique (sans variété) -->
+                            <option value="fruit_{{ fruit.id }}"
+                                    data-type="fruit"
+                                    data-id="{{ fruit.id }}"
+                                    data-nom="{{ fruit.nom }}"
+                                    data-saison="{{ fruit.saison }}"
+                                    data-prix="{{ fruit.prix }}"
+                                    data-emoji="🍎">
+                                🍎 {{ fruit.nom }}
+                            </option>
+                            <!-- Variétés du fruit (triées par ordre alphabétique) -->
+                            {% for variete in fruit.varietes_m2m.all %}
+                            <option value="variete_{{ variete.id }}"
+                                    data-type="variete"
+                                    data-id="{{ variete.id }}"
+                                    data-nom="{{ variete.nom }}"
+                                    data-culture="{{ fruit.nom }}"
+                                    data-saison="{{ variete.saison|default:fruit.saison }}"
+                                    data-prix="{{ fruit.prix }}"
+                                    data-emoji="{{ variete.emoji|default:fruit.get_emoji }}">
+                                &nbsp;&nbsp;&nbsp;🌱 {{ variete.nom }}
+                            </option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
+                    <button class="btn-add" id="add-fruit-btn" disabled>
+                        🍎 Prêt à placer
+                    </button>
+                </div>
+
+                <!-- Sélecteur de légumes -->
+                <div class="selector-group">
+                    <h4>🥕 Légumes</h4>
+                    <select id="vegetable-select" class="culture-select">
+                        <option value="">-- Choisir un légume --</option>
+                        {% for vegetable in vegetables %}
+                        <optgroup label="🥬 {{ vegetable.nom }}">
+                            <!-- Option légume générique (sans variété) -->
+                            <option value="vegetable_{{ vegetable.id }}"
+                                    data-type="vegetable"
+                                    data-id="{{ vegetable.id }}"
+                                    data-nom="{{ vegetable.nom }}"
+                                    data-saison="{{ vegetable.saison }}"
+                                    data-prix="{{ vegetable.prix }}"
+                                    data-emoji="🥬">
+                                🥬 {{ vegetable.nom }}
+                            </option>
+                            <!-- Variétés du légume (triées par ordre alphabétique) -->
+                            {% for variete in vegetable.varietes_m2m.all %}
+                            <option value="variete_{{ variete.id }}"
+                                    data-type="variete"
+                                    data-id="{{ variete.id }}"
+                                    data-nom="{{ variete.nom }}"
+                                    data-culture="{{ vegetable.nom }}"
+                                    data-saison="{{ variete.saison|default:vegetable.saison }}"
+                                    data-prix="{{ vegetable.prix }}"
+                                    data-emoji="{{ variete.emoji|default:vegetable.get_emoji }}">
+                                &nbsp;&nbsp;&nbsp;🌱 {{ variete.nom }}
+                            </option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
+                    <button class="btn-add" id="add-vegetable-btn" disabled>
+                        🥕 Prêt à placer
+                    </button>
+                </div>
+
+                <p style="color: var(--primary); font-size:0.9rem; text-align:center;">
+                    👆 Sélectionnez une culture puis cliquez sur la carte
+                </p>
+
+                <!-- Liste des placements -->
+                <h4>📍 Cultures placées</h4>
+                <div class="placements-list" id="placements-list">
+                    <p class="text-muted">Aucune culture placée</p>
+                </div>
+
+                <!-- FORMULAIRE -->
+                <form method="post" action="{% url 'vegetables_fruits:edit_figure' figure.id %}" id="edit-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="crops_data" id="crops-data" value="">
+
+                    <!-- Exposition au soleil -->
+                    <div class="form-group mb-3">
+                        <label for="exposition" class="form-label fw-bold">
+                            <i class="bi bi-sun-fill"></i> Exposition au soleil
+                        </label>
+                        <select name="exposition" id="exposition" class="form-select">
+                            <option value="plein_soleil" {% if parcelle.exposition == 'plein_soleil' %}selected{% endif %}>
+                                ☀️ Plein soleil (6h+)
+                            </option>
+                            <option value="mi_ombre" {% if parcelle.exposition == 'mi_ombre' %}selected{% endif %}>
+                                🌤️ Mi-ombre (4-6h)
+                            </option>
+                            <option value="ombre" {% if parcelle.exposition == 'ombre' %}selected{% endif %}>
+                                🌥️ Ombre (<4h)
+                            </option>
+                            <option value="non_defini" {% if parcelle.exposition == 'non_defini' %}selected{% endif %}>
+                                ❓ Non défini
+                            </option>
+                        </select>
+                        <small class="text-muted">Choisissez l'exposition de votre parcelle</small>
+                    </div>
+
+                    <!-- TYPE DE SOL -->
+                    <div class="form-group">
+                        <label class="form-label fw-bold">🌍 Type de sol</label>
+                        <div class="mb-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="sol_mode" id="sol_manuel" value="manuel" checked onchange="toggleSolMode()">
+                                <label class="form-check-label" for="sol_manuel">Je connais mon sol</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="sol_mode" id="sol_auto" value="auto" onchange="toggleSolMode()">
+                                <label class="form-check-label" for="sol_auto">Estimez-le pour moi (via ma région)</label>
+                            </div>
+                        </div>
+
+                        <select name="type_sol" id="type_sol" class="form-control">
+                            <option value="">-- Sélectionnez --</option>
+                            <option value="argileux">Argileux (terre qui colle)</option>
+                            <option value="sableux">Sableux (terre qui sable)</option>
+                            <option value="limoneux">Limoneux (terre légère et fertile)</option>
+                            <option value="humifère">Humifère (terre noire, riche en humus)</option>
+                            <option value="calcaire">Calcaire (terre blanchâtre)</option>
+                            <option value="autre">Autre / Je ne sais pas</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 15px 0;">
+                        <label>Nom de la figure</label>
+                        <input type="text" name="name" value="{{ figure.name }}" class="culture-select">
+                    </div>
+
+                    <div style="margin: 15px 0;">
+                        <label>Description</label>
+                        <textarea name="description" class="culture-select" rows="3">{{ figure.description }}</textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-success">💾 Enregistrer</button>
+                        <a href="{% url 'vegetables_fruits:figure_detail' figure.id %}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+let appState = {
+    map: null,
+    figureLayer: null,
+    selectedCrop: null,
+    crops: [],
+    markers: []
+};
+
+// Charger les cultures existantes
+{% if enriched_crops %}
+    appState.crops = {{ enriched_crops|safe }};
+{% endif %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    initCrops();
+    setupSelectors();
+});
+
+function initMap() {
+    appState.map = L.map('map').setView([46.603354, 1.888334], 6);
+    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token={{ mapbox_token }}', {
+    attribution: '© Mapbox'
+    }).addTo(appState.map);
+
+    {% if figure.geojson_data %}
+        console.log('✅ Chargement de la figure:', {{ figure.geojson_data|safe }});
+
+        try {
+            var geojson = {{ figure.geojson_data|safe }};
+
+            appState.figureLayer = L.geoJSON(geojson, {
+                style: function(feature) {
+                    return {
+                        color: '#28a745',
+                        weight: 4,
+                        opacity: 0.8,
+                        fillOpacity: 0.2,
+                        fillColor: '#28a745'
+                    };
+                },
+                pointToLayer: function(feature, latlng) {
+                    if (feature.properties && feature.properties.radius) {
+                        return L.circle(latlng, {
+                            radius: feature.properties.radius,
+                            color: '#28a745',
+                            fillColor: '#28a745',
+                            fillOpacity: 0.2
+                        });
+                    } else {
+                        return L.marker(latlng);
+                    }
+                }
+            }).addTo(appState.map);
+
+            appState.map.fitBounds(appState.figureLayer.getBounds());
+            console.log('✅ Figure chargée avec succès');
+
+        } catch (e) {
+            console.error('❌ Erreur de parsing GeoJSON:', e);
+        }
+    {% else %}
+        console.log('❌ Aucune donnée GeoJSON pour cette figure');
+    {% endif %}
+
+    appState.map.on('click', function(e) {
+        console.log('🖱️ Clic sur la carte', e.latlng);
+        if (appState.selectedCrop) {
+            placeCulture(e.latlng.lat, e.latlng.lng);
+        }
+    });
+}
+
+function initCrops() {
+    const validCrops = appState.crops.filter(crop =>
+        crop.lat && crop.lng && typeof crop.lat === 'number' && typeof crop.lng === 'number'
+    );
+
+    validCrops.forEach(crop => {
+        addMarker(crop);
+    });
+    updateList();
+}
+
+function setupSelectors() {
+    const fruitSelect = document.getElementById('fruit-select');
+    const fruitBtn = document.getElementById('add-fruit-btn');
+
+    fruitSelect.addEventListener('change', function() {
+        if (this.value) {
+            const opt = this.selectedOptions[0];
+            const type = opt.dataset.type || 'fruit';
+            const nom = opt.dataset.nom;
+
+            appState.selectedCrop = {
+                type: type,
+                id: parseInt(opt.dataset.id),
+                nom: nom,
+                culture: opt.dataset.culture || nom,
+                emoji: opt.dataset.emoji || '🍎'
+            };
+            fruitBtn.disabled = false;
+            fruitBtn.textContent = '🍎 Cliquez sur la carte';
+            document.getElementById('vegetable-select').value = '';
+            document.getElementById('add-vegetable-btn').disabled = true;
+        } else {
+            fruitBtn.disabled = true;
+            fruitBtn.textContent = '🍎 Prêt à placer';
+        }
+    });
+
+    const vegSelect = document.getElementById('vegetable-select');
+    const vegBtn = document.getElementById('add-vegetable-btn');
+
+    vegSelect.addEventListener('change', function() {
+        if (this.value) {
+            const opt = this.selectedOptions[0];
+            const type = opt.dataset.type || 'vegetable';
+            const nom = opt.dataset.nom;
+
+            appState.selectedCrop = {
+                type: type,
+                id: parseInt(opt.dataset.id),
+                nom: nom,
+                culture: opt.dataset.culture || nom,
+                emoji: opt.dataset.emoji || '🥕'
+            };
+            vegBtn.disabled = false;
+            vegBtn.textContent = '🥕 Cliquez sur la carte';
+            document.getElementById('fruit-select').value = '';
+            document.getElementById('add-fruit-btn').disabled = true;
+        } else {
+            vegBtn.disabled = true;
+            vegBtn.textContent = '🥕 Prêt à placer';
+        }
+    });
+}
+
+function placeCulture(lat, lng) {
+    console.log('=== placeCulture appelée ===');
+    console.log('lat:', lat, 'lng:', lng);
+    console.log('selectedCrop:', appState.selectedCrop);
+
+    if (!appState.selectedCrop) {
+        console.log('❌ selectedCrop est null');
+        return;
+    }
+
+    console.log('✅ selectedCrop OK:', appState.selectedCrop);
+
+    const crop = {
+        placement_id: Date.now(),
+        [appState.selectedCrop.type + '_id']: appState.selectedCrop.id,
+        name: appState.selectedCrop.nom,
+        emoji: appState.selectedCrop.emoji,
+        lat: lat,
+        lng: lng,
+        date_placement: new Date().toISOString()
+    };
+
+    console.log('✅ crop créé:', crop);
+
+    appState.crops.push(crop);
+    console.log('✅ crops après ajout:', appState.crops);
+
+    addMarker(crop);
+    updateList();
+
+    // Reset
+    appState.selectedCrop = null;
+    document.getElementById('fruit-select').value = '';
+    document.getElementById('vegetable-select').value = '';
+    document.getElementById('add-fruit-btn').disabled = true;
+    document.getElementById('add-vegetable-btn').disabled = true;
+    document.getElementById('add-fruit-btn').textContent = '🍎 Prêt à placer';
+    document.getElementById('add-vegetable-btn').textContent = '🥕 Prêt à placer';
+}
+
+const culturePreselect = "{{ culture_preselect|default:'' }}";
+if (culturePreselect) {
+    setTimeout(() => {
+        const select = document.getElementById('culture-select');
+        if (select) {
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].text.toLowerCase().includes(culturePreselect.toLowerCase())) {
+                    select.value = select.options[i].value;
+                    break;
+                }
+            }
+        }
+        alert(`🌱 La culture "${culturePreselect}" a été pré-sélectionnée !`);
+    }, 500);
+}
+
+function addMarker(crop) {
+    const marker = L.marker([crop.lat, crop.lng], {
+        icon: L.divIcon({
+            html: `<div style="background:white; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:3px solid #28a745;">${crop.emoji}</div>`
+        })
+    }).addTo(appState.map);
+
+    appState.markers.push(marker);
+}
+
+function removeCrop(placementId) {
+    const index = appState.crops.findIndex(c => c.placement_id === placementId);
+    if (index !== -1) {
+        appState.crops.splice(index, 1);
+        if (appState.markers[index]) {
+            appState.map.removeLayer(appState.markers[index]);
+            appState.markers.splice(index, 1);
+        }
+        updateList();
+    }
+}
+
+function updateList() {
+    const list = document.getElementById('placements-list');
+
+    if (appState.crops.length === 0) {
+        list.innerHTML = '<p class="text-muted">Aucune culture placée</p>';
+    } else {
+        let html = '';
+        appState.crops.forEach(crop => {
+            html += `
+                <div class="placement-item">
+                    <span class="placement-emoji">${crop.emoji}</span>
+                    <div class="placement-info">
+                        <strong>${crop.name}</strong><br>
+                        <small>${crop.lat.toFixed(4)}, ${crop.lng.toFixed(4)}</small>
+                    </div>
+                    <button class="placement-remove" onclick="removeCrop(${crop.placement_id})">🗑️</button>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    document.getElementById('crops-data').value = JSON.stringify(appState.crops);
+}
+
+function toggleSolMode() {
+    const manuel = document.getElementById('sol_manuel').checked;
+    const selectSol = document.getElementById('type_sol');
+    if (selectSol) {
+        if (manuel) {
+            selectSol.style.display = 'block';
+            selectSol.disabled = false;
+        } else {
+            selectSol.style.display = 'none';
+            selectSol.disabled = false;
+            selectSol.value = '';
+        }
+    }
+}
+
+window.removeCrop = removeCrop;
+
+// ✅ INTERCEPTION DU SUBMIT — ALERTE HORS SAISON
+document.getElementById('edit-form').addEventListener('submit', async function(e) {
+    // Si on est en mode "confirmé" (planter quand même), on laisse passer
+    if (this.dataset.confirmed === 'true') {
+        return; // POST normal
+    }
+
+    e.preventDefault();
+
+    // Sync des crops dans le champ caché
+    document.getElementById('crops-data').value = JSON.stringify(appState.crops);
+
+    if (!appState.crops || appState.crops.length === 0) {
+        // Rien à vérifier, on envoie directement
+        HTMLFormElement.prototype.submit.call(this);
+        return;
+    }
+
+    try {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const figureId = {{ figure.id }};
+
+        const resp = await fetch('{% url "vegetables_fruits:api_verifier_saison" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                crops: appState.crops,
+                figure_id: figureId,
+            }),
+        });
+
+        if (!resp.ok) {
+            console.warn('⚠️ Erreur API vérif saison, on continue quand même');
+            HTMLFormElement.prototype.submit.call(this);
+            return;
+        }
+
+        const data = await resp.json();
+
+        if (data.hors_saison && data.hors_saison.length > 0) {
+            // Afficher la modale
+            afficherModaleHorsSaison(data.hors_saison, this);
+        } else {
+            // Aucune hors saison → envoi direct
+            HTMLFormElement.prototype.submit.call(this);
+        }
+
+    } catch (err) {
+        console.error('❌ Erreur vérif saison:', err);
+        // En cas d'erreur réseau, on n'empêche pas la plantation
+        HTMLFormElement.prototype.submit.call(this);
+    }
+});
+</script>
+{% endblock %}

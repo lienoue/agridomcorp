@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🌱 Placer {{ culture_nom }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    #map {
+        height: 500px;
+        width: 100%;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    .instruction {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1>🌱 Placer {{ culture_nom }}</h1>
+    <p class="text-muted">Sur la parcelle <strong>{{ figure.name }}</strong></p>
+
+    <div class="instruction">
+        <strong>📌 Instructions :</strong>
+        <ol class="mb-0">
+            <li>Cliquez sur la carte à l'endroit où vous souhaitez planter votre <strong>{{ culture_nom }}</strong></li>
+            <li>Un marqueur apparaîtra</li>
+            <li>Cliquez sur "Confirmer le placement"</li>
+        </ol>
+    </div>
+
+    <div id="map"></div>
+
+    <form method="post" id="placementForm">
+        {% csrf_token %}
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+        <input type="hidden" name="culture_nom" value="{{ culture_nom }}">
+        
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                ✅ Confirmer le placement
+            </button>
+            <a href="{% url 'vegetables_fruits:suggestions_personnalisees' %}" class="btn btn-secondary btn-lg">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    // Initialiser la carte
+    var map = L.map('map').setView([{{ figure.adresse_lat|default:46.603354 }}, {{ figure.adresse_lng|default:1.888334 }}], 15);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3ih6_1_4b54795fabf7d713823323fc&language=fr', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 20
+    }).addTo(appState.map);
+    
+    // Dessiner le contour de la parcelle
+    {% if figure.geojson_data %}
+    var geojson = {{ figure.geojson_data|safe }};
+    var layer = L.geoJSON(geojson, {
+        style: { color: '#28a745', weight: 3, opacity: 0.7 }
+    }).addTo(map);
+    if (layer.getBounds().isValid()) {
+        map.fitBounds(layer.getBounds());
+    }
+    {% endif %}
+    
+    var marker = null;
+    var latInput = document.getElementById('lat');
+    var lngInput = document.getElementById('lng');
+    var submitBtn = document.getElementById('submitBtn');
+    
+    // Gérer le clic sur la carte
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        
+        marker = L.marker(e.latlng).addTo(map);
+        marker.bindPopup("📍 {{ culture_nom }}").openPopup();
+        
+        latInput.value = e.latlng.lat;
+        lngInput.value = e.latlng.lng;
+        
+        submitBtn.disabled = false;
+    });
+</script>
+{% endblock %}

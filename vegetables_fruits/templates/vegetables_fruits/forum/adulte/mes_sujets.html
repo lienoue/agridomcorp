@@ -1,0 +1,50 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}📝 Mes sujets - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Tous vos sujets créés 📝{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+    <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}" class="btn-primary-forum">
+        <span>✏️</span> Nouveau sujet
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="?statut=tous" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'tous' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            📋 Tous
+        </a>
+        <a href="?statut=actifs" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'actifs' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            🌱 Actifs
+        </a>
+        <a href="?statut=fermes" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'fermes' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            🔒 Fermés
+        </a>
+    </div>
+    <span style="font-size: 0.85rem; color: #999;">{{ sujets.paginator.count }} sujet(s)</span>
+</div>
+
+{% for sujet in sujets %}
+    {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet %}
+{% empty %}
+    <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <div class="empty-title">Vous n'avez pas encore créé de sujet</div>
+        <p>Partagez votre expérience jardinage !</p>
+        <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}" class="btn-primary-forum" style="margin-top: 12px; display: inline-flex;">
+            <span>✏️</span> Créer un sujet
+        </a>
+    </div>
+{% endfor %}
+
+{% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=sujets %}
+
+{% endblock %}

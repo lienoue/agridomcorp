@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Paiement Réussi - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <span style="font-size: 5rem;">🎉</span>
+                    </div>
+                    <h1 class="display-5 fw-bold text-success mb-4">
+                        Paiement réussi !
+                    </h1>
+                    <p class="lead mb-4">
+                        Votre abonnement a été activé avec succès.<br>
+                        Vous pouvez maintenant profiter de toutes les fonctionnalités.
+                    </p>
+                    
+                    <div class="alert alert-success d-inline-block mb-4">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Votre compte est maintenant actif
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'vegetables_fruits:dashboard' %}" 
+                           class="btn btn-success btn-lg px-5 me-3">
+                            📊 Accéder au Dashboard
+                        </a>
+                        <a href="{% url 'vegetables_fruits:draw_figure' %}" 
+                           class="btn btn-outline-success btn-lg px-5">
+                            🗺️ Créer une parcelle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

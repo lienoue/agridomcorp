@@ -1,0 +1,195 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+{% load cache %}
+
+{% block title %}{{ sujet.titre }} - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}{{ sujet.categorie.nom }}{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+    <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}" class="btn-primary-forum">
+        <span>✏️</span> Nouveau sujet
+    </a>
+    {% if est_premium %}
+        <a href="#repondre" class="btn-outline-forum">
+            <span>💬</span> Répondre
+        </a>
+    {% endif %}
+    {% if est_auteur %}
+        <button class="btn-outline-forum" onclick="if(confirm('Fermer ce sujet ?')){fetch('{{ fermer_url }}', {method:'POST',headers:{'X-CSRFToken':'{{ csrf_token }}'}}).then(()=>location.reload())}">
+            <span>🔒</span> {% if sujet.est_ferme %}Rouvrir{% else %}Fermer{% endif %}
+        </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+{# SUJET #}
+<div style="background: #fff; border-radius: var(--radius); padding: 24px 28px; margin-bottom: 24px; border: 1px solid rgba(109,76,42,0.06);">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+        <h2 style="font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--brun-terre);">
+            {% if sujet.est_premium %}🔒 {% endif %}{{ sujet.titre }}
+        </h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            {% if sujet.est_epingle %}<span class="badge-epingle">📌 Épinglé</span>{% endif %}
+            {% if sujet.est_ferme %}<span class="badge-ferme">🔒 Fermé</span>{% endif %}
+            {% if sujet.est_premium %}<span class="badge-premium" style="font-size:0.8rem;">🔒 Premium</span>{% endif %}
+        </div>
+    </div>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: #888; margin-bottom: 12px;">
+        <span>👤 <strong>{{ sujet.auteur.username }}</strong></span>
+        <span>🗓️ {{ sujet.date_creation|date:"d/m/Y à H:i" }}</span>
+        <span>👁️ {{ sujet.vues|default:0 }} vues</span>
+        <span>💬 {{ sujet.nb_messages|default:0 }} réponses</span>
+    </div>
+    
+    <div style="font-size: 1rem; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word;">
+        {{ sujet.contenu|linebreaks }}
+    </div>
+    
+    <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; border-top: 1px solid #f0ece8; padding-top: 14px;">
+        <a href="{% url 'vegetables_fruits:forum_adulte_signalement' %}?sujet_id={{ sujet.id }}" style="color: #999; font-size: 0.85rem; text-decoration: none;">
+            <span>🚩</span> Signaler
+        </a>
+        {% if est_premium %}
+        <a href="#repondre" style="color: var(--vert-jardin); font-size: 0.85rem; text-decoration: none;">
+            <span>💬</span> Répondre
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{# MESSAGES #}
+<section>
+    <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <span>💬</span> Réponses
+        <span style="font-size: 0.8rem; color: #999; font-weight: 400;">({{ messages.paginator.count }})</span>
+    </h3>
+    
+    {% for msg in messages %}
+        {% include "vegetables_fruits/forum/adulte/includes/message_card.html" with message=msg %}
+    {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">🌱</div>
+            <div class="empty-title">Aucune réponse</div>
+            <p>Soyez le premier à répondre à ce sujet !</p>
+        </div>
+    {% endfor %}
+    
+    {% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=messages %}
+</section>
+
+{# FORMULAIRE DE RÉPONSE #}
+<section id="repondre" style="margin-top: 28px; background: #fff; border-radius: var(--radius); padding: 24px 28px; border: 1px solid rgba(109,76,42,0.06);">
+    <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; margin-bottom: 16px;">
+        🌱 Votre réponse
+    </h4>
+    
+    {% if sujet.est_ferme %}
+        <div class="alert alert-warning">🔒 Ce sujet est fermé. Vous ne pouvez plus répondre.</div>
+    {% elif niveau == 'basique' and quota.messages_restants <= 0 %}
+        <div class="alert alert-warning">
+            ⚠️ Vous avez atteint votre limite de 50 messages ce mois-ci. 
+            <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-premium-forum" style="padding: 6px 16px; font-size: 0.8rem; display: inline-block; margin-top: 6px;">
+                👑 Passer à Premium pour des messages illimités
+            </a>
+        </div>
+    {% else %}
+        <form method="POST" class="forum-form">
+            {% csrf_token %}
+            <textarea name="contenu" placeholder="Partagez votre expérience, conseil ou question..." required minlength="10" style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); min-height:120px; resize:vertical;"></textarea>
+            
+            {% if est_premium %}
+            <div class="form-check" style="margin-top: 12px;">
+                <input type="checkbox" name="est_premium" id="est_premium">
+                <label for="est_premium" style="font-size: 0.9rem; color: #888;">
+                    🔒 Réserver cette réponse aux Premium
+                </label>
+            </div>
+            {% endif %}
+            
+            <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                <button type="submit" class="btn-primary-forum">
+                    <span>📨</span> Publier
+                </button>
+                <a href="{% url 'vegetables_fruits:forum_adulte_sujet' sujet.id %}" class="btn-outline-forum">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // VOTES AJAX
+    document.querySelectorAll('.vote-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const url = this.dataset.url;
+            const type = this.dataset.type;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrftoken,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'type_vote=' + type
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    const card = btn.closest('.message-card');
+                    const upBtn = card.querySelector('.vote-btn.upvote');
+                    const downBtn = card.querySelector('.vote-btn.downvote');
+                    const upCount = card.querySelector('.vote-count-up');
+                    const downCount = card.querySelector('.vote-count-down');
+                    
+                    upBtn.classList.toggle('active', data.nb_upvotes > 0);
+                    downBtn.classList.toggle('active', data.nb_downvotes > 0);
+                    if (upCount) upCount.textContent = data.nb_upvotes;
+                    if (downCount) downCount.textContent = data.nb_downvotes;
+                    
+                    const totalSpan = document.querySelector('.sujet-stats span:last-child');
+                    if (totalSpan && data.total_votes !== undefined) {
+                        totalSpan.textContent = '❤️ ' + data.total_votes;
+                    }
+                }
+            });
+        });
+    });
+    
+    // SOLUTION
+    document.querySelectorAll('.btn-solution').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!confirm('Marquer ce message comme solution ?')) return;
+            
+            const url = this.dataset.url;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrftoken
+                }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

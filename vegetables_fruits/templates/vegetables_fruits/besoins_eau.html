@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Besoins en eau</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* BENTO GRID */
+    .bento {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-rows: minmax(110px, auto);
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+    .card-b {
+        background: var(--card-bg, #fff);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        transition: transform .25s, box-shadow .25s;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-b:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.10); }
+
+    .bento-title {
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    /* HERO (Info parcelle) */
+    .bento-hero {
+        grid-column: span 12;
+        background: linear-gradient(135deg, #17a2b8, #0e6674);
+        color: #fff;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .bento-hero .bento-title { color: rgba(255,255,255,.75); margin-bottom: 4px; }
+    .bento-hero .hero-value { font-size: 2rem; font-weight: 800; line-height: 1.2; }
+    .bento-hero .hero-label { font-size: .9rem; opacity: .85; margin-top: 4px; }
+
+    /* STATS CARDS */
+    .bento-stat { grid-column: span 4; align-items: flex-start; justify-content: space-between; }
+    .bento-stat .stat-value { font-size: 2rem; font-weight: 800; color: #17a2b8; line-height: 1; }
+    .bento-stat .stat-label { font-size: .8rem; color: #6c757d; margin-top: 4px; }
+    .bento-stat .stat-icon { font-size: 1.5rem; opacity: .6; }
+
+    /* TABLEAU (Pleine largeur) */
+    .bento-table { grid-column: span 12; }
+
+    .table-custom { margin-bottom: 0; font-size: 0.9rem; }
+    .table-custom thead { background: #0e6674; color: white; }
+    .table-custom thead th { border: none; font-weight: 600; padding: 12px; }
+    .table-custom tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #e9ecef; }
+    .table-custom tbody tr:hover { background: #f8f9fa; }
+
+    /* FILTRES */
+    .filters-bar {
+        display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;
+    }
+    .filters-bar select {
+        padding: 10px 16px; border-radius: 12px; border: 1px solid #e9ecef;
+        background: white; font-size: .9rem; cursor: pointer; transition: .2s;
+    }
+    .filters-bar select:hover { border-color: #17a2b8; }
+
+    @media (max-width: 768px) {
+        .bento-stat { grid-column: span 12; }
+        .bento-hero { text-align: center; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 style="color: #1b4332; font-weight: 700;">💧 Besoins en eau</h2>
+        {% if figure %}
+        <a href="{% url 'vegetables_fruits:ajuster_besoins_annuels' %}?figure_id={{ figure.id }}" class="btn btn-outline-info fw-bold" style="border-radius: 12px;">
+            ⚙️ Ajuster
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="filters-bar">
+    <form method="get" class="d-flex gap-2 flex-wrap w-100">
+        <select name="figure_id" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">-- Choisir une parcelle --</option>
+            {% for fig in figures %}
+                <option value="{{ fig.id }}" {% if fig.id|stringformat:"s" == figure_id %}selected{% endif %}>
+                    {{ fig.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <select name="unite" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="m2" {% if unite == 'm2' %}selected{% endif %}>m²</option>
+            <option value="ha" {% if unite == 'ha' %}selected{% endif %}>Hectares (ha)</option>
+        </select>
+    </form>
+</div>
+
+{% if message %}
+    <div class="alert alert-info" style="border-radius: 12px;">{{ message }}</div>
+{% endif %}
+
+{% if figure %}
+<div class="bento">
+    <!-- HERO : Infos Parcelle -->
+    <div class="card-b bento-hero">
+        <div>
+            <div class="bento-title">Parcelle sélectionnée</div>
+            <div class="hero-value">📌 {{ figure.name }}</div>
+            <div class="hero-label">
+                🌍 {{ region }} · 📏 {{ surface_affichee }} {{ unite_affichee }}
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div class="bento-title">Cultures présentes</div>
+            {% if cultures %}
+                <div class="d-flex flex-wrap gap-1 justify-content-end">
+                    {% for culture in cultures %}
+                        <span class="badge bg-light text-dark" style="font-size: 0.85rem;">{{ culture }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="badge bg-secondary">Aucune culture</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STATS : Total annuel -->
+    <div class="card-b bento-stat">
+        <div class="stat-icon">🚰</div>
+        <div>
+            <div class="stat-value">{{ total_besoins }}</div>
+            <div class="stat-label">Litres / an (estimé)</div>
+        </div>
+    </div>
+
+    <!-- STATS : Cultures -->
+    <div class="card-b bento-stat">
+        <div class="stat-icon">🌱</div>
+        <div>
+            <div class="stat-value">{{ cultures|length }}</div>
+            <div class="stat-label">Cultures suivies</div>
+        </div>
+    </div>
+
+    <!-- STATS : Fréquence -->
+    <div class="card-b bento-stat">
+        <div class="stat-icon">📅</div>
+        <div>
+            <div class="stat-value">—</div>
+            <div class="stat-label">Fréquence moyenne</div>
+        </div>
+    </div>
+
+    <!-- TABLEAU -->
+    <div class="card-b bento-table">
+        <div class="bento-title">📊 Détail des besoins par culture</div>
+
+        {% if besoins_cultures %}
+        <div class="table-responsive mt-2">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Culture</th>
+                        <th class="text-center">Base<br><small>L/m²/sem</small></th>
+                        <th class="text-center">Coef.<br><small>région</small></th>
+                        <th class="text-center">Ajusté<br><small>L/m²/sem</small></th>
+                        <th class="text-center">Fréq.<br><small>jours</small></th>
+                        <th>Période sensible</th>
+                        <th class="text-end">Total annuel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bc in besoins_cultures %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ bc.culture }}</td>
+                        <td class="text-center">{{ bc.besoin_base }}</td>
+                        <td class="text-center">{{ bc.coefficient }}</td>
+                        <td class="text-center fw-bold text-info">{{ bc.besoin_ajuste }}</td>
+                        <td class="text-center">{{ bc.frequence }}</td>
+                        <td>
+                            {% if bc.periode_sensible %}
+                                <span class="badge bg-warning text-dark">{{ bc.periode_sensible }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold text-success">{{ bc.besoin_total }} L</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-2" style="border-radius: 12px;">
+            ⚠️ Aucune donnée de besoin en eau disponible pour les cultures de cette parcelle.
+        </div>
+        {% endif %}
+
+        <!-- Bouton plan d'irrigation -->
+        <div class="mt-4 text-center">
+            <a href="{% url 'vegetables_fruits:plan_irrigation' %}?figure_id={{ figure.id }}" class="btn btn-outline-info" style="border-radius: 12px;">
+                📅 Voir le plan d'irrigation détaillé
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

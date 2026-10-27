@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}⚠️ Alertes météo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">⚠️ Alertes météo</h1>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ stats.total }}</h3>
+                    <p class="text-muted">Total alertes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.non_lues }}</h3>
+                    <p class="text-muted">Non lues</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>❄️ {{ stats.gel }}</h3>
+                    <p class="text-muted">Alertes gel</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>🌡️ {{ stats.canicule }}</h3>
+                    <p class="text-muted">Alertes canicule</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des alertes -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">📋 Historique des alertes</h5>
+        </div>
+        <div class="card-body">
+            {% if alertes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Température</th>
+                                <th>Parcelle</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alerte in alertes %}
+                            <tr class="{% if alerte.statut == 'en_attente' %}table-warning{% endif %}">
+                                <td>{{ alerte.date_declenchement|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if alerte.type_alerte == 'gel' %}❄️ Gel
+                                    {% elif alerte.type_alerte == 'canicule' %}🌡️ Canicule
+                                    {% elif alerte.type_alerte == 'pluie' %}🌧️ Forte pluie
+                                    {% elif alerte.type_alerte == 'vent' %}💨 Vent fort
+                                    {% else %}⛈️ Orage{% endif %}
+                                </td>
+                                <td>{{ alerte.message }}</td>
+                                <td>{% if alerte.temperature %}{{ alerte.temperature }}°C{% else %}--{% endif %}</td>
+                                <td>
+                                    {% if alerte.figure %}
+                                    <a href="{% url 'vegetables_fruits:figure_detail' alerte.figure.id %}">
+                                        {{ alerte.figure.name }}
+                                    </a>
+                                    {% else %}--{% endif %}
+                                </td>
+                                <td>
+                                    {% if alerte.statut == 'en_attente' %}
+                                        <span class="badge bg-warning">⏳ En attente</span>
+                                    {% elif alerte.statut == 'envoyee' %}
+                                        <span class="badge bg-success">✅ Envoyée</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">⏭️ Ignorée</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted text-center">Aucune alerte météo pour le moment.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Bouton de rafraîchissement -->
+    <div class="mt-3 text-center">
+        <button onclick="window.location.reload();" class="btn btn-primary">
+            🔄 Rafraîchir
+        </button>
+    </div>
+</div>
+{% endblock %}

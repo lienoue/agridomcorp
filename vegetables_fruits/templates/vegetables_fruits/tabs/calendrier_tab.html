@@ -1,0 +1,273 @@
+{% load user_tags %}
+
+<div class="calendrier-container">
+
+    <!-- ✅ Info région -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span style="font-size: 1.2rem;">📍</span>
+                    <strong>Région :</strong> {{ region|capfirst }}
+                </div>
+                <span class="badge bg-success">
+                    🌤️ {{ saison|capfirst }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Conseils pour le mois en cours -->
+    {% if conseils_par_mois %}
+        {% with mois_courant=mois_actuel %}
+            {% if conseils_par_mois|get_item:mois_courant %}
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        🌱 Conseils pour {{ mois_nom }}
+                    </div>
+                    <div class="card-body">
+                        {% for conseil in conseils_par_mois|get_item:mois_courant %}
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="font-size: 1.5rem;">{{ conseil.get_emoji }}</span>
+                                <div>
+                                    <strong>{{ conseil.culture }}</strong>
+                                    <small class="text-muted">
+                                        Semis : {{ conseil.mois_debut_semis }}-{{ conseil.mois_fin_semis }} |
+                                        Récolte : {{ conseil.mois_debut_recolte }}-{{ conseil.mois_fin_recolte }}
+                                    </small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+
+    <!-- Calendrier mensuel -->
+    <div class="card">
+        <div class="card-body">
+            <h5>{{ mois_nom }} {{ annee }}</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        {% for jour in jours_semaine %}
+                            <th>{{ jour }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for semaine in cal %}
+                        <tr>
+                            {% for jour in semaine %}
+                                <td {% if jour == aujourdhui %}class="bg-success text-white"{% endif %}>
+                                    {% if jour != 0 %}
+                                        <strong>{{ jour }}</strong>
+                                        {% if evenements_par_jour|get_item:jour %}
+                                            {% for evt in evenements_par_jour|get_item:jour %}
+                                                <div style="font-size: 0.7rem;">{{ evt.emoji }} {{ evt.titre }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .calendrier-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .calendrier-table {
+        width: 100%;
+        table-layout: fixed;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .calendrier-table th {
+        width: 14.28%;
+        background-color: #f1f3f5;
+        padding: 12px 5px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #2d3436;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+    .calendrier-table td {
+        width: 14.28%;
+        height: 120px;
+        vertical-align: top;
+        padding: 6px;
+        border: 1px solid #dee2e6;
+        background: white;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    z-index 0s;
+        position: relative;
+        z-index: 1;
+        cursor: default;
+    }
+    .calendrier-table td:hover {
+        transform: scale(1.2);
+        z-index: 10;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        background: white;
+        border-color: #28a745;
+    }
+    .empty-cell {
+        background-color: #f8f9fa !important;
+    }
+    .empty-cell:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        background-color: #f8f9fa !important;
+    }
+    .day-cell {
+        background-color: white;
+        transition: background 0.2s;
+    }
+    .day-cell:hover {
+        background-color: #ffffff;
+    }
+    .date-number {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        margin-bottom: 4px;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+    .date-number.today {
+        background-color: #28a745;
+        color: white;
+    }
+    .events-container {
+        font-size: 0.75rem;
+        max-height: 75px;
+        overflow-y: auto;
+    }
+    .events-container::-webkit-scrollbar {
+        width: 4px;
+    }
+    .events-container::-webkit-scrollbar-thumb {
+        background: #ced4da;
+        border-radius: 10px;
+    }
+    .event-badge {
+        padding: 3px 8px;
+        border-radius: 8px;
+        color: white;
+        margin: 2px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        font-weight: 500;
+        pointer-events: none;
+    }
+    .event-badge:hover {
+        opacity: 0.8;
+    }
+    .calendrier-header h5 {
+        font-weight: 700;
+        color: #2d3436;
+        font-size: 1.2rem;
+    }
+    .calendrier-header .btn-outline-primary {
+        color: #28a745;
+        border-color: #28a745;
+        padding: 6px 16px;
+        font-size: 0.95rem;
+    }
+    .calendrier-header .btn-outline-primary:hover {
+        background-color: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    @media (max-width: 768px) {
+        .calendrier-table td {
+            height: 70px;
+            padding: 4px;
+        }
+        .calendrier-table td:hover {
+            transform: scale(1.3);
+        }
+        .date-number {
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            font-size: 0.9rem;
+        }
+        .event-badge {
+            font-size: 0.55rem;
+            padding: 2px 6px;
+        }
+        .events-container {
+            max-height: 45px;
+        }
+        .calendrier-table th {
+            font-size: 0.8rem;
+            padding: 8px 2px;
+        }
+    }
+    @media (max-width: 480px) {
+        .calendrier-table td {
+            height: 55px;
+            padding: 2px;
+        }
+        .calendrier-table td:hover {
+            transform: scale(1.2);
+        }
+        .date-number {
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            font-size: 0.75rem;
+        }
+        .event-badge {
+            font-size: 0.45rem;
+            padding: 1px 4px;
+        }
+        .events-container {
+            max-height: 30px;
+        }
+        .calendrier-table th {
+            font-size: 0.65rem;
+            padding: 4px 2px;
+        }
+    }
+</style>
+
+<script>
+    // La fonction changerMois est définie dans la page principale (cultures.html)
+    // Fallback si elle n'est pas définie
+    if (typeof changerMois === 'undefined') {
+        function changerMois(delta) {
+            const url = new URL(window.location.href);
+            let mois = parseInt('{{ mois }}') + delta;
+            let annee = parseInt('{{ annee }}');
+            if (mois > 12) { mois = 1; annee += 1; }
+            else if (mois < 1) { mois = 12; annee -= 1; }
+            url.searchParams.set('month', mois);
+            url.searchParams.set('year', annee);
+            window.location.href = url.toString();
+        }
+    }
+</script>

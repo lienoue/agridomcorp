@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Guide utilisateur enseignant - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Guide enseignant</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-card .step { background: #f8f9fa; padding: 15px 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2d6a4f; }
+    .doc-card .step p { margin-bottom: 8px; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>👨‍🏫 Guide utilisateur enseignant</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>📌 Introduction</h2>
+        <p>Ce guide est destiné aux <strong>enseignants</strong> utilisant Agriculture 2.0 avec leurs élèves. Il vous explique comment créer une classe, gérer vos élèves et utiliser les outils pédagogiques.</p>
+
+        <div class="success-box">
+            <strong>🎉 Bon à savoir :</strong> L'abonnement Enseignant inclut <strong>toutes les fonctionnalités Premium</strong>
+            (bilan carbone, rotation, compagnonnage, statistiques avancées, dashboard climat, prévisions météo 7 jours…)
+            à tarif réduit.
+        </div>
+
+        <h2>🔐 1. Créer un compte enseignant</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Accéder au site <a href="#">www.agriculture2.0</a></p>
+            <p><strong>Étape 2 :</strong> Cliquer sur "Inscription"</p>
+            <p><strong>Étape 3 :</strong> Cocher "Je suis enseignant"</p>
+            <p><strong>Étape 4 :</strong> Utiliser un <strong>email académique</strong> (ex: nom@ac-ville.fr, nom@universite.fr, nom@ac.uk)</p>
+            <p><strong>Étape 5 :</strong> Confirmer votre email</p>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Important :</strong> L'inscription enseignant nécessite une adresse email académique
+            (domaines acceptés : .edu, .ac-, .univ-, .ecole, .lycee, .gouv, .ac.uk, .edu.fr…).
+        </div>
+
+        <h2>🏫 2. Créer une classe</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Une fois connecté, accéder à "Tableau de bord"</p>
+            <p><strong>Étape 2 :</strong> Cliquer sur "Créer une classe"</p>
+            <p><strong>Étape 3 :</strong> Donner un nom à la classe (ex: "6ème A - Potager")</p>
+            <p><strong>Étape 4 :</strong> Un <strong>code d'invitation unique</strong> est généré automatiquement</p>
+            <p><strong>Étape 5 :</strong> Partager le code avec vos élèves</p>
+        </div>
+
+        <h2>👨‍🎓 3. Inscrire les élèves</h2>
+        <p>Deux méthodes possibles :</p>
+        <h3>A. Inscription via le code de classe</h3>
+        <ul>
+            <li>Communiquez le code aux élèves</li>
+            <li>Les élèves s'inscrivent eux-mêmes via <code>/inscription-eleve/</code></li>
+            <li>Le profil élève est créé automatiquement</li>
+            <li><strong>Vous recevez une notification</strong> à chaque nouvel élève</li>
+        </ul>
+        <h3>B. Création manuelle par l'enseignant</h3>
+        <ul>
+            <li>Depuis le tableau de bord → "Ajouter un élève"</li>
+            <li>Renseigner les infos (nom, email, classe)</li>
+            <li>Un mot de passe est généré</li>
+        </ul>
+
+        <h2>📊 4. Tableau de bord enseignant</h2>
+        <p>Votre tableau de bord affiche :</p>
+        <ul>
+            <li>Nombre d'élèves inscrits</li>
+            <li>Points totaux de la classe</li>
+            <li>Liste des élèves avec leurs points et niveaux</li>
+            <li>Signalements forum en attente</li>
+            <li>Notifications récentes</li>
+        </ul>
+
+        <h2>🎯 5. Créer des défis de classe</h2>
+        <p>Les défis sont un excellent moyen de motiver vos élèves collectivement.</p>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Aller dans "Défis de classe"</p>
+            <p><strong>Étape 2 :</strong> Cliquer sur "Créer un défi"</p>
+            <p><strong>Étape 3 :</strong> Choisir le type d'action :
+                <em>planter, récolter, quiz, journal, fleur, connexion, like, commentaire</em></p>
+            <p><strong>Étape 4 :</strong> Définir l'objectif (ex: 50 plantations collectives)</p>
+            <p><strong>Étape 5 :</strong> Définir la récompense (points + badge)</p>
+            <p><strong>Étape 6 :</strong> Définir les dates (début / fin)</p>
+            <p><strong>Étape 7 :</strong> Valider → le défi est proposé automatiquement à la classe</p>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Astuce :</strong> Lorsqu'un défi est terminé collectivement,
+            <strong>tous les élèves de la classe</strong> reçoivent le badge de récompense,
+            pas seulement ceux qui ont participé.
+        </div>
+
+        <h2>🏅 6. Suivre les progrès des élèves</h2>
+        <ul>
+            <li><strong>Liste des élèves</strong> : points, niveaux, badges</li>
+            <li><strong>Classement de classe</strong> : voir la position de chaque élève</li>
+            <li><strong>Statistiques individuelles</strong> : détail par élève</li>
+            <li><strong>Bilan carbone par élève</strong> : impact écologique</li>
+            <li><strong>Planification semis par élève</strong> : suivi des cultures</li>
+        </ul>
+
+        <h2>📁 7. Exporter les données</h2>
+        <h3>Export CSV de la classe</h3>
+        <ul>
+            <li>Tableau de bord → "Exporter CSV"</li>
+            <li>Contient : nom, email, date inscription, points, niveau, badges, mode junior</li>
+        </ul>
+        <h3>Export PDF de la classe</h3>
+        <ul>
+            <li>Tableau de bord → "Exporter PDF"</li>
+            <li>Rapport complet avec statistiques + tableau</li>
+        </ul>
+        <h3>Export PDF individuel</h3>
+        <ul>
+            <li>Cliquer sur un élève → "Exporter PDF"</li>
+            <li>Rapport individuel complet</li>
+        </ul>
+
+        <h2>🛡️ 8. Modérer le forum école</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Aller dans "Modération"</p>
+            <p><strong>Étape 2 :</strong> Voir les sujets/messages signalés</p>
+            <p><strong>Étape 3 :</strong> Choisir une action :
+                <em>accepter (supprime), refuser, sanctionner</em></p>
+            <p><strong>Étape 4 :</strong> Vous pouvez aussi :</p>
+            <ul>
+                <li>📌 Épingler un sujet important</li>
+                <li>🔒 Fermer un sujet</li>
+                <li>🗑️ Supprimer un message</li>
+            </ul>
+        </div>
+
+        <h2>📸 9. Valider les photos des élèves</h2>
+        <p>Les élèves peuvent partager des photos de leur jardin. Vous devez les valider avant publication.</p>
+        <ul>
+            <li>Accès : Galerie → "Modération photos"</li>
+            <li>Voir les photos en attente de validation</li>
+            <li>Valider → la photo devient publique</li>
+            <li>Supprimer si non conforme</li>
+        </ul>
+
+        <h2>🌱 10. Mode Junior de vos élèves</h2>
+        <p>Tous vos élèves mineurs ont automatiquement <code>mode_junior=True</code>. Cela leur donne :</p>
+        <ul>
+            <li>Interface adaptée (couleurs, tutoiement)</li>
+            <li>Points et badges à chaque action</li>
+            <li>Missions hebdomadaires</li>
+            <li>Arbre de compétences</li>
+            <li>Classement de classe</li>
+        </ul>
+        <p>Vous pouvez <strong>désactiver le mode Junior</strong> pour un élève spécifique si besoin (élève adulte dans une classe).</p>
+
+        <h2>💎 11. Fonctionnalités Premium incluses</h2>
+        <div class="success-box">
+            <p><strong>Votre abonnement Enseignant inclut automatiquement :</strong></p>
+            <ul style="margin: 0;">
+                <li>🌍 Bilan carbone (par parcelle et par élève)</li>
+                <li>🔄 Rotation des cultures (4 ans)</li>
+                <li>🌿 Compagnonnage (associations bénéfiques)</li>
+                <li>📊 Statistiques avancées</li>
+                <li>🌤️ Dashboard climat consolidé</li>
+                <li>🌡️ Prévisions météo 7 jours</li>
+                <li>💧 Plan d'irrigation personnalisé</li>
+                <li>🎯 Plan de fertilisation</li>
+                <li>🦠 Gestion des maladies</li>
+                <li>⚠️ Alertes traitements</li>
+                <li>📈 Planification des semis</li>
+            </ul>
+        </div>
+
+        <h2>💰 12. Abonnement enseignant</h2>
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Mensuel</th><th>Annuel</th><th>Parcelles</th><th>Élèves</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>🏫 Enseignant</strong></td>
+                    <td>9,99€</td>
+                    <td>99,90€</td>
+                    <td>Illimité</td>
+                    <td>Illimité</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="info-box">
+            <strong>🎓 Réduction importante :</strong> Le plan Enseignant est proposé à <strong>-37%</strong>
+            par rapport au tarif Premium, tout en incluant <strong>toutes les fonctionnalités Premium</strong>.
+        </div>
+
+        <h2>🔔 13. Notifications enseignant</h2>
+        <p>Vous recevez des notifications pour :</p>
+        <ul>
+            <li>🎉 Nouvel élève dans une classe</li>
+            <li>⭐ Élève qui atteint un nouveau niveau</li>
+            <li>🏆 Classe qui atteint un palier de points</li>
+            <li>⚠️ Signalement forum</li>
+        </ul>
+        <p>Les notifications sont visibles dans le menu et peuvent être marquées comme lues.</p>
+
+        <h2>🎓 14. Bonnes pratiques pédagogiques</h2>
+        <ul>
+            <li><strong>Démarrez petit</strong> : une parcelle collective avant de passer aux parcelles individuelles</li>
+            <li><strong>Fixez des défis courts</strong> : 1-2 semaines max pour maintenir la motivation</li>
+            <li><strong>Valorisez</strong> : affichez le classement en classe, félicitez les progrès</li>
+            <li><strong>Alternez</strong> : jardinage + quiz + journal pour varier les plaisirs</li>
+            <li><strong>Impliquez les parents</strong> : partagez les liens vers la galerie</li>
+            <li><strong>Reliez au programme</strong> : SVT, sciences, EMC (écologie, alimentation)</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Paiement Annulé - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <span style="font-size: 5rem;">😕</span>
+                    </div>
+                    <h1 class="display-5 fw-bold text-warning mb-4">
+                        Paiement annulé
+                    </h1>
+                    <p class="lead mb-4">
+                        Votre paiement n'a pas été finalisé.<br>
+                        Pas d'inquiétude, vous pouvez réessayer quand vous voulez !
+                    </p>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'vegetables_fruits:tarification' %}" 
+                           class="btn btn-warning btn-lg px-5">
+                            📋 Voir les offres
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

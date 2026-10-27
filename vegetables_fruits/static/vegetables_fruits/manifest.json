@@ -1,0 +1,40 @@
+{
+  "name": "Agriculture 2.0",
+  "short_name": "Agri2.0",
+  "description": "Gestion agricole pour enfants et enseignants",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#28a745",
+  "background_color": "#f0f2f5",
+  "orientation": "portrait-primary",
+  "screenshots": [
+    {
+      "src": "/static/vegetables_fruits/images/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tableau de bord sur ordinateur"
+    },
+    {
+      "src": "/static/vegetables_fruits/images/screenshot-mobile.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tableau de bord sur mobile"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/static/vegetables_fruits/images/AgridomCorp.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/vegetables_fruits/images/AgridomCorp.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

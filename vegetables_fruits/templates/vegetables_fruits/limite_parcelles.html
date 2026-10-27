@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🌾 Limite de parcelles atteinte - Agriculture 2.0{% endblock %}
+
+{% block extra_css %}
+<style>
+    .limite-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .limite-hero {
+        background: linear-gradient(135deg, #fff3cd, #ffe8a1);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        margin-bottom: 30px;
+        border: 3px solid #ffc107;
+    }
+
+    .limite-hero h1 {
+        font-size: 2rem;
+        color: #856404;
+        margin-bottom: 15px;
+    }
+
+    .limite-hero .emoji {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .limite-hero p {
+        font-size: 1.1rem;
+        color: #6d5308;
+        line-height: 1.6;
+    }
+
+    .progress-container {
+        background: #e9ecef;
+        border-radius: 20px;
+        padding: 25px;
+        margin: 25px 0;
+        text-align: center;
+    }
+
+    .progress-bar-bg {
+        background: #dee2e6;
+        border-radius: 15px;
+        height: 30px;
+        overflow: hidden;
+        margin: 15px 0;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ffc107, #ff6b35);
+        border-radius: 15px;
+        transition: width 0.5s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .plans-comparison {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+    }
+
+    .plan-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px 20px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .plan-card.recommended {
+        border-color: #28a745;
+        transform: scale(1.05);
+    }
+
+    .plan-card.recommended:hover {
+        transform: scale(1.05) translateY(-5px);
+    }
+
+    .plan-badge {
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .plan-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .plan-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #28a745;
+        margin: 15px 0;
+    }
+
+    .plan-price small {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+
+    .plan-features {
+        list-style: none;
+        text-align: left;
+        margin: 20px 0;
+        padding: 0;
+    }
+
+    .plan-features li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .plan-features li:last-child {
+        border-bottom: none;
+    }
+
+    .btn-plan {
+        display: block;
+        padding: 15px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        margin-top: 20px;
+        transition: all 0.3s;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-plan:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        text-decoration: none;
+    }
+
+    .btn-basique {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-basique:hover {
+        background: #218838;
+        color: white;
+        box-shadow: 0 5px 20px rgba(40,167,69,0.3);
+    }
+
+    .btn-premium {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .btn-premium:hover {
+        background: #e55a2b;
+        color: white;
+        box-shadow: 0 5px 20px rgba(255,107,53,0.3);
+    }
+
+    .btn-enseignant {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-enseignant:hover {
+        background: #138496;
+        color: white;
+        box-shadow: 0 5px 20px rgba(23,162,184,0.3);
+    }
+
+    .offer-banner {
+        background: linear-gradient(135deg, #ff6b35, #ffb347);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin: 25px 0;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,107,53,0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(255,107,53,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+    }
+
+    .offer-banner h2 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .offer-banner .code {
+        background: white;
+        color: #ff6b35;
+        padding: 5px 15px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 1.2rem;
+    }
+
+    .feature-highlight {
+        color: #ff6b35;
+        font-weight: 700;
+    }
+
+    .feature-exclusif {
+        color: #17a2b8;
+        font-weight: 700;
+    }
+
+    .current-plan-badge {
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .link-retour {
+        display: inline-block;
+        margin-top: 20px;
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .link-retour:hover {
+        color: #28a745;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .limite-hero {
+            padding: 25px 15px;
+        }
+        .limite-hero h1 {
+            font-size: 1.5rem;
+        }
+        .plan-card.recommended {
+            transform: scale(1);
+        }
+        .plan-card.recommended:hover {
+            transform: translateY(-5px);
+        }
+        .plans-comparison {
+            grid-template-columns: 1fr;
+        }
+        .plan-price {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="limite-container">
+
+    <!-- HERO -->
+    <div class="limite-hero">
+        <span class="emoji">🌱</span>
+        <h1>Votre jardin s'agrandit !</h1>
+        <p>
+            Vous avez atteint la limite de
+            <strong>{{ max_parcelles|default:3 }} parcelles</strong>
+            {% if abonnement and abonnement.plan %}
+                du plan <strong>{{ abonnement.plan.get_nom_display }}</strong>
+            {% else %}
+                du plan Gratuit
+            {% endif %}
+            .<br>
+            Pour continuer à cultiver et débloquer des outils avancés, passez à un plan supérieur !
+        </p>
+    </div>
+
+    <!-- PROGRESSION -->
+    <div class="progress-container">
+        <strong>📊 Votre progression</strong>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: {% widthratio nb_parcelles|default:0 max_parcelles|default:3 100 %}%;">
+                {{ nb_parcelles|default:0 }}/{{ max_parcelles|default:3 }} parcelles
+            </div>
+        </div>
+        <small>
+            {% if max_parcelles|default:3 == 15 %}
+                🌿 Plan Basique - Débloquez jusqu'à 50 parcelles avec Premium
+            {% elif max_parcelles|default:3 == 50 %}
+                🌳 Plan Premium - Vous êtes au maximum
+            {% elif max_parcelles|default:3 >= 999 %}
+                🏫 Plan Enseignant - Parcelles illimitées
+            {% else %}
+                🌱 Plan Gratuit - Débloquez jusqu'à 50 parcelles avec nos plans payants
+            {% endif %}
+        </small>
+    </div>
+
+    <!-- OFFRE DÉCOUVERTE -->
+    <div class="offer-banner">
+        <h2>🎉 Passez à Premium !</h2>
+        <p>Profitez de toutes les fonctionnalités avancées et de parcelles illimitées</p>
+        <p style="margin-top: 10px;">
+            <a href="{% url 'vegetables_fruits:tarification' %}" style="background: white; color: #ff6b35; padding: 10px 30px; border-radius: 50px; font-weight: 700; text-decoration: none; display: inline-block;">
+                💎 Découvrir Premium
+            </a>
+        </p>
+    </div>
+
+    <!-- COMPARAISON DES PLANS -->
+    <h2 style="text-align: center; margin: 30px 0;">💎 Choisissez votre plan</h2>
+
+    <div class="plans-comparison">
+        <!-- BASIQUE -->
+        <div class="plan-card {% if abonnement and abonnement.plan.nom == 'BASIQUE' %}recommended{% endif %}">
+            {% if abonnement and abonnement.plan.nom == 'BASIQUE' %}
+                <span class="plan-badge">✅ Votre plan</span>
+            {% endif %}
+            <div class="plan-name">🌿 Basique</div>
+            <div class="plan-price">7,49€<small>/mois</small></div>
+            <ul class="plan-features">
+                <li>✅ 15 parcelles</li>
+                <li>✅ Météo par parcelle</li>
+                <li>✅ Journal de bord (10 notes)</li>
+                <li>✅ Quiz illimités</li>
+                <li>✅ Alertes météo avancées</li>
+                <li>✅ Missions hebdomadaires</li>
+                <li>❌ Conseiller Sol</li>
+                <li>❌ Plan de fertilisation</li>
+                <li>❌ Bilan carbone</li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-plan btn-basique">
+                🌿 Choisir Basique
+            </a>
+        </div>
+
+        <!-- PREMIUM - Recommandé -->
+        <div class="plan-card recommended {% if abonnement and abonnement.plan.nom == 'PREMIUM' %}recommended{% endif %}">
+            <span class="plan-badge">⭐ Recommandé</span>
+            {% if abonnement and abonnement.plan.nom == 'PREMIUM' %}
+                <span class="plan-badge" style="right: auto; left: 20px; background: #17a2b8;">✅ Votre plan</span>
+            {% endif %}
+            <div class="plan-name">🌳 Premium</div>
+            <div class="plan-price">15,99€<small>/mois</small></div>
+            <ul class="plan-features">
+                <li>✅ 50 parcelles</li>
+                <li>🔥 <strong class="feature-highlight">Tout le Basique inclus</strong></li>
+                <li>✅ Conseiller Sol</li>
+                <li>✅ Plan de fertilisation</li>
+                <li>✅ Gestion des maladies</li>
+                <li>✅ Bilan carbone</li>
+                <li>✅ Dashboard climat</li>
+                <li>✅ Prévisions 7j</li>
+                <li>✅ Statistiques avancées</li>
+                <li>✅ Rotation des cultures</li>
+                <li>✅ Compagnonnage</li>
+                <li>✅ Export CSV / PDF</li>
+                <li>✅ Forum adulte (écriture)</li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-plan btn-premium">
+                ⭐ Choisir Premium
+            </a>
+        </div>
+
+        <!-- ENSEIGNANT -->
+        <div class="plan-card {% if abonnement and abonnement.plan.nom == 'ENSEIGNANT' %}recommended{% endif %}">
+            {% if abonnement and abonnement.plan.nom == 'ENSEIGNANT' %}
+                <span class="plan-badge">✅ Votre plan</span>
+            {% endif %}
+            <div class="plan-name">🏫 Enseignant</div>
+            <div class="plan-price">9,99€<small>/mois</small></div>
+            <ul class="plan-features">
+                <li>✅ Parcelles illimitées</li>
+                <li class="feature-exclusif">🔥 <strong>3 fonctions Premium incluses</strong></li>
+                <li>✅ Gestion des classes</li>
+                <li>✅ Défis de classe</li>
+                <li>✅ Forum école</li>
+                <li>✅ Galerie photos de classe</li>
+                <li>✅ Classement national</li>
+                <li>✅ Suivi des élèves</li>
+                <li>✅ Bilan carbone (appât)</li>
+                <li>✅ Export PDF (appât)</li>
+                <li>✅ Alertes traitements (appât)</li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-plan btn-enseignant">
+                🏫 Choisir Enseignant
+            </a>
+        </div>
+    </div>
+
+    <!-- ACTIONS RAPIDES -->
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-secondary btn-lg">
+            📋 Voir mes parcelles
+        </a>
+        <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-success btn-lg ms-2">
+            💰 Voir toutes les offres
+        </a>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <p class="text-muted small">
+            💡 Supprimez une parcelle depuis la page "Mes parcelles" pour en créer une nouvelle, ou passez à l'abonnement supérieur.
+        </p>
+        <a href="{% url 'vegetables_fruits:index' %}" class="link-retour">
+            ← Retour à l'accueil
+        </a>
+    </div>
+
+</div>
+{% endblock %}

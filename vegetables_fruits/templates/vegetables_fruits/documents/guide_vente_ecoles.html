@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Guide de vente écoles - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Guide de vente écoles</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .highlight-box { background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #2d6a4f; margin: 15px 0; }
+    .highlight-box-success { background: #d4edda; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin: 15px 0; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🏫 Guide de vente écoles</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>🎯 1. Pitch d'introduction</h2>
+        <div class="highlight-box">
+            <p><em>"Bonjour, je suis [Nom] d'Agriculture 2.0. Nous proposons aux écoles une application
+            web de jardinage pédagogique qui permet aux élèves d'apprendre l'agriculture en s'amusant,
+            et aux enseignants de suivre leurs progrès en temps réel. Puis-je vous présenter notre solution ?"</em></p>
+        </div>
+
+        <h2>💡 2. Problèmes rencontrés par les écoles</h2>
+        <table>
+            <thead>
+                <tr><th>Problème</th><th>Solution Agriculture 2.0</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Manque de projets concrets en SVT/sciences</td><td>✅ Projet jardinage clé en main</td></tr>
+                <tr><td>Élèves peu motivés</td><td>✅ Gamification + défis + badges</td></tr>
+                <tr><td>Suivi des élèves difficile</td><td>✅ Tableau de bord enseignant complet</td></tr>
+                <tr><td>Pas de ressources pédagogiques adaptées</td><td>✅ Contenu enrichi + quiz + missions</td></tr>
+                <tr><td>Manque d'outils collaboratifs sécurisés</td><td>✅ Forum école modéré + galerie validée</td></tr>
+                <tr><td>Contraintes RGPD sur les données des mineurs</td><td>✅ Conforme RGPD + consentement parental</td></tr>
+                <tr><td>Budget serré</td><td>✅ Tarif enseignant -37% par rapport au Premium</td></tr>
+            </tbody>
+        </table>
+
+        <h2>🧩 3. Solutions proposées par profil</h2>
+
+        <h3>👨‍🎓 Pour les élèves</h3>
+        <ul>
+            <li>Apprendre en s'amusant avec un projet concret</li>
+            <li>Gagner des points, badges et compétences</li>
+            <li>Participer à des défis de classe motivants</li>
+            <li>Progresser à leur rythme (mode Junior automatique)</li>
+            <li>Partager leurs photos dans une galerie modérée</li>
+            <li>Discuter dans un forum sécurisé (réservé à leur école)</li>
+        </ul>
+
+        <h3>👨‍🏫 Pour les enseignants</h3>
+        <ul>
+            <li>Tableau de bord dédié avec vue d'ensemble</li>
+            <li>Création de défis personnalisés</li>
+            <li>Export des résultats (CSV / PDF) pour les bulletins</li>
+            <li>Modération du forum et validation des photos</li>
+            <li>Suivi individuel de chaque élève</li>
+            <li>Accès à <strong>toutes les fonctionnalités Premium</strong></li>
+        </ul>
+
+        <h3>🏫 Pour l'établissement</h3>
+        <ul>
+            <li>Projet pédagogique structuré et valorisant</li>
+            <li>Éducation à l'environnement et au développement durable</li>
+            <li>Conformité RGPD assurée</li>
+            <li>Classement national des écoles</li>
+            <li>Valorisation de l'image de l'établissement</li>
+        </ul>
+
+        <h2>💰 4. Offre Enseignant</h2>
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Mensuel</th><th>Annuel</th><th>Parcelles</th><th>Élèves</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>🏫 Enseignant</strong></td>
+                    <td>9,99€</td>
+                    <td>99,90€</td>
+                    <td>Illimité</td>
+                    <td>Illimité</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="highlight-box-success">
+            <p><strong>🎓 Réduction importante :</strong> Le plan Enseignant est proposé à <strong>-37%</strong>
+            par rapport au tarif Premium, tout en incluant <strong>toutes les fonctionnalités Premium</strong>.</p>
+            <p style="margin: 0;"><strong>Prix annuel = 99,90€</strong> (soit 8,32€/mois)</p>
+        </div>
+
+        <h2>⭐ 5. Inclus : toutes les fonctionnalités Premium</h2>
+        <div class="info-box">
+            <strong>Argument clé :</strong> L'abonnement Enseignant inclut l'intégralité du plan Premium,
+            ce qui représente une valeur bien supérieure à 15,99€/mois, proposée à 9,99€/mois.
+        </div>
+        <ul>
+            <li>🌍 <strong>Bilan carbone</strong> par parcelle et par élève</li>
+            <li>🔄 <strong>Rotation des cultures</strong> sur 4 ans</li>
+            <li>🌿 <strong>Compagnonnage</strong> (associations bénéfiques)</li>
+            <li>📊 <strong>Statistiques avancées</strong></li>
+            <li>🌤️ <strong>Dashboard climat</strong> consolidé</li>
+            <li>🌡️ <strong>Prévisions météo</strong> 7 jours</li>
+            <li>💧 <strong>Plan d'irrigation</strong> personnalisé</li>
+            <li>🎯 <strong>Plan de fertilisation</strong></li>
+            <li>🦠 <strong>Gestion des maladies</strong></li>
+            <li>⚠️ <strong>Alertes traitements</strong></li>
+            <li>📈 <strong>Planification des semis</strong></li>
+        </ul>
+
+        <h2>🗣️ 6. Argumentaire</h2>
+        <div class="highlight-box">
+            <p><em>"Avec Agriculture 2.0, vos élèves apprennent l'agriculture de manière ludique
+            et concrète. Ils créent leur propre jardin virtuel, suivent leurs cultures, relèvent
+            des défis et échangent avec leurs camarades.<br><br>
+
+            Vous disposez d'un tableau de bord complet pour suivre leurs progrès, créer des défis
+            sur mesure et exporter les résultats pour vos évaluations.<br><br>
+
+            Le forum est <strong>réservé aux écoles</strong> et modéré par les enseignants,
+            garantissant un cadre 100% sécurisé pour les élèves.<br><br>
+
+            Nous proposons un <strong>tarif préférentiel de -37%</strong> pour les enseignants,
+            incluant <strong>toutes les fonctionnalités Premium</strong>.<br><br>
+
+            L'application est <strong>conforme au RGPD</strong> et met en place un consentement
+            parental obligatoire pour les élèves de moins de 15 ans."</em></p>
+        </div>
+
+        <h2>🔄 7. Objections et réponses</h2>
+        <table>
+            <thead>
+                <tr><th>Objection</th><th>Réponse</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>"C'est trop cher"</td>
+                    <td>Pour 9,99€/mois, vous avez un outil complet avec parcelles illimitées,
+                    élèves illimités, et <strong>toutes les fonctionnalités Premium incluses</strong>.
+                    Soit moins de 10€ par mois pour un projet pédagogique complet sur l'année scolaire.</td>
+                </tr>
+                <tr>
+                    <td>"Pas de version mobile native"</td>
+                    <td>L'application est une <strong>PWA installable</strong> : elle fonctionne
+                    sur ordinateur, tablette et smartphone. Installation possible en un clic
+                    depuis le navigateur.</td>
+                </tr>
+                <tr>
+                    <td>"Pourquoi le forum est fermé aux autres écoles ?"</td>
+                    <td>Pour garantir un <strong>cadre 100% sécurisé</strong> aux élèves.
+                    Seuls les élèves et enseignants de la même école peuvent y échanger.
+                    Le forum est modéré par les enseignants.</td>
+                </tr>
+                <tr>
+                    <td>"On a déjà un outil"</td>
+                    <td>Agriculture 2.0 <strong>combine tout en un seul outil</strong> :
+                    parcelles géolocalisées, cultures (200+), gamification, communauté,
+                    exports, modération. Aucun autre outil ne fait tout cela.</td>
+                </tr>
+                <tr>
+                    <td>"Pas de temps pour le mettre en place"</td>
+                    <td>L'application est <strong>intuitive</strong> et nous proposons
+                    un accompagnement personnalisé. La création d'une classe prend 2 minutes,
+                    et un élève peut rejoindre la classe en 30 secondes.</td>
+                </tr>
+                <tr>
+                    <td>"On a des contraintes RGPD"</td>
+                    <td>Agriculture 2.0 est <strong>conforme au RGPD</strong> :
+                    consentement parental obligatoire pour les moins de 15 ans,
+                    données hébergées en France, et documentation complète.</td>
+                </tr>
+                <tr>
+                    <td>"On a des élèves mineurs, est-ce sécurisé ?"</td>
+                    <td>Les mineurs ont un <strong>mode Junior</strong> automatique,
+                    une interface adaptée, un forum restreint à leur école et une
+                    <strong>modération systématique</strong> des contenus.</td>
+                </tr>
+                <tr>
+                    <td>"Et si l'enseignant quitte l'école ?"</td>
+                    <td>Le compte enseignant est <strong>personnel</strong>. Il peut
+                    être transféré ou recréé. Les données des classes sont conservées
+                    et accessibles au nouvel enseignant.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🎯 8. Démonstration en 5 minutes</h2>
+        <p>Voici un scénario de démo efficace :</p>
+        <ol style="line-height: 1.9; color: #495057;">
+            <li><strong>Inscription</strong> avec un email académique (30s)</li>
+            <li><strong>Création d'une classe</strong> → code généré (1 min)</li>
+            <li><strong>Ajout d'une parcelle</strong> → dessin sur la carte (2 min)</li>
+            <li><strong>Plantation d'une culture</strong> → voir la chronologie (1 min)</li>
+            <li><strong>Création d'un défi</strong> → voir le rendu côté élève (1 min)</li>
+        </ol>
+
+        <h2>💼 9. Prochaine étape</h2>
+        <div class="highlight-box">
+            <p><em>"Je vous propose de tester Agriculture 2.0 <strong>gratuitement</strong> avec votre classe
+            pendant 15 jours. Nous vous accompagnons dans la mise en place. Qu'en pensez-vous ?"</em></p>
+        </div>
+
+        <h3>Ce que nous offrons pendant la phase de test</h3>
+        <ul>
+            <li>✅ Accès complet à toutes les fonctionnalités</li>
+            <li>✅ Accompagnement personnalisé (téléphone, email)</li>
+            <li>✅ Formation des enseignants (visio 30 min)</li>
+            <li>✅ Documents pédagogiques prêts à l'emploi</li>
+            <li>✅ Support prioritaire</li>
+        </ul>
+
+        <h2>🔗 10. Liens utiles</h2>
+        <ul>
+            <li>🌐 <strong>Site web</strong> : www.agriculture2.0</li>
+            <li>📧 <strong>Contact commercial</strong> : contact@agriculture2.0</li>
+            <li>📚 <strong>Documentation</strong> : voir le footer du site</li>
+            <li>🎓 <strong>Guide enseignant</strong> : /guide-enseignant/</li>
+        </ul>
+
+        <h2>📊 11. Chiffres clés à retenir</h2>
+        <table>
+            <thead>
+                <tr><th>Chiffre</th><th>Signification</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>9,99€/mois</strong></td><td>Tarif Enseignant mensuel</td></tr>
+                <tr><td><strong>99,90€/an</strong></td><td>Tarif Enseignant annuel (-17%)</td></tr>
+                <tr><td><strong>-37%</strong></td><td>Réduction vs Premium</td></tr>
+                <tr><td><strong>200+</strong></td><td>Cultures référencées</td></tr>
+                <tr><td><strong>78</strong></td><td>Fleurs pollinisatrices</td></tr>
+                <tr><td><strong>10</strong></td><td>Types de sols gérés</td></tr>
+                <tr><td><strong>Illimité</strong></td><td>Parcelles + élèves</td></tr>
+                <tr><td><strong>15 jours</strong></td><td>Essai gratuit proposé</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+h1, li {
+    color: white;
+}
+
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+
+        .auth-buttons a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .auth-buttons a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .auth-buttons a i {
+            margin-right: 8px;
+        }
+
+        .login-btn {
+            background-color: #388E3C;
+        }
+
+        .signup-btn {
+            background-color: #2E7D32;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("images/raisins.jpg") no-repeat;
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 20px;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 50px 20px;
+            background-color: white;
+        }
+
+        .feature {
+            text-align: center;
+            width: 300px;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .feature i {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+        }

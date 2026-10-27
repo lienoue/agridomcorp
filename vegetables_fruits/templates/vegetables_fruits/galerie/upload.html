@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}📤 Partager une photo{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 700px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📤 Partager une photo</h1>
+        <a href="{% url 'vegetables_fruits:galerie_index' %}" class="btn btn-secondary">
+            ← Retour
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Photo *</label>
+                    <input type="file" name="image" class="form-control" accept="image/*" required>
+                    <small class="text-muted">Formats acceptés : JPG, PNG. Max 5MB.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Titre *</label>
+                    <input type="text" name="titre" class="form-control" required placeholder="Ex: Mon potager en été">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Décrivez votre jardin, ce que vous avez planté..."></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Parcelle associée (optionnel)</label>
+                    <select name="figure_id" class="form-select">
+                        <option value="">-- Aucune parcelle --</option>
+                        {% for figure in figures %}
+                        <option value="{{ figure.id }}">{{ figure.name }} ({{ figure.created_at|date:"d/m/Y" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="alert alert-info">
+                    {% if user.is_enseignant %}
+                    ✅ En tant qu'enseignant, votre photo sera publiée immédiatement.
+                    {% else %}
+                    ⏳ Votre photo sera visible après validation par un enseignant.
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-success w-100">
+                    📤 Publier la photo
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

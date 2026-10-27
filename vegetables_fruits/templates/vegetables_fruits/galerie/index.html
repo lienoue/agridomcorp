@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Galeries des jardins</li>
+{% endblock %}
+
+{% block title %}📸 Galerie des jardins{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-galerie {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        padding: 40px 0;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: white;
+    }
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .photo-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .photo-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .photo-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    .photo-info {
+        padding: 12px;
+    }
+    .photo-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 0.95rem;
+    }
+    .photo-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    .photo-stats {
+        display: flex;
+        gap: 12px;
+    }
+    .badge-une {
+        background: #ffc107;
+        color: #333;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+    .btn-upload {
+        background: #28a745;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 40px;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    .btn-upload:hover {
+        background: #1e7e34;
+        transform: translateY(-2px);
+        color: white;
+    }
+    @media (max-width: 768px) {
+        .photo-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .photo-image {
+            height: 140px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="hero-galerie">
+        <h1>📸 Galerie des jardins</h1>
+        <p>Découvrez les plus beaux jardins de la communauté</p>
+        <a href="{% url 'vegetables_fruits:galerie_upload' %}" class="btn-upload mt-3">
+            📤 Partager ma photo
+        </a>
+    </div>
+
+    <!-- Photos à la une -->
+    {% if photos_a_la_une %}
+    <div>
+        <div class="section-title">
+            <span>⭐</span>
+            <h2 class="mb-0">À la une</h2>
+        </div>
+        <div class="photo-grid">
+            {% for photo in photos_a_la_une %}
+            <div class="photo-card" onclick="window.location.href='{% url 'vegetables_fruits:galerie_photo_detail' photo.id %}'">
+                <img src="{{ photo.image.url }}" alt="{{ photo.titre }}" class="photo-image">
+                <div class="photo-info">
+                    <div class="photo-title">{{ photo.titre|truncatechars:30 }}</div>
+                    <div class="photo-meta">
+                        <span>👤 {{ photo.auteur.username }}</span>
+                        <div class="photo-stats">
+                            <span>❤️ {{ photo.nb_likes }}</span>
+                            <span>💬 {{ photo.nb_commentaires }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dernières photos -->
+    <div>
+        <div class="section-title">
+            <span>🆕</span>
+            <h2 class="mb-0">Dernières publications</h2>
+            <a href="{% url 'vegetables_fruits:galerie_photos' %}" class="ms-auto text-decoration-none small">Voir tout →</a>
+        </div>
+        <div class="photo-grid">
+            {% for photo in dernieres_photos %}
+            <div class="photo-card" onclick="window.location.href='{% url 'vegetables_fruits:galerie_photo_detail' photo.id %}'">
+                <img src="{{ photo.image.url }}" alt="{{ photo.titre }}" class="photo-image">
+                <div class="photo-info">
+                    <div class="photo-title">{{ photo.titre|truncatechars:30 }}</div>
+                    <div class="photo-meta">
+                        <span>👤 {{ photo.auteur.username }}</span>
+                        <div class="photo-stats">
+                            <span>❤️ {{ photo.nb_likes }}</span>
+                            <span>💬 {{ photo.nb_commentaires }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                Aucune photo pour le moment. <a href="{% url 'vegetables_fruits:galerie_upload' %}">Soyez le premier à partager !</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Photos les plus populaires -->
+    {% if plus_populaires %}
+    <div>
+        <div class="section-title">
+            <span>🔥</span>
+            <h2 class="mb-0">Les plus populaires</h2>
+        </div>
+        <div class="photo-grid">
+            {% for photo in plus_populaires %}
+            <div class="photo-card" onclick="window.location.href='{% url 'vegetables_fruits:galerie_photo_detail' photo.id %}'">
+                <img src="{{ photo.image.url }}" alt="{{ photo.titre }}" class="photo-image">
+                <div class="photo-info">
+                    <div class="photo-title">{{ photo.titre|truncatechars:30 }}</div>
+                    <div class="photo-meta">
+                        <span>👤 {{ photo.auteur.username }}</span>
+                        <div class="photo-stats">
+                            <span>❤️ {{ photo.nb_likes }}</span>
+                            <span>💬 {{ photo.nb_commentaires }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lien vers la modération pour les enseignants -->
+    {% if user.is_enseignant %}
+    <div class="text-center mt-4">
+        <a href="{% url 'vegetables_fruits:galerie_moderation' %}" class="btn btn-outline-warning">
+            ⚖️ Modérer les photos en attente
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

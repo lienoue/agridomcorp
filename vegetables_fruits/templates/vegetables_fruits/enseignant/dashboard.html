@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Enseignant - Agriculture 2.0{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #28a745;
+        --primary-dark: #218838;
+        --secondary: #6c757d;
+        --light: #f8f9fa;
+        --dark: #343a40;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 30px 30px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        color: var(--secondary);
+        margin-top: 8px;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .class-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .class-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .class-header {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .class-header h3 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .class-code {
+        background: rgba(255,255,255,0.2);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-family: monospace;
+        font-size: 1.1rem;
+    }
+
+    .class-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .class-stats span {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .class-body {
+        padding: 20px;
+        display: none;
+    }
+
+    .class-body.show {
+        display: block;
+    }
+
+    .students-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .students-table th,
+    .students-table td {
+        padding: 12px 8px;
+        text-align: left;
+        vertical-align: middle; /* ✅ Alignement vertical pour éviter le chevauchement */
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .students-table th {
+        background: var(--light);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .students-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* ✅ Nouveau : conteneur des boutons d'action */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .rank-badge {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 30px;
+        font-weight: bold;
+    }
+
+    .rank-1 { background: #ffd700; color: #333; }
+    .rank-2 { background: #c0c0c0; color: #333; }
+    .rank-3 { background: #cd7f32; color: white; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* ✅ Boutons compacts pour la colonne Actions */
+    .btn-sm {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ✅ Styles pour le modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-content {
+        background: white; border-radius: 20px; width: 90%; max-width: 500px;
+        padding: 30px; animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    .loading {
+        text-align: center;
+        padding: 50px;
+        display: none;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e9ecef;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+        .class-header { flex-direction: column; text-align: center; }
+        .class-stats { justify-content: center; }
+        .students-table { font-size: 0.8rem; }
+        .students-table th, .students-table td { padding: 6px 4px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <h1>👩‍🏫 Tableau de bord enseignant</h1>
+        <p>Gérez vos classes et suivez la progression de vos élèves</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+    </div>
+
+    <div id="dashboard-content">
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-number" id="total-classes">{{ classes|length }}</div>
+                <div class="stat-label">Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🎓</div>
+                <div class="stat-number" id="total-eleves">{{ total_eleves }}</div>
+                <div class="stat-label">Élèves</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number" id="total-points">{{ total_points }}</div>
+                <div class="stat-label">Points cumulés</div>
+            </div>
+        </div>
+
+        <!-- Liste des classes -->
+        {% if classes %}
+            <div class="mb-4">
+                <button onclick="showCreateClassModal()" class="btn-primary">
+                    ➕ Nouvelle classe
+                </button>
+            </div>
+
+            {% for classe in classes %}
+            <div class="class-card" data-classe-id="{{ classe.id }}">
+                <div class="class-header" onclick="toggleClass({{ classe.id }})">
+                    <h3>
+                        <span>📚</span>
+                        {{ classe.nom }}
+                    </h3>
+                    <div class="class-stats">
+                        <span>👥 {{ classe.eleves.count }} élèves</span>
+                        <span>⭐ {{ classe.eleves.all.0.points|default:0 }} max</span>
+                        <span class="class-code">Code: {{ classe.code }}</span>
+                    </div>
+                </div>
+                <div class="class-body" id="class-body-{{ classe.id }}">
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="copyCode('{{ classe.code }}')" class="btn-primary btn-sm">
+                            📋 Copier le code
+                        </button>
+                        <a href="{% url 'vegetables_fruits:export_eleves_csv' classe.id %}" class="btn-primary btn-sm">
+                            📊 Exporter CSV
+                        </a>
+                        <a href="{% url 'vegetables_fruits:export_eleves_pdf' classe.id %}" class="btn-primary btn-sm">
+                            📄 Exporter PDF
+                        </a>
+                    </div>
+
+                    {% if classe.eleves.all %}
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Élève</th>
+                                <th style="width: 100px;">Points</th>
+                                <th style="width: 90px;">Niveau</th>
+                                <th style="width: 90px;">Badges</th>
+                                <th style="min-width: 140px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eleve in classe.eleves.all|dictsortreversed:"points" %}
+                            <tr>
+                                <td>
+                                    {% if forloop.counter == 1 %}
+                                        <span class="rank-badge rank-1">🥇</span>
+                                    {% elif forloop.counter == 2 %}
+                                        <span class="rank-badge rank-2">🥈</span>
+                                    {% elif forloop.counter == 3 %}
+                                        <span class="rank-badge rank-3">🥉</span>
+                                    {% else %}
+                                        <span class="rank-badge">{{ forloop.counter }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        {{ eleve.user.username }}
+                                        {% if eleve.user.mode_junior %}
+                                            <span title="Mode Junior">🧒</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td><strong>{{ eleve.points }}</strong></td>
+                                <td>⭐ {{ eleve.niveau }}</td>
+                                <td>{{ eleve.badges.count }}</td>
+                                <td>
+                                    <!-- ✅ COLONNE ACTIONS : Boutons ajoutés sans chevauchement -->
+                                    <div class="action-buttons">
+                                        <a href="{% url 'vegetables_fruits:export_eleve_pdf' eleve.id %}" class="btn-primary btn-sm" title="Fiche PDF">
+                                            📄
+                                        </a>
+                                        <!-- ✅ Nouveaux boutons Premium pour l'enseignant -->
+                                        <a href="{% url 'vegetables_fruits:bilan_carbone_eleve' eleve.id %}" class="btn-primary btn-sm" style="background: #28a745;" title="Bilan carbone">
+                                            🌍
+                                        </a>
+                                        <a href="{% url 'vegetables_fruits:statistiques_avancees_eleve' eleve.id %}" class="btn-primary btn-sm" style="background: #17a2b8;" title="Statistiques avancées">
+                                            📊
+                                        </a>
+                                        <a href="{% url 'vegetables_fruits:planification_semis_eleve' eleve.id %}" class="btn-primary btn-sm" style="background: #6c757d;" title="Planification des semis">
+                                            🌱
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted" style="text-align: center; padding: 30px;">
+                        Aucun élève dans cette classe pour le moment.<br>
+                        Partagez le code <strong>{{ classe.code }}</strong> avec vos élèves.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- État initial : aucune classe -->
+            <div class="empty-state">
+                <div class="empty-icon">🌱</div>
+                <h3>Bienvenue dans votre espace enseignant !</h3>
+                <p>Vous n'avez pas encore créé de classe.</p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="showCreateClassModal()" class="btn-primary">
+                        ➕ Créer ma première classe
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de création de classe -->
+<div id="createClassModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 20px;">📚 Créer une nouvelle classe</h3>
+        <form method="post" action="{% url 'vegetables_fruits:creer_classe' %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Nom de la classe</label>
+                <input type="text" name="nom" class="form-control" style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 10px;" required placeholder="ex: CM1 A - Jardinage">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="hideCreateClassModal()" class="btn-outline" style="padding: 10px 20px;">Annuler</button>
+                <button type="submit" class="btn-primary" style="padding: 10px 20px;">Créer la classe</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div style="background: yellow; padding: 5px;">
+    signalements_en_attente = {{ signalements_en_attente }}
+</div>
+
+{% if signalements_en_attente > 0 %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>{{ signalements_en_attente }} signalement(s) en attente</strong> de modération.
+    <a href="{% url 'vegetables_fruits:forum_moderation' %}" class="alert-link">Voir et traiter</a>
+    <a href="{% url 'vegetables_fruits:marquer_signalements_lus' %}" class="alert-link ms-2">Marquer comme lu</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+
+<script>
+    function toggleClass(id) {
+        const body = document.getElementById(`class-body-${id}`);
+        body.classList.toggle('show');
+    }
+
+    function copyCode(code) {
+        navigator.clipboard.writeText(code);
+        alert(`Code ${code} copié dans le presse-papier !`);
+    }
+
+    function showCreateClassModal() {
+        document.getElementById('createClassModal').classList.add('show');
+    }
+
+    function hideCreateClassModal() {
+        document.getElementById('createClassModal').classList.remove('show');
+    }
+
+    document.getElementById('createClassModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideCreateClassModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('dashboard-content');
+            if (loading && content) {
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            }
+        }, 300);
+    });
+</script>
+{% endblock %}

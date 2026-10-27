@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Statistiques Premium — Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Statistiques avancées</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============ BENTO GRID ============ */
+.bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: minmax(110px, auto);
+    gap: 16px;
+    margin-bottom: 30px;
+}
+.card-b {
+    background: var(--card-bg, #fff);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform .25s, box-shadow .25s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.card-b:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.10); }
+
+.bento-title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* HERO */
+.bento-hero {
+    grid-column: span 5;
+    grid-row: span 3;
+    background: linear-gradient(135deg, #1b4332, #28a745);
+    color: #fff;
+}
+.bento-hero .bento-title { color: rgba(255,255,255,.75); }
+.bento-hero .hero-value { font-size: 3rem; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+.bento-hero .hero-label { font-size: .9rem; opacity: .85; margin-bottom: 20px; }
+.bento-hero .hero-chart-wrap {
+    width: 180px; height: 180px; margin: 0 auto; position: relative;
+}
+.bento-hero .legend {
+    display: flex; justify-content: center; gap: 12px;
+    margin-top: 16px; font-size: .8rem; flex-wrap: wrap;
+}
+.bento-hero .legend span { display: flex; align-items: center; gap: 6px; }
+.bento-hero .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* STATS */
+.bento-stat { grid-column: span 3; grid-row: span 1; align-items: flex-start; justify-content: space-between; }
+.bento-stat .stat-value { font-size: 2rem; font-weight: 800; color: #28a745; line-height: 1; }
+.bento-stat .stat-label { font-size: .8rem; color: #6c757d; margin-top: 4px; }
+.bento-stat .stat-icon { font-size: 1.5rem; opacity: .6; }
+
+/* PIE */
+.bento-pie { grid-column: span 4; grid-row: span 2; }
+.bento-pie .pie-row { display: flex; align-items: center; gap: 16px; flex: 1; }
+.bento-pie .pie-canvas-wrap {
+    width: 110px; height: 110px; flex-shrink: 0; position: relative;
+}
+.bento-pie .pie-legend { font-size: .8rem; flex: 1; }
+.bento-pie .pie-legend div { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.bento-pie .pie-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+
+/* TIMELINE */
+.bento-timeline { grid-column: span 8; grid-row: span 2; }
+.timeline-h { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; flex: 1; align-items: center; }
+.timeline-h::-webkit-scrollbar { height: 6px; }
+.timeline-h::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.tl-item {
+    min-width: 110px; padding: 12px; background: #f8f9fa; border-radius: 14px;
+    border-left: 4px solid #28a745; transition: .2s; flex-shrink: 0;
+}
+.tl-item:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,.08); }
+.tl-item.recolte { border-left-color: #ffc107; }
+.tl-item.planif { border-left-color: #17a2b8; }
+.tl-date { font-size: .75rem; color: #6c757d; font-weight: 600; }
+.tl-culture { font-size: .95rem; font-weight: 700; margin: 4px 0; }
+.tl-parcelle { font-size: .7rem; color: #6c757d; }
+
+/* PARCELLES */
+.bento-parcelles { grid-column: span 4; grid-row: span 2; }
+.parc-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e9ecef; font-size: .9rem; }
+.parc-row:last-child { border-bottom: none; }
+.parc-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.parc-dot { width: 8px; height: 8px; border-radius: 50%; background: #28a745; }
+.parc-surf { color: #6c757d; font-size: .8rem; }
+
+/* POINTS CHART */
+.bento-points { grid-column: span 12; grid-row: span 2; }
+
+/* FILTRES */
+.filters-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;
+}
+.filters-bar select {
+    padding: 10px 16px; border-radius: 12px; border: 1px solid #e9ecef;
+    background: white; font-size: .9rem; cursor: pointer; transition: .2s;
+}
+.filters-bar select:hover { border-color: #28a745; }
+.filters-bar .loading-indicator {
+    display: none; color: #28a745; font-size: .85rem;
+    animation: pulse 1s infinite;
+}
+.filters-bar.loading .loading-indicator { display: inline-block; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .bento-hero { grid-column: span 12; grid-row: span 2; }
+    .bento-stat { grid-column: span 6; }
+    .bento-pie { grid-column: span 6; }
+    .bento-timeline { grid-column: span 12; }
+    .bento-parcelles { grid-column: span 12; }
+}
+@media (max-width: 576px) {
+    .bento-stat, .bento-pie { grid-column: span 12; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h2 style="color: #1b4332; font-weight: 700;">📊 Mes statistiques</h2>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="filters-bar" id="filters-bar">
+    <select id="filter-parcelle">
+        <option value="">Toutes mes parcelles</option>
+        {% for f in figures %}
+        <option value="{{ f.id }}" {% if selected_figure_id == f.id %}selected{% endif %}>{{ f.name }}</option>
+        {% endfor %}
+    </select>
+    <select id="filter-periode">
+        <option value="30j" {% if selected_periode == '30j' %}selected{% endif %}>30 derniers jours</option>
+        <option value="6m" {% if selected_periode == '6m' %}selected{% endif %}>6 derniers mois</option>
+        <option value="12m" {% if selected_periode == '12m' %}selected{% endif %}>12 derniers mois</option>
+        <option value="tout" {% if selected_periode == 'tout' %}selected{% endif %}>Tout</option>
+    </select>
+    <span class="loading-indicator">⏳ Mise à jour…</span>
+</div>
+
+<!-- BENTO GRID -->
+<div class="bento" id="bento">
+
+    <!-- HERO -->
+    <div class="card-b bento-hero">
+        <div class="bento-title">Répartition des cultures</div>
+        <div style="text-align: center; margin-top: 8px;">
+            <div class="hero-chart-wrap">
+                <canvas id="chart-repartition"></canvas>
+            </div>
+            <div class="legend" id="legend-repartition"></div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card-b bento-stat">
+        <div class="stat-icon">⭐</div>
+        <div>
+            <div class="stat-value" id="stat-points">-</div>
+            <div class="stat-label">Points totaux</div>
+        </div>
+    </div>
+    <div class="card-b bento-stat">
+        <div class="stat-icon">🌾</div>
+        <div>
+            <div class="stat-value" id="stat-parcelles">-</div>
+            <div class="stat-label">Parcelles</div>
+        </div>
+    </div>
+    <div class="card-b bento-stat">
+        <div class="stat-icon">🌱</div>
+        <div>
+            <div class="stat-value" id="stat-cultures">-</div>
+            <div class="stat-label">Cultures</div>
+        </div>
+    </div>
+    <div class="card-b bento-stat">
+        <div class="stat-icon">🧺</div>
+        <div>
+            <div class="stat-value" id="stat-recoltes">-</div>
+            <div class="stat-label">Récoltes</div>
+        </div>
+    </div>
+
+    <!-- PIE : SURFACE -->
+    <div class="card-b bento-pie">
+        <div class="bento-title">Surface par parcelle</div>
+        <div class="pie-row">
+            <div class="pie-canvas-wrap">
+                <canvas id="chart-surfaces"></canvas>
+            </div>
+            <div class="pie-legend" id="legend-surfaces"></div>
+        </div>
+    </div>
+
+    <!-- PIE : STATUT -->
+    <div class="card-b bento-pie">
+        <div class="bento-title">État du jardin</div>
+        <div class="pie-row">
+            <div class="pie-canvas-wrap">
+                <canvas id="chart-statuts"></canvas>
+            </div>
+            <div class="pie-legend" id="legend-statuts"></div>
+        </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="card-b bento-timeline">
+        <div class="bento-title">📅 Prochaines actions</div>
+        <div class="timeline-h" id="timeline-container"></div>
+    </div>
+
+    <!-- PARCELLES -->
+    <div class="card-b bento-parcelles">
+        <div class="bento-title">📍 Mes parcelles</div>
+        <div id="parcelles-container"></div>
+    </div>
+
+    <!-- POINTS CHART -->
+    <div class="card-b bento-points">
+        <div class="bento-title">📈 Évolution des points (12 mois)</div>
+        <canvas id="chart-points" style="max-height: 200px;"></canvas>
+    </div>
+
+</div>
+
+<!-- Chart.js chargé UNIQUEMENT ici -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'vegetables_fruits/js/statistiques_bento.js' %}"></script>
+
+<script>
+// Injecte les données initiales du serveur (rendu instantané)
+window.__STATS_INITIALES__ = {{ data_json|safe }};
+window.__URL_API_STATS__ = "{% url 'vegetables_fruits:api_stats_bento' %}";
+</script>
+{% endblock %}

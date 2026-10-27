@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouveau sujet - Forum{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    <div class="mb-3">
+        <a href="{% url 'vegetables_fruits:forum_categorie' categorie.id %}" class="btn btn-sm btn-secondary">
+            ← Retour à {{ categorie.nom }}
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h3 class="mb-0">📝 Nouveau sujet dans {{ categorie.nom }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Titre du sujet</label>
+                    <input type="text" name="titre" class="form-control" required 
+                           placeholder="Ex: Problème avec mes tomates">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Message</label>
+                    <textarea name="contenu" class="form-control" rows="8" required 
+                              placeholder="Décrivez votre question ou partagez votre expérience..."></textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        📤 Publier le sujet
+                    </button>
+                    <a href="{% url 'vegetables_fruits:forum_categorie' categorie.id %}" class="btn btn-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

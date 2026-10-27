@@ -1,0 +1,152 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}🌱 Nouveau sujet - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Partagez votre expérience jardinage 🌱{% endblock %}
+
+{% block breadcrumb %}
+    <li style="color: #ccc;">›</li>
+    {% if categorie_preselect %}
+        <li>
+            <a href="{% url 'vegetables_fruits:forum_adulte_categorie' categorie_preselect.id %}" style="color: var(--vert-jardin); text-decoration: none;">
+                {{ categorie_preselect.icone }} {{ categorie_preselect.nom }}
+            </a>
+        </li>
+        <li style="color: #ccc;">›</li>
+        <li style="color: var(--brun-terre);">✏️ Nouveau sujet</li>
+    {% else %}
+        <li style="color: var(--brun-terre);">✏️ Nouveau sujet</li>
+    {% endif %}
+{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    {% if categorie_preselect %}
+        <a href="{% url 'vegetables_fruits:forum_adulte_categorie' categorie_preselect.id %}" class="btn-outline-forum">
+            <span>←</span> Retour à {{ categorie_preselect.icone }} {{ categorie_preselect.nom }}
+        </a>
+    {% else %}
+        <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+            <span>←</span> Retour
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="background: #fff; border-radius: var(--radius); padding: 32px; max-width: 800px; margin: 0 auto; border: 1px solid rgba(109,76,42,0.06);">
+    <h2 style="font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--brun-terre); margin-bottom: 20px;">
+        🌱 Créer un nouveau sujet
+        {% if categorie_preselect %}
+            <span style="font-size: 1rem; color: #888; font-weight: 400; display: block; margin-top: 4px;">
+                dans {{ categorie_preselect.icone }} {{ categorie_preselect.nom }}
+            </span>
+        {% endif %}
+    </h2>
+
+    <form method="POST" class="forum-form">
+        {% csrf_token %}
+
+        {# ✅ Si on est dans une catégorie, on passe l'ID en champ caché #}
+        {% if categorie_preselect %}
+            <input type="hidden" name="categorie_id" value="{{ categorie_preselect.id }}">
+        {% endif %}
+
+        {# Titre #}
+        <div style="margin-bottom: 16px;">
+            <label for="titre" class="form-label">Titre du sujet <span style="color: var(--tomate);">*</span></label>
+            <input type="text" id="titre" name="titre" placeholder="Ex: Comment lutter contre le mildiou ?" required minlength="5" maxlength="200">
+            <div class="form-hint">Soyez clair et précis (minimum 5 caractères)</div>
+        </div>
+
+        {# ⚠️ CHAMP CATÉGORIE : UNIQUEMENT SI ON VIENT DE L'ACCUEIL #}
+        {% if not categorie_preselect %}
+        <div style="margin-bottom: 16px;">
+            <label for="categorie_id" class="form-label">Catégorie <span style="color: var(--tomate);">*</span></label>
+            <select id="categorie_id" name="categorie_id" required style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); background:#fff;">
+                <option value="">-- Sélectionnez une catégorie --</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.est_premium %}disabled{% endif %}>
+                        {{ cat.icone }} {{ cat.nom }}
+                        {% if cat.est_premium %}🔒 Premium{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <div class="form-hint">
+                {% if est_premium %}
+                    Les catégories Premium sont accessibles avec votre abonnement.
+                {% else %}
+                    Les catégories Premium sont réservées aux abonnés Premium.
+                    <a href="{% url 'vegetables_fruits:tarification' %}" style="color: var(--vert-jardin);">👑 Passer à Premium</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Contenu #}
+        <div style="margin-bottom: 16px;">
+            <label for="contenu" class="form-label">Contenu <span style="color: var(--tomate);">*</span></label>
+            <textarea id="contenu" name="contenu" placeholder="Décrivez votre situation, posez votre question ou partagez votre expérience..." required minlength="20"></textarea>
+            <div class="form-hint">Détaillez votre sujet (minimum 20 caractères)</div>
+        </div>
+
+        {# Premium #}
+        {% if est_premium %}
+        <div class="form-check" style="margin-bottom: 16px;">
+            <input type="checkbox" name="est_premium" id="est_premium">
+            <label for="est_premium" style="font-size: 0.9rem; color: #888;">
+                🔒 Réserver ce sujet aux abonnés Premium
+            </label>
+            <div class="form-hint">Les sujets Premium sont plus visibles et réservés à la communauté Premium.</div>
+        </div>
+        {% endif %}
+
+        {# Quota #}
+        {% if niveau == 'basique' %}
+        <div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.9rem;">
+                <span>📊 Sujets utilisés ce mois-ci :</span>
+                <span><strong>{{ quota.sujets_utilises|default:0 }}</strong> / {{ quota.sujets_max|default:5 }}</span>
+            </div>
+            <div class="quota-bar" style="margin-top: 6px;">
+                <div class="quota-fill {% if quota.pourcentage < 70 %}vert{% elif quota.pourcentage < 90 %}orange{% else %}rouge{% endif %}"
+                     style="width: {{ quota.pourcentage|default:0 }}%;"></div>
+            </div>
+            {% if quota.sujets_restants <= 0 %}
+                <div style="margin-top: 8px; color: var(--tomate); font-weight: 600;">
+                    ⚠️ Vous avez atteint votre limite de 5 sujets ce mois-ci.
+                    <a href="{% url 'vegetables_fruits:tarification' %}" style="color: var(--vert-jardin);">👑 Passer à Premium</a>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# Boutons #}
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+            <button type="submit" class="btn-primary-forum" {% if quota.sujets_restants <= 0 and niveau == 'basique' %}disabled{% endif %}>
+                <span>🌱</span> Publier
+            </button>
+            {% if categorie_preselect %}
+                <a href="{% url 'vegetables_fruits:forum_adulte_categorie' categorie_preselect.id %}" class="btn-outline-forum">
+                    Annuler
+                </a>
+            {% else %}
+                <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+                    Annuler
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if not est_premium %}
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee; text-align: center;">
+            <p style="color: #888; font-size: 0.9rem;">
+                👑 <a href="{% url 'vegetables_fruits:tarification' %}" style="color: var(--vert-jardin); font-weight: 600;">Passer à Premium</a>
+                pour des sujets illimités et des fonctionnalités exclusives !
+            </p>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+{% endblock %}

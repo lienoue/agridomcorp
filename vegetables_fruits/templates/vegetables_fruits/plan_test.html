@@ -1,0 +1,1932 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Plan de test - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Plan de test</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .test-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 40px 50px;
+    }
+    .test-card h1 {
+        font-size: 2rem;
+        color: #2d6a4f;
+        margin-bottom: 5px;
+    }
+    .test-card .subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+    .test-card h2 {
+        font-size: 1.3rem;
+        color: #2d6a4f;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 8px;
+    }
+    .test-card h3 {
+        font-size: 1.1rem;
+        color: #2d6a4f;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    .test-card h4 {
+        font-size: 1rem;
+        color: #2d6a4f;
+        margin-top: 15px;
+        margin-bottom: 8px;
+    }
+    .test-card p, .test-card li {
+        line-height: 1.6;
+        color: #495057;
+    }
+    .test-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 0.9rem;
+    }
+    .test-card table th {
+        background: #2d6a4f;
+        color: white;
+        padding: 8px 12px;
+        text-align: center;
+        font-weight: 600;
+    }
+    .test-card table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: top;
+    }
+    .test-card table tr:hover {
+        background: #f8f9fa;
+    }
+    .test-card table .status-cell {
+        text-align: center;
+        min-width: 40px;
+    }
+    .test-card table .checkbox-cell {
+        text-align: center;
+        min-width: 30px;
+    }
+    .test-card table .checkbox-cell input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    .legend-item .badge {
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .badge-critical { background: #dc3545; color: white; }
+    .badge-important { background: #ffc107; color: #343a40; }
+    .badge-mobile { background: #17a2b8; color: white; }
+    .badge-desktop { background: #6c757d; color: white; }
+    .badge-retest { background: #fd7e14; color: white; }
+    .badge-success { background: #28a745; color: white; }
+
+    .btn-print {
+        background: #2d6a4f;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-print:hover {
+        background: #1b4332;
+        transform: translateY(-2px);
+    }
+
+    .section-total {
+        background: #d4edda;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        font-weight: 600;
+        color: #155724;
+    }
+    .scenario-passed {
+        background: #d4edda !important;
+    }
+    .scenario-failed {
+        background: #f8d7da !important;
+    }
+
+    @media print {
+        .btn-print { display: none; }
+        .navbar { display: none; }
+        .footer { display: none; }
+        .breadcrumb { display: none; }
+        .test-card { box-shadow: none; padding: 20px; }
+        .test-card table th { background: #2d6a4f !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-critical { background: #dc3545 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-important { background: #ffc107 !important; color: #343a40 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-mobile { background: #17a2b8 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-desktop { background: #6c757d !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-retest { background: #fd7e14 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge-success { background: #28a745 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .legend { background: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .section-total { background: #d4edda !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .test-card table tr:hover { background: transparent !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <div class="test-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <div>
+                <h1>🧪 Plan de test</h1>
+                <p class="subtitle">Agriculture 2.0 – Version 1.0 – Juillet 2026</p>
+            </div>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+
+        <!-- Légende -->
+        <div class="legend">
+            <span class="legend-item"><span class="badge badge-critical">⚠️</span> Critique (bloquant)</span>
+            <span class="legend-item"><span class="badge badge-important">✅</span> Important</span>
+            <span class="legend-item"><span class="badge badge-retest">🔄</span> À retester</span>
+            <span class="legend-item"><span class="badge badge-mobile">📱</span> Mobile</span>
+            <span class="legend-item"><span class="badge badge-desktop">💻</span> Ordinateur</span>
+            <span class="legend-item"><span class="badge badge-success">🎯</span> Scénario principal</span>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 0. SCÉNARIOS DE TEST PRINCIPAUX -->
+        <!-- ============================================================ -->
+        <h2>🎯 0. Scénarios de test principaux</h2>
+
+        <p style="color: #6c757d; margin-bottom: 15px;">
+            Ces 5 scénarios couvrent l'ensemble des cas d'usage d'Agriculture 2.0.
+            À valider avant mise en production.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Profil</th>
+                    <th style="text-align:left;">Localisation</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Particulier Gratuit</td>
+                    <td>Jean, 35 ans</td>
+                    <td>Paris 🇫🇷</td>
+                    <td>3 parcelles max, outils Premium bloqués</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>0.2</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Particulier Premium</td>
+                    <td>Marie, 42 ans</td>
+                    <td>Tokyo 🇯🇵</td>
+                    <td>50 parcelles, Conseiller Sol, fertilisation, CSV</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>0.3</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Enseignant</td>
+                    <td>Sophie, 45 ans</td>
+                    <td>New York 🇺🇸</td>
+                    <td>-20%, classes, élèves, mode Junior</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>0.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Élève Junior</td>
+                    <td>Amadou, 13 ans</td>
+                    <td>Dakar 🇸🇳</td>
+                    <td>Mode Junior, restrictions, quiz adapté</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>0.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Particulier Australie</td>
+                    <td>Thomas, 28 ans</td>
+                    <td>Sydney 🇦🇺</td>
+                    <td>Fuseau horaire, saisons inversées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Détail Scénario 0.1 -->
+        <h3>📋 Scénario 0.1 : Particulier Gratuit</h3>
+        <p><strong>Profil :</strong> Jean, 35 ans, Paris 🇫🇷 | <strong>Abonnement :</strong> Gratuit</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Action</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Créer un compte</td>
+                    <td>✅ Inscription réussie avec plan Gratuit</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Créer 3 parcelles</td>
+                    <td>✅ Limite atteinte (3 parcelles max)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Créer une 4ème parcelle</td>
+                    <td>❌ Bloqué - invite à passer Premium</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Ajouter une culture (tomate)</td>
+                    <td>✅ Succès - météo Paris affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Voir les alertes</td>
+                    <td>✅ Alertes météo uniquement</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Accéder aux outils avancés</td>
+                    <td>❌ Bloqué - "Fonctionnalité Premium"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Répondre à un quiz</td>
+                    <td>✅ Quiz accessible - 50 XP gagnés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Détail Scénario 0.2 -->
+        <h3>📋 Scénario 0.2 : Particulier Premium</h3>
+        <p><strong>Profil :</strong> Marie, 42 ans, Tokyo 🇯🇵 | <strong>Abonnement :</strong> Premium (15,99€/mois)</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Action</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Souscrire à l'abonnement Premium</td>
+                    <td>✅ Paiement Stripe réussi</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Créer 30 parcelles</td>
+                    <td>✅ Succès - 50 parcelles max autorisées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Utiliser Conseiller Sol</td>
+                    <td>✅ Recommandations basées sur sol Tokyo</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Utiliser Plan de fertilisation</td>
+                    <td>✅ Plan personnalisé généré</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Voir la rotation des cultures</td>
+                    <td>✅ Planning de rotation affiché</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Compagnonnage plantes</td>
+                    <td>✅ Suggestions de compagnonnage</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Exporter CSV</td>
+                    <td>✅ Fichier CSV téléchargé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Recevoir alerte traitement</td>
+                    <td>✅ Alerte déclenchée selon météo Tokyo</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Détail Scénario 0.3 -->
+        <h3>📋 Scénario 0.3 : Enseignant</h3>
+        <p><strong>Profil :</strong> Sophie, 45 ans, New York 🇺🇸 | <strong>Abonnement :</strong> Enseignant (17,49€/mois)</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Action</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>S'inscrire avec email académique (.edu)</td>
+                    <td>✅ Plan Enseignant (-20% : 17,49€)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Créer une classe</td>
+                    <td>✅ Classe créée avec code d'invitation</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Ajouter 5 élèves (mode Junior)</td>
+                    <td>✅ Comptes Junior créés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Créer 100 parcelles</td>
+                    <td>✅ Parcelles illimitées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Lancer un défi de classe</td>
+                    <td>✅ Défi visible par tous les élèves</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Voir le forum classe</td>
+                    <td>✅ Forum réservé école accessible</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Voir les statistiques avancées</td>
+                    <td>✅ Stats détaillées par élève</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Exporter PDF rapport classe</td>
+                    <td>✅ PDF généré</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Détail Scénario 0.4 -->
+        <h3>📋 Scénario 0.4 : Élève Junior</h3>
+        <p><strong>Profil :</strong> Amadou, 13 ans, Dakar 🇸🇳 | <strong>Abonnement :</strong> Junior (dans la classe)</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Action</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Créer compte via invitation enseignant</td>
+                    <td>✅ Mode Junior activé automatiquement</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Voir les 3 parcelles de la classe</td>
+                    <td>✅ Accès limité aux parcelles assignées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Tenter de supprimer une parcelle</td>
+                    <td>❌ Bloqué - droits restreints</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Voir une alerte traitement</td>
+                    <td>✅ Alerte affichée mais pas de modification</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Répondre à un quiz</td>
+                    <td>✅ Quiz Junior (adapté)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Gagner un badge</td>
+                    <td>✅ Badge débloqué et affiché</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Voir la galerie classe</td>
+                    <td>✅ Galerie accessible en lecture seule</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Poster sur le forum</td>
+                    <td>❌ Bloqué - écriture désactivée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Détail Scénario 0.5 -->
+        <h3>📋 Scénario 0.5 : Particulier Australie</h3>
+        <p><strong>Profil :</strong> Thomas, 28 ans, Sydney 🇦🇺 | <strong>Abonnement :</strong> Gratuit</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Action</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Créer un compte (Gratuit)</td>
+                    <td>✅ Compte créé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Créer 3 parcelles</td>
+                    <td>✅ Succès - limite gratuite</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Ajouter culture saison inverse</td>
+                    <td>✅ Saison hémisphère Sud respectée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Voir météo Sydney</td>
+                    <td>✅ Données météo Australie</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Voir les alertes traitement</td>
+                    <td>✅ Alertes adaptées au fuseau AEDT</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Mission hebdomadaire</td>
+                    <td>✅ Mission basée sur la saison locale</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Tester le quiz</td>
+                    <td>✅ Quiz en français ou anglais selon paramètre</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 1. INSCRIPTION -->
+        <!-- ============================================================ -->
+        <h2>1. 👤 Inscription et compte utilisateur</h2>
+
+        <h3>1.1 Création de compte</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Inscription particulier</td>
+                    <td>Aller sur /signup/<br>Remplir tous les champs<br>Cliquer sur "S'inscrire"</td>
+                    <td>Compte créé, redirection vers profil</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.1.2</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Inscription enseignant</td>
+                    <td>Aller sur /signup/<br>Cocher "Je suis enseignant"<br>Remplir et valider</td>
+                    <td>Compte enseignant créé, redirection dashboard</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Inscription élève</td>
+                    <td>Aller sur /signup/<br>Date de naissance &lt; 18 ans<br>Valider</td>
+                    <td>Compte créé avec mode Junior activé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Connexion</td>
+                    <td>Aller sur /login/<br>Saisir identifiants<br>Valider</td>
+                    <td>Connexion réussie, redirection profil</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.1.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Déconnexion</td>
+                    <td>Cliquer sur "Déconnexion"</td>
+                    <td>Redirection vers page d'accueil</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.1.6</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Mot de passe oublié</td>
+                    <td>Aller sur /password_reset/<br>Saisir email<br>Valider</td>
+                    <td>Email reçu avec lien de réinitialisation</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>1.2 Profil utilisateur</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Modification profil</td>
+                    <td>Aller sur /profile/<br>Modifier bio, téléphone<br>Sauvegarder</td>
+                    <td>Modifications enregistrées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Mode Junior</td>
+                    <td>Activer le mode Junior<br>Voir l'interface</td>
+                    <td>Interface adaptée, points affichés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>1.2.3</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>Profil mobile</td>
+                    <td>Ouvrir sur mobile<br>Voir le profil</td>
+                    <td>Affichage responsive correct</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 2. PARCELLES -->
+        <!-- ============================================================ -->
+        <h2>2. 🌾 Gestion des parcelles</h2>
+
+        <h3>2.1 Création d'une parcelle (mode dessin)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Créer une parcelle (polygone)</td>
+                    <td>Aller sur /draw/<br>Dessiner un polygone (≥3 points)<br>Nommer et sauvegarder</td>
+                    <td>Parcelle créée avec surface calculée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Créer une parcelle (cercle)</td>
+                    <td>Aller sur /draw/<br>Choisir "Cercle"<br>Cliquer sur la carte<br>Nommer et sauvegarder</td>
+                    <td>Parcelle circulaire créée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Créer une parcelle (point)</td>
+                    <td>Aller sur /draw/<br>Choisir "Point"<br>Cliquer sur la carte<br>Sauvegarder</td>
+                    <td>Parcelle de 0,0001 ha créée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Mode GPS</td>
+                    <td>Aller sur /draw/<br>Activer "Mode GPS"<br>Accepter la géolocalisation<br>Sauvegarder</td>
+                    <td>Parcelle créée avec coordonnées GPS</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.1.5</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Nom de parcelle requis</td>
+                    <td>Ne pas saisir de nom<br>Sauvegarder</td>
+                    <td>Message d'erreur affiché</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2.2 Création d'une parcelle (mode auto)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2.2.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Parcelle avec adresse</td>
+                    <td>Aller sur /draw/<br>Saisir une adresse valide<br>Sélectionner "Auto"<br>Sauvegarder</td>
+                    <td>Type de sol détecté automatiquement</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Parcelle à l'étranger</td>
+                    <td>Saisir adresse hors France<br>Sélectionner "Auto"<br>Sauvegarder</td>
+                    <td>Région détectée, sol adapté</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Adresse invalide</td>
+                    <td>Saisir adresse inexistante<br>Sauvegarder</td>
+                    <td>Message d'erreur, fallback "limoneux"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2.3 Visualisation et gestion</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2.3.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Voir toutes ses parcelles</td>
+                    <td>Aller sur /view/</td>
+                    <td>Liste des parcelles affichée avec météo</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Météo par parcelle</td>
+                    <td>Voir chaque parcelle sur /view/</td>
+                    <td>Météo différente par parcelle</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Détail d'une parcelle</td>
+                    <td>Cliquer sur une parcelle</td>
+                    <td>Voir détails, cultures, chronologie</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Modifier une parcelle</td>
+                    <td>Cliquer sur "Modifier"</td>
+                    <td>Modifier nom, description, cultures</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Supprimer une parcelle</td>
+                    <td>Cliquer "Supprimer" → Confirmer</td>
+                    <td>Parcelle supprimée de la liste</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.6</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Pagination</td>
+                    <td>Avoir &gt; 12 parcelles</td>
+                    <td>Pagination fonctionnelle</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.3.7</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>View mobile</td>
+                    <td>Ouvrir /view/ sur mobile</td>
+                    <td>Grille responsive</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2.4 Limites d'utilisation</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2.4.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Limite parcelles (Gratuit)</td>
+                    <td>Créer 4 parcelles en mode Gratuit</td>
+                    <td>Message "Limite atteinte" affiché</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>2.4.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Limite parcelles (Basique)</td>
+                    <td>Créer 16 parcelles en Basique</td>
+                    <td>Message "Limite atteinte"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 3. CULTURES -->
+        <!-- ============================================================ -->
+        <h2>3. 🌱 Cultures</h2>
+
+        <h3>3.1 Ajout de cultures</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>3.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Ajouter une culture</td>
+                    <td>Aller sur une parcelle<br>Cliquer "Modifier les cultures"<br>Sélectionner une culture<br>Sauvegarder</td>
+                    <td>Culture ajoutée, chronologie créée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Ajouter plusieurs cultures</td>
+                    <td>Ajouter 3 cultures différentes</td>
+                    <td>Toutes les cultures apparaissent</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Supprimer une culture</td>
+                    <td>Modifier → Supprimer une culture</td>
+                    <td>Culture retirée de la liste</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Ajouter un fruit</td>
+                    <td>Sélectionner un fruit (ex: Pomme)</td>
+                    <td>Fruit ajouté avec ses détails</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Ajouter un légume</td>
+                    <td>Sélectionner un légume (ex: Tomate)</td>
+                    <td>Légume ajouté avec ses détails</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.6</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Ajouter une culture rare</td>
+                    <td>Chercher "Durian" ou "Jacquier"</td>
+                    <td>Culture trouvée et ajoutée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.1.7</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Recherche culture</td>
+                    <td>Taper "tom" dans la recherche</td>
+                    <td>Filtrer les cultures contenant "tom"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>3.2 Détails des cultures</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>3.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir détails légume</td>
+                    <td>Cliquer sur une culture légume</td>
+                    <td>Fiche détaillée affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir détails fruit</td>
+                    <td>Cliquer sur une culture fruit</td>
+                    <td>Fiche détaillée affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Emoji</td>
+                    <td>Vérifier l'emoji affiché</td>
+                    <td>Emoji correspondant à la culture</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.2.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Besoins en eau</td>
+                    <td>Voir la section besoins en eau</td>
+                    <td>Besoins calculés en fonction de la région</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>3.3 Chronologie des cultures</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>3.3.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir chronologie</td>
+                    <td>Accéder aux chronologies d'une parcelle</td>
+                    <td>Chronologie affichée avec progression</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.3.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Progression automatique</td>
+                    <td>Attendre quelques jours</td>
+                    <td>Progression calculée automatiquement</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.3.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Récolter une culture</td>
+                    <td>Cliquer "Récolter"</td>
+                    <td>Statut passe à "Récolté", points gagnés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>3.3.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Points de récolte</td>
+                    <td>Récolter une culture</td>
+                    <td>+10 points pour l'élève</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 4. MÉTÉO -->
+        <!-- ============================================================ -->
+        <h2>4. 🌤️ Météo</h2>
+
+        <h3>4.1 Météo par parcelle</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>4.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Météo affichée</td>
+                    <td>Afficher une parcelle avec coordonnées</td>
+                    <td>Météo affichée (température, conditions)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Météo différente</td>
+                    <td>Comparer 2 parcelles éloignées</td>
+                    <td>Météo différente</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Météo sans coordonnées</td>
+                    <td>Parcelle sans adresse</td>
+                    <td>Message "Météo non disponible"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Météo sur view</td>
+                    <td>Aller sur /view/</td>
+                    <td>Météo affichée sur chaque carte</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>4.2 Alertes météo</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>4.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Alerte gel</td>
+                    <td>Simuler température &lt; seuil</td>
+                    <td>Alerte gel déclenchée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Alerte canicule</td>
+                    <td>Simuler température &gt; seuil</td>
+                    <td>Alerte canicule déclenchée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir alertes</td>
+                    <td>Aller sur /alertes-meteo/</td>
+                    <td>Liste des alertes affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>4.2.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Alertes avancées (Premium)</td>
+                    <td>Aller sur /alertes-avancees/</td>
+                    <td>Toutes les parcelles avec alertes</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 5. COMMUNAUTÉ -->
+        <!-- ============================================================ -->
+        <h2>5. 👥 Communauté</h2>
+
+        <h3>5.1 Forum (réservé écoles)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>5.1.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès forum (élève)</td>
+                    <td>Élève avec classe → /forum/</td>
+                    <td>Accès autorisé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès forum (enseignant)</td>
+                    <td>Enseignant → /forum/</td>
+                    <td>Accès autorisé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès forum (particulier)</td>
+                    <td>Particulier → /forum/</td>
+                    <td>Message "Réservé aux écoles"</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Créer un sujet</td>
+                    <td>Cliquer "Nouveau sujet" → Remplir</td>
+                    <td>Sujet créé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Répondre à un sujet</td>
+                    <td>Cliquer "Répondre" → Écrire</td>
+                    <td>Réponse ajoutée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.6</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Signalement</td>
+                    <td>Signaler un sujet</td>
+                    <td>Signalement créé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.7</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Modération (enseignant)</td>
+                    <td>Aller sur /moderation/</td>
+                    <td>Sujets signalés affichés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.8</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Épingler un sujet</td>
+                    <td>Enseignant → Épingler</td>
+                    <td>Sujet épinglé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.1.9</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Fermer un sujet</td>
+                    <td>Enseignant → Fermer</td>
+                    <td>Sujet fermé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5.2 Galerie photos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>5.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Upload photo</td>
+                    <td>Aller sur /galerie/upload/<br>Choisir image<br>Remplir titre</td>
+                    <td>Photo uploadée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Valider photo (enseignant)</td>
+                    <td>Enseignant → Modération photo</td>
+                    <td>Photo validée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir photos</td>
+                    <td>Aller sur /galerie/</td>
+                    <td>Photos affichées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Liker une photo</td>
+                    <td>Cliquer "❤️" sur une photo</td>
+                    <td>Like ajouté</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.5</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Commenter</td>
+                    <td>Écrire un commentaire</td>
+                    <td>Commentaire ajouté</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.6</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Compression image</td>
+                    <td>Uploader une grande image (5Mo+)</td>
+                    <td>Image redimensionnée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>5.2.7</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Format invalide</td>
+                    <td>Uploader un fichier non image</td>
+                    <td>Message d'erreur</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 6. GAMIFICATION -->
+        <!-- ============================================================ -->
+        <h2>6. 🧠 Gamification</h2>
+
+        <h3>6.1 Quiz</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>6.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Répondre à un quiz</td>
+                    <td>Aller sur /quiz/<br>Répondre à toutes les questions<br>Valider</td>
+                    <td>Score affiché, points gagnés</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Quiz sans réponse</td>
+                    <td>Ne pas répondre à une question</td>
+                    <td>Message d'erreur</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Quiz parfait</td>
+                    <td>Répondre juste à toutes les questions</td>
+                    <td>Bonus +5 points</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>6.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Historique des quiz</td>
+                    <td>Refaire le quiz plus tard</td>
+                    <td>Nouveau résultat enregistré</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 7. ABONNEMENTS -->
+        <!-- ============================================================ -->
+        <h2>7. 💰 Abonnements</h2>
+
+        <h3>7.1 Abonnement</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>7.1.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir plans</td>
+                    <td>Aller sur /tarification/</td>
+                    <td>Plans affichés avec prix</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Basculer mensuel/annuel</td>
+                    <td>Cliquer sur "Annuel"</td>
+                    <td>Prix annuel affiché</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.3</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Souscrire Basique</td>
+                    <td>Choisir Basique → Payer</td>
+                    <td>Abonnement actif</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.4</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Souscrire Premium</td>
+                    <td>Choisir Premium → Payer</td>
+                    <td>Abonnement actif</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.5</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Souscrire Enseignant</td>
+                    <td>Choisir Enseignant → Payer</td>
+                    <td>Abonnement actif (-20%)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.6</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Essai gratuit</td>
+                    <td>Choisir "Commencer gratuitement"</td>
+                    <td>Essai actif (30 jours)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.7</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Stripe paiement</td>
+                    <td>Payer via Stripe (mode test)</td>
+                    <td>Paiement réussi</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.8</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Limites après abonnement</td>
+                    <td>Créer des parcelles</td>
+                    <td>Limites appliquées</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.1.9</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Annuler abonnement</td>
+                    <td>Aller sur /stripe-portal/</td>
+                    <td>Abonnement annulé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>7.2 Plans et accès</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>7.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès Gratuit</td>
+                    <td>Connexion Gratuit</td>
+                    <td>3 parcelles max</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès Basique</td>
+                    <td>Connexion Basique</td>
+                    <td>15 parcelles, journal</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès Premium</td>
+                    <td>Connexion Premium</td>
+                    <td>50 parcelles, tous les outils</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>7.2.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès Enseignant</td>
+                    <td>Connexion Enseignant</td>
+                    <td>Illimité, classes</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 8. ENSEIGNANT -->
+        <!-- ============================================================ -->
+        <h2>8. 🏫 Fonctionnalités enseignant</h2>
+
+        <h3>8.1 Gestion des classes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>8.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Créer une classe</td>
+                    <td>Aller sur /creer-classe/<br>Remplir et sauvegarder</td>
+                    <td>Classe créée avec code</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir classes</td>
+                    <td>Aller sur /dashboard-enseignant/</td>
+                    <td>Liste des classes affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Inviter élève</td>
+                    <td>Partager le code de classe</td>
+                    <td>Élève rejoint avec le code</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Supprimer une classe</td>
+                    <td>Cliquer "Supprimer" → Confirmer</td>
+                    <td>Classe supprimée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>8.2 Gestion des élèves</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>8.2.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Voir élèves</td>
+                    <td>Aller sur une classe</td>
+                    <td>Liste des élèves affichée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.2.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Exporter CSV</td>
+                    <td>Cliquer "Exporter CSV"</td>
+                    <td>Fichier CSV téléchargé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.2.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Exporter PDF</td>
+                    <td>Cliquer "Exporter PDF"</td>
+                    <td>Fichier PDF téléchargé</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>8.2.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Supprimer élève</td>
+                    <td>Cliquer "Supprimer" → Confirmer</td>
+                    <td>Élève retiré de la classe</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 9. SÉCURITÉ -->
+        <!-- ============================================================ -->
+        <h2>9. 🔒 Sécurité et permissions</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>9.1.1</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>Accès page sans login</td>
+                    <td>Aller sur /profile/ sans être connecté</td>
+                    <td>Redirection vers /login/</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>9.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Accès enseignant</td>
+                    <td>Tentative d'accès dashboard (non enseignant)</td>
+                    <td>Redirection ou message</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>9.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Session expirée</td>
+                    <td>Attendre expiration, recharger</td>
+                    <td>Redirection vers login</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>9.1.4</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>XSS protection</td>
+                    <td>Saisir `<script>` dans un champ</td>
+                    <td>Échappé, non exécuté</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>9.1.5</td>
+                    <td><span class="badge badge-critical">⚠️</span></td>
+                    <td>CSRF protection</td>
+                    <td>Formulaire sans CSRF token</td>
+                    <td>Erreur 403</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 10. MOBILE -->
+        <!-- ============================================================ -->
+        <h2>10. 📱 Responsive mobile</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>10.1.1</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>Affichage mobile</td>
+                    <td>Ouvrir sur smartphone</td>
+                    <td>Affichage responsive</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>10.1.2</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>Menu mobile</td>
+                    <td>Ouvrir le menu hamburger</td>
+                    <td>Menu déroulant visible</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>10.1.3</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>Carte mobile</td>
+                    <td>Ouvrir /draw/ sur mobile</td>
+                    <td>Carte adaptée à l'écran</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>10.1.4</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>Parcelles mobile</td>
+                    <td>Ouvrir /view/ sur mobile</td>
+                    <td>Grille adaptée (1 colonne)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>10.1.5</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>PWA installation</td>
+                    <td>Ajouter à l'écran d'accueil</td>
+                    <td>App installée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>10.1.6</td>
+                    <td><span class="badge badge-mobile">📱</span></td>
+                    <td>PWA hors ligne</td>
+                    <td>Couper internet → recharger</td>
+                    <td>Page visible (hors ligne)</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 11. PERFORMANCES -->
+        <!-- ============================================================ -->
+        <h2>11. 📊 Performances</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>11.1.1</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Temps chargement</td>
+                    <td>Ouvrir une page</td>
+                    <td>&lt; 3 secondes</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>11.1.2</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Nombre de requêtes</td>
+                    <td>Ouvrir /view/</td>
+                    <td>&lt; 20 requêtes</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>11.1.3</td>
+                    <td><span class="badge badge-important">✅</span></td>
+                    <td>Images optimisées</td>
+                    <td>Uploader une image</td>
+                    <td>Compression appliquée</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- 12. NON-RÉGRESSION -->
+        <!-- ============================================================ -->
+        <h2>12. 🔄 Tests de non-régression</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:50px;">Priorité</th>
+                    <th style="text-align:left;">Scénario</th>
+                    <th style="text-align:left;">Étapes</th>
+                    <th style="text-align:left;">Résultat attendu</th>
+                    <th style="width:50px;">✅</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>12.1.1</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Parcelle existante</td>
+                    <td>Ouvrir une ancienne parcelle</td>
+                    <td>Affichage correct</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>12.1.2</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Culture existante</td>
+                    <td>Voir une culture existante</td>
+                    <td>Détails corrects</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>12.1.3</td>
+                    <td><span class="badge badge-retest">🔄</span></td>
+                    <td>Abonnement existant</td>
+                    <td>Se connecter avec abonnement actif</td>
+                    <td>Abonnement reconnu</td>
+                    <td class="checkbox-cell"><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- RÉCAPITULATIF -->
+        <!-- ============================================================ -->
+        <h2>📊 Récapitulatif des tests</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align:left;">Catégorie</th>
+                    <th>Total</th>
+                    <th>✅ Réussi</th>
+                    <th>❌ Échec</th>
+                    <th>🔄 À corriger</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="text-align:left;">Scénarios principaux</td><td>5</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Inscription</td><td>9</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Parcelles</td><td>18</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Cultures</td><td>15</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Météo</td><td>8</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Communauté</td><td>16</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Gamification</td><td>4</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Abonnements</td><td>13</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Enseignant</td><td>8</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Sécurité</td><td>5</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Mobile</td><td>6</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Performance</td><td>3</td><td></td><td></td><td></td></tr>
+                <tr><td style="text-align:left;">Non-régression</td><td>3</td><td></td><td></td><td></td></tr>
+                <tr style="font-weight:700; background:#d4edda;">
+                    <td style="text-align:left;">TOTAL</td>
+                    <td>113</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ============================================================ -->
+        <!-- RAPPORT DE BUGS -->
+        <!-- ============================================================ -->
+        <h2>🐛 Rapport de bugs</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="text-align:left;">Description</th>
+                    <th style="text-align:left;">Page</th>
+                    <th style="text-align:left;">Priorité</th>
+                    <th style="text-align:left;">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-total">
+            📊 Total des tests : 113
+        </div>
+
+    </div>
+</div>
+{% endblock %}

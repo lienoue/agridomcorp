@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fiche produit - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Fiche produit</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fiche-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .fiche-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .fiche-header {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+    }
+
+    .fiche-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .fiche-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .fiche-body {
+        padding: 40px 45px;
+    }
+
+    .fiche-section {
+        margin-bottom: 35px;
+    }
+
+    .fiche-section h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d6a4f;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #e9ecef;
+    }
+
+    .fiche-section h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-top: 20px;
+        margin-bottom: 12px;
+    }
+
+    .fiche-section p {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #495057;
+        margin-bottom: 15px;
+    }
+
+    .fiche-list {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 15px 25px;
+    }
+
+    .fiche-list li {
+        padding: 10px 0 10px 32px;
+        border-bottom: 1px solid #f1f3f5;
+        line-height: 1.6;
+        font-size: 0.98rem;
+        color: #495057;
+        position: relative;
+    }
+
+    .fiche-list li:last-child {
+        border-bottom: none;
+    }
+
+    .fiche-list li::before {
+        content: "•";
+        position: absolute;
+        left: 8px;
+        top: 10px;
+        font-size: 1.4rem;
+        color: #2d6a4f;
+        font-weight: 700;
+    }
+
+    .fiche-list .list-icon {
+        position: absolute;
+        left: 0;
+        top: 10px;
+        font-size: 1.2rem;
+    }
+
+    .fiche-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin: 10px 0;
+    }
+
+    @media (max-width: 768px) {
+        .fiche-grid-2 {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+
+    .fiche-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0 10px;
+        font-size: 0.95rem;
+    }
+
+    .fiche-table thead th {
+        background: #2d6a4f;
+        color: white;
+        padding: 12px 15px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .fiche-table tbody td {
+        padding: 12px 15px;
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .fiche-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .fiche-table .table-success-row {
+        background: #d4edda;
+        font-weight: 600;
+    }
+
+    .badge-reduction {
+        background: #28a745;
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-left: 8px;
+    }
+
+    .badge-status {
+        background: #6c757d;
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .badge-coming {
+        background: #ffc107;
+        color: #343a40;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .badge-school {
+        background: #2d6a4f;
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .fiche-footer {
+        background: #f8f9fa;
+        padding: 20px 30px;
+        text-align: center;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .fiche-footer .btn {
+        padding: 12px 35px;
+        border-radius: 50px;
+        font-weight: 600;
+        margin: 0 8px;
+    }
+
+    .fiche-footer .btn-success {
+        background: #2d6a4f;
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .fiche-footer .btn-success:hover {
+        background: #1b4332;
+        transform: translateY(-2px);
+    }
+
+    .fiche-footer .btn-outline-secondary {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #ced4da;
+        transition: 0.3s;
+    }
+
+    .fiche-footer .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    .fiche-quote {
+        text-align: center;
+        font-style: italic;
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px dashed #dee2e6;
+    }
+
+    .text-success-custom {
+        color: #2d6a4f;
+    }
+
+    .mt-2 { margin-top: 10px; }
+    .mt-3 { margin-top: 20px; }
+    .mb-2 { margin-bottom: 10px; }
+    .mb-3 { margin-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fiche-container">
+    <div class="fiche-card">
+
+        <!-- HEADER -->
+        <div class="fiche-header">
+            <h1>🌱 Agriculture 2.0</h1>
+            <p>Fiche produit – Application web de jardinage pédagogique</p>
+        </div>
+
+        <!-- BODY -->
+        <div class="fiche-body">
+
+            <!-- ===== PRÉSENTATION ===== -->
+            <div class="fiche-section">
+                <h2>📌 Présentation</h2>
+                <p>
+                    <strong>Agriculture 2.0</strong> est une application web de jardinage pédagogique qui permet d'apprendre l'agriculture en s'amusant.
+                    Que vous soyez <strong>particulier</strong>, <strong>enseignant</strong> ou <strong>établissement scolaire</strong>,
+                    Agriculture 2.0 vous accompagne dans la création et le suivi de vos parcelles.
+                </p>
+            </div>
+
+            <!-- ===== PUBLIC CIBLE ===== -->
+            <div class="fiche-section">
+                <h2>🎯 Public cible</h2>
+                <ul class="fiche-list">
+                    <li><span class="list-icon">🌱</span> <strong>Particuliers</strong> – Apprendre à jardiner, suivre ses cultures, comprendre son sol</li>
+                    <li><span class="list-icon">🏫</span> <strong>Écoles</strong> – Projet pédagogique, éducation à l'environnement</li>
+                    <li><span class="list-icon">👨‍🏫</span> <strong>Enseignants</strong> – Suivi des élèves, création de défis, outils d'animation</li>
+                </ul>
+            </div>
+
+            <!-- ===== FONCTIONNALITÉS ===== -->
+            <div class="fiche-section">
+                <h2>🛠️ Fonctionnalités clés</h2>
+
+                <div class="fiche-grid-2">
+                    <div>
+                        <h3>🌾 Gestion des parcelles</h3>
+                        <ul class="fiche-list">
+                            <li>Dessin interactif (polygone, cercle, point)</li>
+                            <li>Mode GPS (géolocalisation)</li>
+                            <li>Type de sol automatique (selon la région)</li>
+                            <li>Météo par parcelle</li>
+                        </ul>
+
+                        <h3>🌱 Suivi des cultures</h3>
+                        <ul class="fiche-list">
+                            <li>Catalogue complet (légumes, fruits, rares)</li>
+                            <li>Fiches détaillées (semis, pollinisation, conseils)</li>
+                            <li>Chronologie des cultures</li>
+                            <li>Besoins en eau personnalisés</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3>🧠 Pédagogie et gamification</h3>
+                        <ul class="fiche-list">
+                            <li>Quiz interactifs</li>
+                            <li>Missions hebdomadaires</li>
+                            <li>Arbre de compétences</li>
+                            <li>Badges et récompenses</li>
+                        </ul>
+
+                        <h3>👥 Communauté</h3>
+                        <ul class="fiche-list">
+                            <li>🏫 <strong>Forum d'entraide</strong> <span class="badge-school">Réservé aux écoles</span></li>
+                            <li>📸 Galerie de photos <span class="badge-status">Accessible à tous</span></li>
+                            <li>🏆 Défis de classe <span class="badge-school">Écoles</span></li>
+                            <li>🌍 Classements nationaux <span class="badge-status">Accessible à tous</span></li>
+                            <li>⏳ Forum particuliers <span class="badge-coming">À venir</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 25px;">📊 Outils avancés <span class="badge bg-warning text-dark" style="font-size:0.75rem;">Premium / Enseignant</span></h3>
+                <ul class="fiche-list">
+                    <li>🌍 Conseiller Sol</li>
+                    <li>🌱 Plan de fertilisation</li>
+                    <li>🦠 Gestion des maladies</li>
+                    <li>🔄 Rotation des cultures</li>
+                    <li>🌿 Compagnonnage</li>
+                    <li>📊 Statistiques avancées</li>
+                    <li>📄 Export CSV / PDF</li>
+                </ul>
+            </div>
+
+            <!-- ===== TARIFS ===== -->
+            <div class="fiche-section">
+                <h2>💰 Tarifs</h2>
+
+                <div class="table-responsive">
+                    <table class="fiche-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Mensuel</th>
+                                <th>Annuel</th>
+                                <th>Parcelles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>🌱 Gratuit</strong></td>
+                                <td>0€</td>
+                                <td>0€</td>
+                                <td>3</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🌿 Basique</strong></td>
+                                <td>6,99€</td>
+                                <td>69€</td>
+                                <td>15</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🌳 Premium</strong></td>
+                                <td>14,99€</td>
+                                <td>149€</td>
+                                <td>50</td>
+                            </tr>
+                            <tr class="table-success-row">
+                                <td><strong>🏫 Enseignant</strong></td>
+                                <td>15,99€</td>
+                                <td>159€</td>
+                                <td>Illimité</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="mt-2" style="font-size:0.95rem; color:#495057;">
+                    🏫 <strong>Enseignant :</strong> <span class="badge-reduction">-20%</span> de réduction sur le tarif Premium.
+                </p>
+            </div>
+
+            <!-- ===== DISPONIBILITÉ ===== -->
+            <div class="fiche-section">
+                <h2>📱 Disponibilité</h2>
+                <ul class="fiche-list">
+                    <li>✅ <strong>Application web</strong> accessible sur ordinateur, tablette et smartphone</li>
+                    <li>✅ Compatible avec tous les navigateurs modernes</li>
+                    <li>✅ Accessible directement via le navigateur <span class="badge-status">Disponible</span></li>
+                    <li>⏳ <strong>Version native</strong> (App Store / Google Play) <span class="badge-coming">Prévue dans le futur</span></li>
+                </ul>
+            </div>
+
+            <!-- ===== AVANTAGES CONCURRENTIELS ===== -->
+            <div class="fiche-section">
+                <h2>🧩 Avantages concurrentiels</h2>
+
+                <div class="table-responsive">
+                    <table class="fiche-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Feature</th>
+                                <th>Agriculture 2.0</th>
+                                <th>Concurrent A</th>
+                                <th>Concurrent B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="text-align:left;">Météo par parcelle</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                            <tr><td style="text-align:left;">Cultures rares</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                            <tr><td style="text-align:left;">Communauté intégrée</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                            <tr><td style="text-align:left;">Gamification complète</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                            <tr><td style="text-align:left;">Pédagogie scolaire</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                            <tr><td style="text-align:left;">Prix abordable</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                            <tr><td style="text-align:left;">Accessible sur mobile et ordinateur</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                            <tr><td style="text-align:left;">Forum réservé aux écoles</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== CONTACT ===== -->
+            <div class="fiche-section">
+                <h2>🔗 Liens utiles</h2>
+                <ul class="fiche-list">
+                    <li>🌐 <strong>Site web</strong> : <a href="#">www.agriculture2.0</a></li>
+                    <li>📧 <strong>Contact</strong> : <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></li>
+                </ul>
+            </div>
+
+            <!-- ===== CITATION ===== -->
+            <div class="fiche-quote">
+                Cultivez votre passion, développez vos compétences, partagez votre expérience.
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="fiche-footer">
+            <a href="{% url 'vegetables_fruits:export_fiche_produit_pdf' %}" class="btn btn-success">
+                📄 Télécharger PDF
+            </a>
+            <a href="{% url 'vegetables_fruits:index' %}" class="btn btn-outline-secondary">
+                🏠 Retour à l'accueil
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

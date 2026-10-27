@@ -1,0 +1,41 @@
+{# ============================================================ #}
+{# CARTE SUJET - Réutilisable #}
+{# ============================================================ #}
+
+<div class="sujet-card" onclick="window.location='{% url 'vegetables_fruits:forum_adulte_sujet' sujet.id %}'">
+    <div class="sujet-icon">
+        {% if sujet.est_premium %}🔒{% else %}🌿{% endif %}
+    </div>
+    <div class="sujet-info">
+        <div class="titre">
+            {{ sujet.titre|truncatechars:60 }}
+            {% if sujet.est_premium %}
+                <span class="badge-premium">🔒 Premium</span>
+            {% endif %}
+            {% if sujet.est_epingle %}
+                <span class="badge-epingle">📌 Épinglé</span>
+            {% endif %}
+            {% if sujet.est_ferme %}
+                <span class="badge-ferme">🔒 Fermé</span>
+            {% endif %}
+            {% if sujet.messages.filter.est_solution.exists %}
+                <span class="badge-resolu">✅ Résolu</span>
+            {% endif %}
+        </div>
+        <div class="meta">
+            <span class="auteur">👤 {{ sujet.auteur.username }}</span>
+            <span>🗓️ {{ sujet.date_creation|date:"d/m/Y" }}</span>
+            <span>💬 {{ sujet.nb_messages|default:0 }}</span>
+            {% if sujet.nb_votes > 0 %}
+                <span>❤️ {{ sujet.nb_votes }}</span>
+            {% endif %}
+            <span>👁️ {{ sujet.vues|default:0 }}</span>
+        </div>
+    </div>
+    <div class="sujet-stats">
+        <span>💬 {{ sujet.nb_messages|default:0 }}</span>
+        {% if sujet.nb_votes > 0 %}
+            <span>❤️ {{ sujet.nb_votes }}</span>
+        {% endif %}
+    </div>
+</div>

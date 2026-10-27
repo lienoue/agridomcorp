@@ -1,0 +1,81 @@
+<div class="alertes-traitements-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+            <i class="bi bi-droplet text-success"></i> Alertes traitements
+        </h5>
+        <div>
+            <span class="badge bg-danger rounded-pill">{{ total_alertes }} actives</span>
+            <span class="badge bg-success rounded-pill">{{ alertes_traitees }} traitées</span>
+        </div>
+    </div>
+<br>
+    <!-- Statistiques par gravité -->
+    <div class="row g-2 mb-4">
+        <div class="col-3">
+            <div class="card text-center bg-danger text-white">
+                <div class="card-body py-2">
+                    <h6>{{ alertes_par_gravite.critique }}</h6>
+                    <small>Critique</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="card text-center bg-warning text-dark">
+                <div class="card-body py-2">
+                    <h6>{{ alertes_par_gravite.elevee }}</h6>
+                    <small>Élevée</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body py-2">
+                    <h6>{{ alertes_par_gravite.moyenne }}</h6>
+                    <small>Moyenne</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="card text-center bg-secondary text-white">
+                <div class="card-body py-2">
+                    <h6>{{ alertes_par_gravite.faible }}</h6>
+                    <small>Faible</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if alertes_actives %}
+        <div class="list-group">
+            {% for alerte in alertes_actives %}
+                <div class="list-group-item list-group-item-{% if alerte.niveau_risque == 'critique' %}danger{% elif alerte.niveau_risque == 'elevee' %}warning{% else %}info{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ alerte.culture.nom }}</strong>
+                            <span class="badge bg-danger">⚠️ {{ alerte.maladie.nom }}</span>
+                            <br>
+                            <small class="text-muted">
+                                {{ alerte.date_creation|date:"d/m/Y H:i" }}
+                                {% if alerte.figure %}
+                                    - {{ alerte.figure.name }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div>
+                            <a href="{% url 'vegetables_fruits:traiter_alerte' alerte.id %}" class="btn btn-sm btn-success">
+                                ✅ Traiter
+                            </a>
+                            <a href="{% url 'vegetables_fruits:ignorer_alerte_traitement' alerte.id %}" class="btn btn-sm btn-secondary">
+                                ⏭️ Ignorer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> Aucune alerte traitement active. Tout va bien !
+        </div>
+    {% endif %}
+</div>

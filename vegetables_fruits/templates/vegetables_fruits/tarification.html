@@ -1,0 +1,675 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tarification - Agriculture 2.0{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pricing-container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
+    .pricing-header { text-align: center; margin-bottom: 40px; }
+    .pricing-header h1 { font-size: 2.5rem; color: #2d6a4f; margin-bottom: 10px; }
+    .pricing-header p { color: #6c757d; font-size: 1.1rem; }
+
+    .toggle-container { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0; }
+    .toggle-container span { font-weight: 600; color: #495057; transition: 0.3s; cursor: pointer; }
+    .toggle-container span.active { color: #2d6a4f; }
+    .toggle-switch { position: relative; width: 60px; height: 34px; background: #ccc; border-radius: 34px; cursor: pointer; transition: 0.3s; }
+    .toggle-switch.active { background: #2d6a4f; }
+    .toggle-switch .slider { position: absolute; top: 4px; left: 4px; width: 26px; height: 26px; background: white; border-radius: 50%; transition: 0.3s; }
+    .toggle-switch.active .slider { left: 30px; }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 25px; margin-top: 30px; }
+
+    .pricing-card { background: white; border-radius: 20px; padding: 30px 25px; box-shadow: 0 5px 25px rgba(0,0,0,0.08); transition: 0.3s; border: 2px solid transparent; position: relative; display: flex; flex-direction: column; }
+    .pricing-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.12); }
+    .pricing-card.popular { border-color: #2d6a4f; background: #f8fffa; }
+    .pricing-card.popular .badge-popular { position: absolute; top: -12px; right: 20px; background: #2d6a4f; color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .pricing-card.locked { opacity: 0.85; border-color: #e9ecef; }
+
+    .pricing-card .plan-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .pricing-card .plan-name { font-size: 1.3rem; font-weight: 700; color: #2d6a4f; margin-bottom: 5px; }
+    .pricing-card .plan-subtitle { font-size: 0.9rem; color: #6c757d; margin-bottom: 15px; }
+    .pricing-card .price { font-size: 2.5rem; font-weight: 700; color: #2d6a4f; margin-bottom: 5px; }
+    .pricing-card .price small { font-size: 1rem; font-weight: 400; color: #6c757d; }
+    .pricing-card .price-annuel { font-size: 1rem; color: #6c757d; margin-bottom: 15px; }
+    .pricing-card .price-annuel strong { color: #2d6a4f; }
+
+    .pricing-card .badge-reduction { display: inline-block; background: #ff6b6b; color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 10px; }
+    .pricing-card .badge-ecolo { display: inline-block; background: #28a745; color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 10px; }
+    .pricing-card .badge-locked { display: inline-block; background: #dc3545; color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 10px; }
+    .pricing-card .badge-appat { display: inline-block; background: #ff6b6b; color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; margin-left: 5px; }
+
+    .pricing-card .features { list-style: none; padding: 0; margin: 20px 0; flex: 1; }
+    .pricing-card .features li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; font-size: 0.92rem; color: #495057; cursor: help; position: relative; }
+    .pricing-card .features li:last-child { border-bottom: none; }
+    .pricing-card .features li .icon { font-size: 1.1rem; min-width: 24px; text-align: center; }
+    .pricing-card .features li .tooltip-text { visibility: hidden; opacity: 0; position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%); background: #343a40; color: white; padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 400; width: 240px; text-align: center; transition: 0.2s; z-index: 10; pointer-events: none; }
+    .pricing-card .features li .tooltip-text::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #343a40; }
+    .pricing-card .features li:hover .tooltip-text { visibility: visible; opacity: 1; }
+    .pricing-card .features li .feature-name { flex: 1; }
+    .pricing-card .features li .feature-name.disabled { color: #6c757d; }
+    .pricing-card .features li.highlight { background: #f0fff4; border-radius: 8px; padding: 8px 12px; margin: 4px 0; border-left: 3px solid #28a745; }
+    .pricing-card .features li.highlight .feature-name { color: #28a745; font-weight: 600; }
+    .pricing-card .features li.exclusif { background: #e8f4fd; border-radius: 8px; padding: 8px 12px; margin: 4px 0; border-left: 3px solid #17a2b8; }
+    .pricing-card .features li.exclusif .feature-name { color: #17a2b8; font-weight: 600; }
+
+    .pricing-card .btn-cta { display: block; text-align: center; padding: 12px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s; text-decoration: none; margin-top: 10px; }
+    .pricing-card .btn-cta.btn-primary { background: #2d6a4f; color: white; }
+    .pricing-card .btn-cta.btn-primary:hover { background: #1b4332; }
+    .pricing-card .btn-cta.btn-outline { background: transparent; color: #2d6a4f; border: 2px solid #2d6a4f; }
+    .pricing-card .btn-cta.btn-outline:hover { background: #2d6a4f; color: white; }
+    .pricing-card .btn-cta.btn-disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; }
+
+    .pricing-card .note-enseignant { margin-top: 10px; font-size: 0.8rem; color: #6c757d; text-align: center; }
+    .pricing-card .note-enseignant a { color: #2d6a4f; text-decoration: none; font-weight: 600; }
+    .pricing-card .frais-info { margin-top: 8px; font-size: 0.7rem; color: #6c757d; text-align: center; }
+
+    .appat-badge-container { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .separateur { border: none; border-top: 2px dashed #e9ecef; margin: 10px 0; }
+
+    .section-title { font-size: 0.75rem; text-transform: uppercase; color: #6c757d; font-weight: 700; letter-spacing: 0.5px; margin: 15px 0 5px 0; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+
+    @media (max-width: 768px) {
+        .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+        .pricing-header h1 { font-size: 1.8rem; }
+        .pricing-card .features li .tooltip-text { width: 180px; font-size: 0.7rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pricing-container">
+
+    <div class="pricing-header">
+        <h1>💰 Choisissez votre formule</h1>
+        <p>Des outils adaptés à tous les profils, du jardinier amateur à l'enseignant</p>
+    </div>
+
+    <div class="toggle-container">
+        <span class="active" id="labelMensuel">Mensuel</span>
+        <div class="toggle-switch active" id="toggleSwitch" onclick="togglePricing()">
+            <div class="slider"></div>
+        </div>
+        <span id="labelAnnuel">Annuel <span class="badge-reduction">-17%</span></span>
+    </div>
+
+    <div class="pricing-grid" id="pricingGrid">
+
+        <!-- ============================================================ -->
+        <!-- GRATUIT -->
+        <!-- ============================================================ -->
+        <div class="pricing-card">
+            <div class="plan-icon">🌱</div>
+            <div class="plan-name">Gratuit</div>
+            <div class="plan-subtitle">Pour découvrir l'agriculture</div>
+            <div class="price" id="price-gratuit">0€ <small>/mois</small></div>
+            <div class="price-annuel" id="price-annuel-gratuit">0€ <small>/an</small></div>
+
+            <ul class="features">
+                <li class="section-title">Cultures & Parcelles</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">3 parcelles</span>
+                    <span class="tooltip-text">Créez jusqu'à 3 parcelles pour débuter</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Météo par parcelle</span>
+                    <span class="tooltip-text">Météo actuelle pour chaque parcelle</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Calendrier des semis</span>
+                    <span class="tooltip-text">Calendrier régional des semis et récoltes</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mes semis personnels</span>
+                    <span class="tooltip-text">Suivi personnalisé de vos semis</span>
+                </li>
+
+                <li class="section-title">Apprentissage</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Quiz jardinage (3/jour)</span>
+                    <span class="tooltip-text">3 quiz par jour pour tester vos connaissances</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mode Junior</span>
+                    <span class="tooltip-text">Interface adaptée pour les moins de 18 ans</span>
+                </li>
+
+                <li class="section-title">Alertes de base</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes météo simples</span>
+                    <span class="tooltip-text">Alertes gel, canicule, pluie, vent basiques</span>
+                </li>
+
+                <li class="section-title">Non inclus</li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Journal de bord</span>
+                    <span class="tooltip-text">Suivez vos observations et notes de culture (dès Basique)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name">Besoins en eau</span>
+                    <span class="tooltip-text">Calcul des besoins hydriques de vos cultures</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Alertes météo avancées</span>
+                    <span class="tooltip-text">Alertes par culture avec seuils personnalisés (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Conseiller Sol</span>
+                    <span class="tooltip-text">Analyse personnalisée de votre sol (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Plan de fertilisation</span>
+                    <span class="tooltip-text">Plan d'engrais adapté à vos cultures (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Gestion des maladies</span>
+                    <span class="tooltip-text">Détection par symptômes (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Bilan carbone</span>
+                    <span class="tooltip-text">Empreinte carbone de votre jardin (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Statistiques avancées</span>
+                    <span class="tooltip-text">Graphiques et analyses détaillées (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Rotation des cultures</span>
+                    <span class="tooltip-text">Plan de rotation sur 4 ans (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Compagnonnage</span>
+                    <span class="tooltip-text">Associations bénéfiques entre plantes (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Dashboard climat</span>
+                    <span class="tooltip-text">Vue consolidée climat + eau + carbone (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Prévisions météo 7 jours</span>
+                    <span class="tooltip-text">Prévisions détaillées sur 7 jours (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Forum adulte</span>
+                    <span class="tooltip-text">Échanges entre jardiniers adultes (dès Basique)</span>
+                </li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:signup' %}" class="btn-cta btn-outline">S'inscrire</a>
+            <div class="frais-info">💳 Frais de transaction inclus</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- BASIQUE -->
+        <!-- ============================================================ -->
+        <div class="pricing-card popular">
+            <span class="badge-popular">⭐ Populaire</span>
+            <div class="plan-icon">🌿</div>
+            <div class="plan-name">Basique</div>
+            <div class="plan-subtitle">Pour les jardiniers réguliers</div>
+            <div class="price" id="price-basique">7,49€ <small>/mois</small></div>
+            <div class="price-annuel" id="price-annuel-basique"><strong>74,90€</strong> <small>/an (soit 6,24€/mois)</small></div>
+
+            <ul class="features">
+                <li class="section-title">Cultures & Parcelles</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">15 parcelles</span>
+                    <span class="tooltip-text">Créez jusqu'à 15 parcelles</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Météo par parcelle</span>
+                    <span class="tooltip-text">Météo actuelle pour chaque parcelle</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Calendrier des semis</span>
+                    <span class="tooltip-text">Calendrier régional des semis et récoltes</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mes semis personnels</span>
+                    <span class="tooltip-text">Suivi personnalisé de vos semis</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Besoins en eau</span>
+                    <span class="tooltip-text">Calcul des besoins hydriques de vos cultures</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mes rappels</span>
+                    <span class="tooltip-text">Rappels personnalisés par email</span>
+                </li>
+
+                <li class="section-title">Apprentissage</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Quiz jardinage illimités</span>
+                    <span class="tooltip-text">Quiz illimités pour progresser</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mode Junior</span>
+                    <span class="tooltip-text">Interface adaptée pour les moins de 18 ans</span>
+                </li>
+
+                <li class="section-title">Suivi & Journal</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Journal de bord (10 notes/mois)</span>
+                    <span class="tooltip-text">Suivez vos observations, météo et photos</span>
+                </li>
+
+                <li class="section-title">Alertes</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes météo avancées</span>
+                    <span class="tooltip-text">Alertes gel, canicule, pluie, vent par culture</span>
+                </li>
+
+                <li class="section-title">Communauté</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Forum adulte (5 sujets/mois, 50 msg/mois)</span>
+                    <span class="tooltip-text">Échanges entre jardiniers adultes</span>
+                </li>
+
+                <li class="section-title">Non inclus</li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Conseiller Sol</span>
+                    <span class="tooltip-text">Analyse personnalisée de votre sol (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Plan de fertilisation</span>
+                    <span class="tooltip-text">Plan d'engrais adapté (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Gestion des maladies</span>
+                    <span class="tooltip-text">Détection par symptômes (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Bilan carbone</span>
+                    <span class="tooltip-text">Empreinte carbone (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Rotation / Compagnonnage</span>
+                    <span class="tooltip-text">Outils avancés de planification (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Dashboard climat</span>
+                    <span class="tooltip-text">Vue consolidée (Premium)</span>
+                </li>
+                <li>
+                    <span class="icon">❌</span>
+                    <span class="feature-name disabled">Prévisions météo 7 jours</span>
+                    <span class="tooltip-text">Prévisions long terme (Premium)</span>
+                </li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan=basique" class="btn-cta btn-primary">Commencer</a>
+            <div class="frais-info">💳 Frais de transaction inclus</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- PREMIUM -->
+        <!-- ============================================================ -->
+        <div class="pricing-card">
+            <div class="plan-icon">🌳</div>
+            <div class="plan-name">Premium</div>
+            <div class="plan-subtitle">La solution complète</div>
+            <div class="price" id="price-premium">15,99€ <small>/mois</small></div>
+            <div class="price-annuel" id="price-annuel-premium"><strong>159,90€</strong> <small>/an (soit 13,32€/mois)</small></div>
+
+            <ul class="features">
+                <li class="section-title">Cultures & Parcelles</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">50 parcelles</span>
+                    <span class="tooltip-text">Créez jusqu'à 50 parcelles</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Météo par parcelle</span>
+                    <span class="tooltip-text">Météo actuelle pour chaque parcelle</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Prévisions météo 7 jours</span>
+                    <span class="tooltip-text">Prévisions détaillées sur 7 jours</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Calendrier + Mes semis</span>
+                    <span class="tooltip-text">Calendrier régional + suivi personnel</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Besoins en eau + Plan d'irrigation</span>
+                    <span class="tooltip-text">Calcul + plan d'arrosage hebdomadaire</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mes rappels</span>
+                    <span class="tooltip-text">Rappels personnalisés par email</span>
+                </li>
+
+                <li class="section-title">Apprentissage</li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Quiz illimités</span>
+                    <span class="tooltip-text">Quiz illimités</span>
+                </li>
+                <li>
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mode Junior</span>
+                    <span class="tooltip-text">Interface adaptée pour les moins de 18 ans</span>
+                </li>
+
+                <li class="section-title">Suivi avancé</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Journal de bord illimité</span>
+                    <span class="tooltip-text">Notes et photos illimitées</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Conseiller Sol</span>
+                    <span class="tooltip-text">Analyse personnalisée de votre sol</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Plan de fertilisation</span>
+                    <span class="tooltip-text">Plan d'engrais adapté à vos cultures</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Gestion des maladies</span>
+                    <span class="tooltip-text">Détection par symptômes + traitements</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Rotation des cultures</span>
+                    <span class="tooltip-text">Plan de rotation sur 4 ans</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Compagnonnage</span>
+                    <span class="tooltip-text">Associations bénéfiques entre plantes</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Statistiques avancées</span>
+                    <span class="tooltip-text">Graphiques et analyses détaillées</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Planification des semis</span>
+                    <span class="tooltip-text">Planification avancée des semis</span>
+                </li>
+
+                <li class="section-title">Environnement</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Bilan carbone</span>
+                    <span class="tooltip-text">Empreinte carbone de votre jardin</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Dashboard climat</span>
+                    <span class="tooltip-text">Vue consolidée climat + eau + carbone</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Autosuffisance</span>
+                    <span class="tooltip-text">Suivi de votre autonomie alimentaire</span>
+                </li>
+
+                <li class="section-title">Alertes</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes météo avancées</span>
+                    <span class="tooltip-text">Alertes par culture avec seuils</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes traitements</span>
+                    <span class="tooltip-text">Protection des cultures contre les maladies</span>
+                </li>
+
+                <li class="section-title">Communauté</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Forum adulte illimité</span>
+                    <span class="tooltip-text">Sujets et messages illimités</span>
+                </li>
+            </ul>
+            <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan=premium" class="btn-cta btn-primary">Commencer</a>
+            <div class="frais-info">💳 Frais de transaction inclus</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ENSEIGNANT -->
+        <!-- ============================================================ -->
+        <div class="pricing-card {% if not user.is_authenticated or not user.is_enseignant %}locked{% endif %}">
+            <div class="plan-icon">🏫</div>
+            <div class="plan-name">Enseignant</div>
+            <div class="plan-subtitle">La solution pédagogique</div>
+
+            {% if user.is_authenticated and user.is_enseignant %}
+                <div class="price" id="price-enseignant">9,99€ <small>/mois</small></div>
+                <div class="price-annuel" id="price-annuel-enseignant">
+                    <strong>99,90€</strong> <small>/an (soit 8,32€/mois)</small>
+                </div>
+                <div class="appat-badge-container">
+                    <span class="badge-ecolo">🎓 -37% par rapport au Premium</span>
+                    <span class="appat-badge">⭐ Inclut le Premium complet</span>
+                </div>
+            {% else %}
+                <div class="price" style="color: #6c757d;">
+                    <span style="font-size:1.5rem;">9,99€</span> <small>/mois</small>
+                </div>
+                <div class="price-annuel" style="color: #6c757d;">
+                    <strong>99,90€</strong> <small>/an</small>
+                </div>
+                <span class="badge-locked">🔒 Réservé aux enseignants</span>
+            {% endif %}
+
+            <ul class="features">
+                <li class="section-title">Exclusif Enseignant</li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Parcelles illimitées</span>
+                    <span class="tooltip-text">Créez autant de parcelles que vous voulez</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Gestion des classes</span>
+                    <span class="tooltip-text">Créez et gérez vos classes d'élèves</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Mode Junior pour élèves</span>
+                    <span class="tooltip-text">Interface adaptée pour les mineurs</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Défis de classe</span>
+                    <span class="tooltip-text">Défis collectifs avec récompenses</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Forum école</span>
+                    <span class="tooltip-text">Échanges sécurisés élèves/enseignants</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Galerie photos de classe</span>
+                    <span class="tooltip-text">Partagez les photos des jardins</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Classement national</span>
+                    <span class="tooltip-text">Comparez votre classe avec les autres</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Export CSV / PDF</span>
+                    <span class="tooltip-text">Rapports de classe en CSV et PDF</span>
+                </li>
+                <li class="exclusif">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Statistiques élèves</span>
+                    <span class="tooltip-text">Bilan carbone et stats de chaque élève</span>
+                </li>
+
+                <li class="section-title">Toutes les fonctions Premium</li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Météo + Prévisions 7 jours</span>
+                    <span class="tooltip-text">Prévisions météo détaillées</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Journal de bord illimité</span>
+                    <span class="tooltip-text">Notes et photos illimitées</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes météo avancées</span>
+                    <span class="tooltip-text">Alertes par culture avec seuils</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Alertes traitements</span>
+                    <span class="tooltip-text">Protection des cultures</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Conseiller Sol</span>
+                    <span class="tooltip-text">Analyse personnalisée de votre sol</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Plan de fertilisation</span>
+                    <span class="tooltip-text">Plan d'engrais adapté</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Gestion des maladies</span>
+                    <span class="tooltip-text">Détection par symptômes</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Bilan carbone</span>
+                    <span class="tooltip-text">Empreinte carbone du jardin</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Rotation des cultures</span>
+                    <span class="tooltip-text">Plan de rotation sur 4 ans</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Compagnonnage</span>
+                    <span class="tooltip-text">Associations bénéfiques</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Statistiques avancées</span>
+                    <span class="tooltip-text">Graphiques et analyses</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Dashboard climat</span>
+                    <span class="tooltip-text">Vue consolidée</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Planification des semis</span>
+                    <span class="tooltip-text">Planification avancée</span>
+                </li>
+            </ul>
+
+            {% if user.is_authenticated and user.is_enseignant %}
+                <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan=enseignant" class="btn-cta btn-primary">
+                    🎓 S'inscrire
+                </a>
+                <div class="note-enseignant">
+                    ✅ Email académique validé
+                    <br>
+                    <small style="color:#28a745;">💡 Premium complet inclus !</small>
+                </div>
+            {% else %}
+                <a href="#" class="btn-cta btn-disabled" onclick="alert('🔒 Cette offre est réservée aux enseignants. Veuillez vous inscrire avec un email académique (ex: nom@universite.fr, nom@ac-ville.fr)')">
+                    🔒 Réservé aux enseignants
+                </a>
+                <div class="note-enseignant">
+                    <a href="{% url 'vegetables_fruits:signup' %}?role=enseignant">
+                        🎓 Inscription enseignant →
+                    </a>
+                </div>
+            {% endif %}
+            <div class="frais-info">💳 Frais de transaction inclus</div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    let isAnnual = false;
+
+    function togglePricing() {
+        isAnnual = !isAnnual;
+        const toggle = document.getElementById('toggleSwitch');
+        const labelMensuel = document.getElementById('labelMensuel');
+        const labelAnnuel = document.getElementById('labelAnnuel');
+
+        toggle.classList.toggle('active');
+        labelMensuel.classList.toggle('active');
+        labelAnnuel.classList.toggle('active');
+
+        if (isAnnual) {
+            document.getElementById('price-basique').innerHTML = '6,24€ <small>/mois</small>';
+            document.getElementById('price-annuel-basique').innerHTML = '<strong>74,90€</strong> <small>/an (soit 6,24€/mois)</small>';
+            document.getElementById('price-premium').innerHTML = '13,32€ <small>/mois</small>';
+            document.getElementById('price-annuel-premium').innerHTML = '<strong>159,90€</strong> <small>/an (soit 13,32€/mois)</small>';
+            document.getElementById('price-enseignant').innerHTML = '8,32€ <small>/mois</small>';
+            document.getElementById('price-annuel-enseignant').innerHTML = '<strong>99,90€</strong> <small>/an (soit 8,32€/mois)</small>';
+        } else {
+            document.getElementById('price-basique').innerHTML = '7,49€ <small>/mois</small>';
+            document.getElementById('price-annuel-basique').innerHTML = '<strong>74,90€</strong> <small>/an (soit 6,24€/mois)</small>';
+            document.getElementById('price-premium').innerHTML = '15,99€ <small>/mois</small>';
+            document.getElementById('price-annuel-premium').innerHTML = '<strong>159,90€</strong> <small>/an (soit 13,32€/mois)</small>';
+            document.getElementById('price-enseignant').innerHTML = '9,99€ <small>/mois</small>';
+            document.getElementById('price-annuel-enseignant').innerHTML = '<strong>99,90€</strong> <small>/an (soit 8,32€/mois)</small>';
+        }
+    }
+</script>
+{% endblock %}

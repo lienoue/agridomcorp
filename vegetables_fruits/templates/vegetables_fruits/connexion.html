@@ -1,0 +1,111 @@
+{% extends 'vegetables_fruits/index.html' %}
+{% load static %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto; padding: 0 20px;">
+    <div class="card" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div class="card-header" style="background: linear-gradient(135deg, #2d6a4f, #40916c); color: white; border-radius: 20px 20px 0 0; padding: 25px; text-align: center;">
+            <h2 style="margin: 0; font-size: 1.8rem;">🔑 Connexion</h2>
+            <p style="margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem;">Accédez à votre espace Agriculture 2.0</p>
+        </div>
+
+        <div class="card-body" style="padding: 30px;">
+            <!-- Affichage des messages -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid {% if message.tags == 'success' %}#28a745{% elif message.tags == 'error' %}#dc3545{% elif message.tags == 'warning' %}#ffc107{% else %}#17a2b8{% endif %};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="id_username" style="font-weight: 600; color: #1b4332; display: block; margin-bottom: 5px;">
+                        Nom d'utilisateur
+                    </label>
+                    <input type="text" name="username" id="id_username" class="form-control" 
+                           placeholder="Entrez votre nom d'utilisateur" required autofocus
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem; transition: all 0.3s; background: #f8f9fa;">
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                        <div style="background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 5px; margin-top: 5px; font-size: 0.85rem;">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="id_password" style="font-weight: 600; color: #1b4332; display: block; margin-bottom: 5px;">
+                        Mot de passe
+                    </label>
+                    <input type="password" name="password" id="id_password" required
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem; transition: all 0.3s; background: #f8f9fa;">
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                        <div style="background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 5px; margin-top: 5px; font-size: 0.85rem;">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                    <div style="background: #f8d7da; color: #721c24; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <a href="{% url 'vegetables_fruits:password_reset' %}" style="color: #2d6a4f; text-decoration: none; font-weight: 500;">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(135deg, #2d6a4f, #40916c); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+                    🔑 Se connecter
+                </button>
+
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+
+            <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                <p style="margin: 0; color: #6c757d;">
+                    Pas encore de compte ?
+                    <a href="{% url 'vegetables_fruits:signup' %}" style="color: #2d6a4f; font-weight: 600; text-decoration: none;">
+                        S'inscrire
+                    </a>
+                </p>
+                <p style="margin-top: 10px; color: #6c757d; font-size: 0.9rem;">
+                    <a href="{% url 'vegetables_fruits:index' %}" style="color: #6c757d; text-decoration: none;">
+                        ← Revenir à la page d'accueil
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Focus styles */
+    .form-control:focus {
+        border-color: #40916c;
+        box-shadow: 0 0 0 3px rgba(64,145,108,0.2);
+        outline: none;
+        background: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(45,106,79,0.4);
+    }
+</style>
+{% endblock %}

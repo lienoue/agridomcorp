@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Guide utilisateur particulier - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Guide particulier</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-card .step { background: #f8f9fa; padding: 15px 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2d6a4f; }
+    .doc-card .step p { margin-bottom: 8px; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .junior-box { background: #fff3e0; border-left: 4px solid #ff6b35; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🌱 Guide utilisateur particulier</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>📌 Introduction</h2>
+        <p>Agriculture 2.0 est une application web de jardinage pédagogique. Ce guide vous accompagne pas à pas pour utiliser toutes les fonctionnalités, que vous soyez un adulte ou un enfant (mode Junior).</p>
+
+        <h2>🔐 1. Créer un compte</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Accéder au site <a href="#">www.agriculture2.0</a></p>
+            <p><strong>Étape 2 :</strong> Cliquer sur "Inscription"</p>
+            <p><strong>Étape 3 :</strong> Remplir le formulaire (nom, email, mot de passe, date de naissance)</p>
+            <p><strong>Étape 4 :</strong> Confirmer votre email</p>
+            <p><strong>Étape 5 :</strong> Suivre le tutoriel de démarrage</p>
+        </div>
+
+        <div class="info-box">
+            <strong>📌 Note :</strong> Si vous avez <strong>moins de 15 ans</strong>, un consentement parental
+            est obligatoire. Si vous avez entre <strong>15 et 17 ans</strong>, un email est envoyé
+            à vos parents pour information.
+        </div>
+
+        <h2>🌾 2. Créer une parcelle</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Cliquer sur "Dessiner une figure" dans le menu</p>
+            <p><strong>Étape 2 :</strong> Choisir le type de parcelle (polygone, cercle, point)</p>
+            <p><strong>Étape 3 :</strong> Dessiner votre parcelle sur la carte</p>
+            <p><strong>Étape 4 :</strong> Donner un nom (ex: "Mon potager du fond")</p>
+            <p><strong>Étape 5 :</strong> Ajouter une adresse (pour la météo locale)</p>
+            <p><strong>Étape 6 :</strong> Choisir le type de sol (manuel ou automatique)</p>
+            <p><strong>Étape 7 :</strong> Sauvegarder</p>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Astuce :</strong> Le <strong>type de sol automatique</strong> est déterminé en fonction
+            de votre localisation (via Mapbox). Idéal si vous ne connaissez pas votre sol !
+        </div>
+
+        <h2>🌱 3. Ajouter des cultures</h2>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Ouvrir votre parcelle</p>
+            <p><strong>Étape 2 :</strong> Cliquer sur "Modifier les cultures"</p>
+            <p><strong>Étape 3 :</strong> Parcourir le catalogue (200+ cultures)</p>
+            <p><strong>Étape 4 :</strong> Cliquer sur une culture pour l'ajouter</p>
+            <p><strong>Étape 5 :</strong> Une chronologie de culture est créée automatiquement</p>
+        </div>
+
+        <h3>Types de cultures disponibles</h3>
+        <ul>
+            <li>🥕 Légumes (carottes, tomates, salades, courgettes…)</li>
+            <li>🍎 Fruits (pommiers, fraisiers, vignes…)</li>
+            <li>🌺 Fleurs pollinisatrices (78 variétés)</li>
+            <li>🌿 Aromatiques (basilic, thym, romarin…)</li>
+        </ul>
+
+        <h2>📅 4. Suivre vos cultures</h2>
+        <p>La page <strong>Cultures</strong> regroupe 3 onglets :</p>
+        <table>
+            <thead>
+                <tr><th>Onglet</th><th>Contenu</th><th>Accès</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>📅 <strong>Calendrier</strong></td>
+                    <td>Calendrier régional des semis et récoltes</td>
+                    <td>Gratuit</td>
+                </tr>
+                <tr>
+                    <td>🌱 <strong>Mes semis</strong></td>
+                    <td>Suivi personnel de vos semis</td>
+                    <td>Gratuit</td>
+                </tr>
+                <tr>
+                    <td>📊 <strong>Planification</strong></td>
+                    <td>Planification avancée des semis</td>
+                    <td>Premium</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>📖 5. Guide des cultures</h2>
+        <p>La page <strong>Guide des cultures</strong> regroupe 4 onglets :</p>
+        <table>
+            <thead>
+                <tr><th>Onglet</th><th>Contenu</th><th>Accès</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🌱 <strong>Conseiller Sol</strong></td>
+                    <td>Analyse personnalisée de votre sol</td>
+                    <td>Premium</td>
+                </tr>
+                <tr>
+                    <td>💧 <strong>Fertilisation</strong></td>
+                    <td>Plan de fertilisation adapté</td>
+                    <td>Premium</td>
+                </tr>
+                <tr>
+                    <td>🌿 <strong>Compagnonnage</strong></td>
+                    <td>Associations bénéfiques entre plantes</td>
+                    <td>Premium</td>
+                </tr>
+                <tr>
+                    <td>🔄 <strong>Rotation</strong></td>
+                    <td>Plan de rotation sur 4 ans</td>
+                    <td>Premium</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🌍 6. Écologie & Autonomie</h2>
+        <p>La page <strong>Écologie</strong> regroupe 2 onglets :</p>
+        <table>
+            <thead>
+                <tr><th>Onglet</th><th>Contenu</th><th>Accès</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🌍 <strong>Bilan carbone</strong></td>
+                    <td>Empreinte carbone de votre jardin</td>
+                    <td>Premium</td>
+                </tr>
+                <tr>
+                    <td>🏠 <strong>Autosuffisance</strong></td>
+                    <td>Suivi de votre autonomie alimentaire</td>
+                    <td>Gratuit</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🔔 7. Alertes</h2>
+        <p>La page <strong>Alertes</strong> regroupe 3 onglets :</p>
+        <table>
+            <thead>
+                <tr><th>Onglet</th><th>Contenu</th><th>Accès</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🌤️ <strong>Météo</strong></td>
+                    <td>Alertes gel, canicule, pluie, vent</td>
+                    <td>Gratuit</td>
+                </tr>
+                <tr>
+                    <td>⚠️ <strong>Avancées</strong></td>
+                    <td>Alertes par culture avec seuils personnalisés</td>
+                    <td>Premium</td>
+                </tr>
+                <tr>
+                    <td>🧪 <strong>Traitements</strong></td>
+                    <td>Protection des cultures contre les maladies</td>
+                    <td>Premium</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>📓 8. Journal de bord</h2>
+        <p>Documentez vos observations, la météo du jour et ajoutez des photos.</p>
+        <ul>
+            <li><strong>Basique</strong> : 10 notes / mois</li>
+            <li><strong>Premium</strong> : notes illimitées</li>
+        </ul>
+
+        <h2>💧 9. Plan d'irrigation et besoins en eau</h2>
+        <ul>
+            <li>Calculez les besoins en eau de vos cultures</li>
+            <li>Recevez un plan d'arrosage hebdomadaire</li>
+            <li>Programmez des rappels par email</li>
+            <li>Exportez votre plan en PDF</li>
+        </ul>
+
+        <h2>🌤️ 10. Météo et prévisions</h2>
+        <ul>
+            <li><strong>Météo actuelle</strong> par parcelle (gratuit)</li>
+            <li><strong>Prévisions 7 jours</strong> (Premium)</li>
+            <li><strong>Dashboard climat</strong> consolidé (Premium)</li>
+            <li>Alertes automatiques selon les seuils de chaque culture</li>
+        </ul>
+
+        <h2>🧠 11. Gamification et apprentissage</h2>
+        <ul>
+            <li>📋 <strong>Quiz jardinage</strong> : 3/jour (gratuit), illimités (Premium)</li>
+            <li>🎯 <strong>Missions hebdomadaires</strong> (mode Junior)</li>
+            <li>🏅 <strong>Badges et compétences</strong> (mode Junior)</li>
+            <li>📊 <strong>Statistiques</strong> de progression (Premium)</li>
+        </ul>
+
+        <h2>👥 12. Communauté</h2>
+        <ul>
+            <li>📸 <strong>Galerie photos</strong> : partagez vos plus belles récoltes (tous)</li>
+            <li>💬 <strong>Forum adulte</strong> : échanges entre jardiniers adultes (Basique/Premium)</li>
+            <li>🏆 <strong>Classements</strong> : comparez-vous aux autres jardiniers</li>
+        </ul>
+
+        <div class="info-box">
+            <strong>💡 Note :</strong> Le forum adulte est réservé aux utilisateurs
+            <strong>majeurs</strong> avec abonnement Basique ou Premium.
+            Les mineurs accèdent uniquement à la galerie publique.
+        </div>
+
+        <h2>🧒 13. Mode Junior (moins de 18 ans)</h2>
+        <div class="junior-box">
+            <p><strong>Automatique :</strong> Si vous avez moins de 18 ans, le mode Junior
+            est activé automatiquement à l'inscription.</p>
+        </div>
+        <p>Le mode Junior offre :</p>
+        <ul>
+            <li>🎨 Interface adaptée (couleurs orange, tutoiement)</li>
+            <li>⭐ Points et badges à chaque action</li>
+            <li>🎯 Missions hebdomadaires</li>
+            <li>🌳 Arbre de compétences</li>
+            <li>📸 Galerie publique (avec modération)</li>
+        </ul>
+
+        <h2>💳 14. Abonnements</h2>
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Mensuel</th><th>Annuel</th><th>Parcelles</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🌱 <strong>Gratuit</strong></td>
+                    <td>0€</td>
+                    <td>0€</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td>🌿 <strong>Basique</strong></td>
+                    <td>7,49€</td>
+                    <td>74,90€</td>
+                    <td>15</td>
+                </tr>
+                <tr>
+                    <td>🌳 <strong>Premium</strong></td>
+                    <td>15,99€</td>
+                    <td>159,90€</td>
+                    <td>50</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Ce que le Basique ajoute</h3>
+        <ul>
+            <li>📓 Journal de bord (10 notes/mois)</li>
+            <li>🌿 Quiz illimités</li>
+            <li>⚠️ Alertes météo avancées (par culture)</li>
+            <li>💬 Forum adulte (5 sujets/mois, 50 messages/mois)</li>
+        </ul>
+
+        <h3>Ce que le Premium ajoute</h3>
+        <ul>
+            <li>📓 Journal de bord <strong>illimité</strong></li>
+            <li>🌱 Conseiller Sol</li>
+            <li>💧 Plan de fertilisation</li>
+            <li>🦠 Gestion des maladies</li>
+            <li>🌍 Bilan carbone + Dashboard climat</li>
+            <li>🔄 Rotation des cultures</li>
+            <li>🌿 Compagnonnage</li>
+            <li>📊 Statistiques avancées</li>
+            <li>🌡️ Prévisions météo 7 jours</li>
+            <li>⚠️ Alertes traitements</li>
+            <li>💬 Forum adulte <strong>illimité</strong></li>
+        </ul>
+
+        <h2>🧒 15. Abonnement pour un mineur</h2>
+        <div class="warning-box">
+            <strong>⚠️ Important :</strong> Un <strong>mineur</strong> ne peut pas souscrire directement
+            à un abonnement payant. Il doit obtenir l'<strong>autorisation d'un parent</strong>.
+        </div>
+
+        <h3>Procédure</h3>
+        <div class="step">
+            <p><strong>Étape 1 :</strong> Le mineur va sur sa page <strong>Profil</strong></p>
+            <p><strong>Étape 2 :</strong> Clique sur "Demander l'autorisation d'un parent"</p>
+            <p><strong>Étape 3 :</strong> Renseigne les informations du parent (nom, prénom, email)</p>
+            <p><strong>Étape 4 :</strong> Le parent reçoit un email avec un lien unique</p>
+            <p><strong>Étape 5 :</strong> Le parent valide ou refuse via le lien</p>
+            <p><strong>Étape 6 :</strong> Si validé → le mineur peut souscrire à l'abonnement</p>
+        </div>
+
+        <div class="info-box">
+            <strong>⏱️ Validité :</strong> L'autorisation parentale est valable <strong>7 jours</strong>.
+            Passé ce délai, le mineur doit refaire une demande.
+        </div>
+
+        <h2>📱 16. Disponibilité</h2>
+        <ul>
+            <li>✅ <strong>PWA</strong> : installable sur mobile et ordinateur</li>
+            <li>✅ Fonctionne hors-ligne (en partie)</li>
+            <li>⏳ Versions natives (App Store, Play Store) : prévues</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

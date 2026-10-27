@@ -1,0 +1,39 @@
+<div class="alertes-meteo-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+            <i class="bi bi-cloud-sun text-success"></i> Alertes météo
+        </h5>
+        <div>
+            <span class="badge bg-info rounded-pill">Total : {{ stats.total }}</span>
+            <span class="badge bg-danger rounded-pill">Non lues : {{ stats.non_lues }}</span>
+        </div>
+    </div>
+
+    {% if alertes %}
+        <div class="list-group">
+            {% for alerte in alertes %}
+                <div class="list-group-item list-group-item-{% if alerte.type_alerte == 'gel' %}danger{% elif alerte.type_alerte == 'canicule' %}warning{% else %}info{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ alerte.message }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ alerte.date_declenchement|date:"d/m/Y H:i" }}
+                                {% if alerte.temperature %}
+                                    - 🌡️ {{ alerte.temperature }}°C
+                                {% endif %}
+                            </small>
+                        </div>
+                        <span class="badge bg-{% if alerte.statut == 'en_attente' %}warning{% else %}secondary{% endif %}">
+                            {{ alerte.get_statut_display }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune alerte météo pour le moment.
+        </div>
+    {% endif %}
+</div>

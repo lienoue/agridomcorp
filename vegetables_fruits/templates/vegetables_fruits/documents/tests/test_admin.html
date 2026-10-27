@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Plan de test - Administrateur - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:test_admin' %}">⚙️ Test Admin</a></li>
+<li class="breadcrumb-item active" aria-current="page">Scénarios</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .code-block { background: #1e1e1e; color: #d4d4d4; padding: 15px 20px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; margin: 10px 0; white-space: pre; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .danger-box { background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .box { min-width: 20px; font-size: 1.2rem; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>⚙️ Plan de test - Administrateur</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 1.0 – Septembre 2026</p>
+
+        <div class="info-box">
+            <strong>🎯 Objectif :</strong> Vérifier les fonctionnalités d'administration,
+            la maintenance, la supervision et la gestion des utilisateurs sensibles.
+        </div>
+
+        <h2>📋 Informations de test</h2>
+        <table>
+            <thead>
+                <tr><th>Champ</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Profil testé</td><td>Administrateur (staff)</td></tr>
+                <tr><td>URL admin</td><td><code>/admin/</code></td></tr>
+                <tr><td>Attributs requis</td><td><code>is_staff=True</code>, <code>is_superuser=True</code></td></tr>
+            </tbody>
+        </table>
+
+        <h2>🧪 Scénarios de test</h2>
+
+        <h3>🔑 Scénario 1 — Accès admin</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Se connecter avec un compte <code>is_staff=True</code></li>
+            <li><span class="box">☐</span> Aller sur <code>/admin/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : interface Django Admin accessible</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : tous les modèles visibles</li>
+        </ul>
+
+        <h3>🚫 Scénario 2 — Accès refusé (non-staff)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Se connecter avec un compte particulier</li>
+            <li><span class="box">☐</span> Aller sur <code>/admin/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : page de connexion admin (refus)</li>
+        </ul>
+
+        <h3>👤 Scénario 3 — Gestion utilisateurs</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>CustomUser</code></li>
+            <li><span class="box">☐</span> Rechercher un utilisateur par username</li>
+            <li><span class="box">☐</span> Rechercher par email</li>
+            <li><span class="box">☐</span> Modifier <code>mode_junior</code></li>
+            <li><span class="box">☐</span> Modifier <code>is_enseignant</code></li>
+            <li><span class="box">☐</span> Désactiver un compte (<code>is_active=False</code>)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : l'utilisateur désactivé ne peut plus se connecter</li>
+        </ul>
+
+        <h3>🧒 Scénario 4 — Vérifier mode_junior</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Chercher les utilisateurs de moins de 18 ans</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : tous ont <code>mode_junior=True</code></li>
+            <li><span class="box">☐</span> Créer un nouvel utilisateur mineur manuellement</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>mode_junior=True</code> activé automatiquement (signal)</li>
+        </ul>
+
+        <h3>🎓 Scénario 5 — Vérifier profils Eleve</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>Eleve</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : uniquement les élèves en classe</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : aucun mineur orphelin (sans classe)</li>
+            <li><span class="box">☐</span> Vérifier <code>profil_eleve.classe</code> sur chaque élève</li>
+        </ul>
+
+        <h3>🏫 Scénario 6 — Gestion classes</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>Classe</code></li>
+            <li><span class="box">☐</span> Voir les classes par enseignant</li>
+            <li><span class="box">☐</span> Voir le code d'invitation</li>
+            <li><span class="box">☐</span> Voir le nombre d'élèves par classe</li>
+        </ul>
+
+        <h3>💳 Scénario 7 — Autorisations parentales</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>Autorisations d'achat (mineurs)</code></li>
+            <li><span class="box">☐</span> Filtrer par statut <code>en_attente</code></li>
+            <li><span class="box">☐</span> Voir les infos parent (nom, email)</li>
+            <li><span class="box">☐</span> Voir les preuves légales (IP, user-agent, date)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : toutes les données visibles</li>
+        </ul>
+
+        <h3>🌱 Scénario 8 — Gestion cultures</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>Vegetable</code></li>
+            <li><span class="box">☐</span> Ajouter un légume</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : légume visible sur le site</li>
+            <li><span class="box">☐</span> Admin → <code>Fruit</code></li>
+            <li><span class="box">☐</span> Ajouter un fruit</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : fruit visible sur le site</li>
+        </ul>
+
+        <h3>💎 Scénario 9 — Plans tarifaires</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>PlanTarification</code></li>
+            <li><span class="box">☐</span> Vérifier prix Basique (7,49€)</li>
+            <li><span class="box">☐</span> Vérifier prix Premium (15,99€)</li>
+            <li><span class="box">☐</span> Vérifier prix Enseignant (9,99€)</li>
+            <li><span class="box">☐</span> Vérifier les <code>stripe_price_id</code> (mensuel et annuel)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : prix cohérents partout</li>
+        </ul>
+
+        <h3>📊 Scénario 10 — Abonnements</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>Abonnement</code></li>
+            <li><span class="box">☐</span> Filtrer par plan (Basique, Premium, Enseignant)</li>
+            <li><span class="box">☐</span> Filtrer par statut (ACTIF, ANNULE, ESSAI…)</li>
+            <li><span class="box">☐</span> Voir les <code>stripe_customer_id</code></li>
+        </ul>
+
+        <h3>📸 Scénario 11 — Modération galerie</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>PhotoJardin</code></li>
+            <li><span class="box">☐</span> Filtrer par <code>est_validee=False</code></li>
+            <li><span class="box">☐</span> Valider une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : la photo devient publique</li>
+            <li><span class="box">☐</span> Supprimer une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : la photo disparaît</li>
+        </ul>
+
+        <h3>🛡️ Scénario 12 — Modération forum</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Admin → <code>SignalementForum</code></li>
+            <li><span class="box">☐</span> Voir les signalements en attente</li>
+            <li><span class="box">☐</span> Admin → <code>SanctionUtilisateur</code></li>
+            <li><span class="box">☐</span> Voir les sanctions actives</li>
+            <li><span class="box">☐</span> Admin → <code>ForumAdulteSignalement</code></li>
+            <li><span class="box">☐</span> Voir les signalements forum adulte</li>
+        </ul>
+
+        <h3>🔍 Scénario 13 — Analyse des connexions</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/analyse-connexions/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès réservé <code>is_staff</code></li>
+            <li><span class="box">☐</span> Voir les utilisateurs avec plusieurs IP</li>
+            <li><span class="box">☐</span> Voir les connexions suspectes</li>
+            <li><span class="box">☐</span> Voir les statistiques globales</li>
+        </ul>
+
+        <h3>📧 Scénario 14 — Test emails</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Vérifier l'envoi d'email à l'inscription</li>
+            <li><span class="box">☐</span> Vérifier l'email de consentement parental</li>
+            <li><span class="box">☐</span> Vérifier l'email d'autorisation d'achat</li>
+            <li><span class="box">☐</span> Vérifier l'email d'abonnement activé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : tous les emails partent (Brevo)</li>
+        </ul>
+
+        <h3>📊 Scénario 15 — Migrations</h3>
+        <div class="code-block">
+python manage.py makemigrations
+python manage.py migrate
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer les commandes</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : aucune erreur</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : aucune migration non appliquée</li>
+        </ul>
+
+        <h3>🧪 Scénario 16 — Tests Django</h3>
+        <div class="code-block">
+python manage.py test
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer les tests</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : tous les tests passent</li>
+        </ul>
+
+        <h3>📦 Scénario 17 — Collectstatic</h3>
+        <div class="code-block">
+python manage.py collectstatic --noinput
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer la commande</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : fichiers copiés dans <code>staticfiles/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas d'erreur <code>ImproperlyConfigured</code></li>
+        </ul>
+
+        <h3>✅ Scénario 18 — Check Django</h3>
+        <div class="code-block">
+python manage.py check
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer la commande</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>System check identified no issues</code></li>
+        </ul>
+
+        <h3>💾 Scénario 19 — Sauvegarde base</h3>
+        <div class="code-block">
+python manage.py dumpdata > sauvegarde.json
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer la commande</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : fichier JSON créé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : taille raisonnable</li>
+        </ul>
+
+        <h3>🔧 Scénario 20 — Correction mineurs (shell)</h3>
+        <div class="code-block">
+from django.contrib.auth import get_user_model
+from datetime import date
+User = get_user_model()
+today = date.today()
+for u in User.objects.filter(birth_date__isnull=False, mode_junior=False):
+    age = today.year - u.birth_date.year - (
+        (today.month, today.day) < (u.birth_date.month, u.birth_date.day)
+    )
+    if age < 18:
+        User.objects.filter(pk=u.pk).update(mode_junior=True)
+        print(f"✅ {u.username} ({age} ans)")
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Lancer le script dans le shell</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : mineurs corrigés</li>
+        </ul>
+
+        <h3>🚀 Scénario 21 — Vérifier configuration prod</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> <code>DEBUG = False</code> en prod</li>
+            <li><span class="box">☐</span> <code>ALLOWED_HOSTS</code> configuré</li>
+            <li><span class="box">☐</span> <code>SECRET_KEY</code> dans <code>.env</code></li>
+            <li><span class="box">☐</span> PostgreSQL configuré</li>
+            <li><span class="box">☐</span> Stripe clés de prod</li>
+            <li><span class="box">☐</span> Mapbox token de prod</li>
+            <li><span class="box">☐</span> OpenWeather API key de prod</li>
+            <li><span class="box">☐</span> Brevo API key de prod</li>
+        </ul>
+
+        <h3>📈 Scénario 22 — Statistiques globales</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Nombre total d'utilisateurs</li>
+            <li><span class="box">☐</span> Nombre d'abonnés par plan</li>
+            <li><span class="box">☐</span> Nombre d'élèves par classe</li>
+            <li><span class="box">☐</span> Revenus mensuels (Stripe dashboard)</li>
+        </ul>
+
+        <h2>✅ Résultat attendu final</h2>
+        <div class="success-box">
+            <ul style="margin: 0;">
+                <li>✅ Admin Django accessible</li>
+                <li>✅ Gestion utilisateurs complète</li>
+                <li>✅ Mode Junior automatique vérifié</li>
+                <li>✅ Autorisations parentales accessibles</li>
+                <li>✅ Prix cohérents en base</li>
+                <li>✅ Emails envoyés correctement</li>
+                <li>✅ Migrations + check OK</li>
+                <li>✅ Collectstatic OK</li>
+                <li>✅ Scripts shell fonctionnent</li>
+                <li>✅ Analyse connexions suspectes OK</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Anomalies à signaler</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Scénario</th><th>Description</th><th>Gravité</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>2</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>3</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

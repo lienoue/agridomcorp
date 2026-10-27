@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Documentation - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">📚 Documentation</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    .doc-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    .doc-header h1 {
+        font-size: 2.5rem;
+        color: #2d6a4f;
+        margin-bottom: 10px;
+    }
+    .doc-header p {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .doc-section {
+        margin-bottom: 50px;
+    }
+    .doc-section-title {
+        font-size: 1.5rem;
+        color: #2d6a4f;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .doc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .doc-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        border-left: 4px solid #2d6a4f;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .doc-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(45, 106, 79, 0.15);
+        text-decoration: none;
+        color: inherit;
+    }
+    .doc-card .doc-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .doc-card .doc-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #2d6a4f;
+        margin-bottom: 8px;
+    }
+    .doc-card .doc-desc {
+        font-size: 0.9rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    .doc-card .doc-badge {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2d6a4f;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    /* Couleurs par catégorie */
+    .doc-section.junior .doc-card { border-left-color: #ff6b35; }
+    .doc-section.junior .doc-card .doc-title { color: #ff6b35; }
+    .doc-section.junior .doc-section-title { color: #ff6b35; border-bottom-color: #ffe0d0; }
+    .doc-section.junior .doc-badge { background: #fff3e0; color: #ff6b35; }
+
+    .doc-section.test .doc-card { border-left-color: #17a2b8; }
+    .doc-section.test .doc-card .doc-title { color: #17a2b8; }
+    .doc-section.test .doc-section-title { color: #17a2b8; border-bottom-color: #d0eaf0; }
+    .doc-section.test .doc-badge { background: #e0f5f8; color: #17a2b8; }
+
+    .doc-section.technique .doc-card { border-left-color: #6f42c1; }
+    .doc-section.technique .doc-card .doc-title { color: #6f42c1; }
+    .doc-section.technique .doc-section-title { color: #6f42c1; border-bottom-color: #e5d8f5; }
+    .doc-section.technique .doc-badge { background: #f0e8ff; color: #6f42c1; }
+
+    .doc-section.business .doc-card { border-left-color: #fd7e14; }
+    .doc-section.business .doc-card .doc-title { color: #fd7e14; }
+    .doc-section.business .doc-section-title { color: #fd7e14; border-bottom-color: #ffe4cc; }
+    .doc-section.business .doc-badge { background: #fff0e0; color: #fd7e14; }
+
+    .doc-note {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px 20px;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+
+    <div class="doc-header">
+        <h1>📚 Documentation Agriculture 2.0</h1>
+        <p>Tous les guides, tests et documents techniques</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GUIDES D'UTILISATION -->
+    <!-- ============================================================ -->
+    <div class="doc-section">
+        <h2 class="doc-section-title">🎯 Guides d'utilisation</h2>
+        <div class="doc-grid">
+
+            <a href="{% url 'vegetables_fruits:guide_particulier' %}" class="doc-card">
+                <span class="doc-icon">🌱</span>
+                <div class="doc-title">Guide Particulier</div>
+                <div class="doc-desc">
+                    Apprenez à créer vos parcelles, planifier vos cultures
+                    et suivre votre jardin au quotidien.
+                </div>
+                <span class="doc-badge">Adulte</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:guide_enseignant' %}" class="doc-card">
+                <span class="doc-icon">🏫</span>
+                <div class="doc-title">Guide Enseignant</div>
+                <div class="doc-desc">
+                    Créez vos classes, gérez vos élèves, lancez des défis
+                    et exportez vos rapports pédagogiques.
+                </div>
+                <span class="doc-badge">Enseignant</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:guide_eleve' %}" class="doc-card">
+                <span class="doc-icon">🎓</span>
+                <div class="doc-title">Guide Élève</div>
+                <div class="doc-desc">
+                    Découvre le mode Junior, gagne des points, débloque
+                    des badges et participe aux défis de ta classe.
+                </div>
+                <span class="doc-badge">Élève en classe</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:guide_junior_particulier' %}" class="doc-card">
+                <span class="doc-icon">🧒</span>
+                <div class="doc-title">Guide Junior</div>
+                <div class="doc-desc">
+                    Jardinier en herbe ? Découvre ton espace personnel,
+                    tes cultures et tes fleurs préférées.
+                </div>
+                <span class="doc-badge">Mineur particulier</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PLANS DE TEST -->
+    <!-- ============================================================ -->
+    <div class="doc-section test">
+        <h2 class="doc-section-title">🧪 Plans de test</h2>
+        <div class="doc-grid">
+
+            <a href="{% url 'vegetables_fruits:test_particulier' %}" class="doc-card">
+                <span class="doc-icon">🌱</span>
+                <div class="doc-title">Test Particulier</div>
+                <div class="doc-desc">
+                    Scénarios de test pour un compte adulte :
+                    inscription, parcelles, abonnement, Premium.
+                </div>
+                <span class="doc-badge">Adulte</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:test_enseignant' %}" class="doc-card">
+                <span class="doc-icon">🏫</span>
+                <div class="doc-title">Test Enseignant</div>
+                <div class="doc-desc">
+                    Création de classe, invitations d'élèves, défis,
+                    exports CSV/PDF, gestion des signalements.
+                </div>
+                <span class="doc-badge">Enseignant</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:test_eleve' %}" class="doc-card">
+                <span class="doc-icon">🎓</span>
+                <div class="doc-title">Test Élève</div>
+                <div class="doc-desc">
+                    Rejoindre une classe, missions, points, badges,
+                    classement, quiz, forum école.
+                </div>
+                <span class="doc-badge">Élève</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:test_junior_particulier' %}" class="doc-card">
+                <span class="doc-icon">🧒</span>
+                <div class="doc-title">Test Junior</div>
+                <div class="doc-desc">
+                    Inscription mineur seul, quotas, autorisation
+                    parentale pour abonnement, dashboard junior.
+                </div>
+                <span class="doc-badge">Mineur seul</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:test_admin' %}" class="doc-card">
+                <span class="doc-icon">⚙️</span>
+                <div class="doc-title">Test Administrateur</div>
+                <div class="doc-desc">
+                    Admin Django, modération forum, imports massifs,
+                    analyse des connexions suspectes.
+                </div>
+                <span class="doc-badge">Staff</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TECHNIQUE -->
+    <!-- ============================================================ -->
+    <div class="doc-section technique">
+        <h2 class="doc-section-title">🏗️ Technique</h2>
+        <div class="doc-grid">
+
+            <a href="{% url 'vegetables_fruits:architecture_technique' %}" class="doc-card">
+                <span class="doc-icon">🏗️</span>
+                <div class="doc-title">Architecture technique</div>
+                <div class="doc-desc">
+                    Modèles, vues, middleware, signaux, workflow
+                    des autorisations parentales, logique d'accès.
+                </div>
+                <span class="doc-badge">Développeur</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:strategie_deploiement' %}" class="doc-card">
+                <span class="doc-icon">🚀</span>
+                <div class="doc-title">Stratégie de déploiement</div>
+                <div class="doc-desc">
+                    Dev → Prod, PostgreSQL, fichiers statiques,
+                    configuration Stripe, sécurité.
+                </div>
+                <span class="doc-badge">DevOps</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:guide_admin' %}" class="doc-card">
+                <span class="doc-icon">⚙️</span>
+                <div class="doc-title">Guide Administrateur</div>
+                <div class="doc-desc">
+                    Django Admin, maintenance, scripts shell,
+                    gestion des utilisateurs et des quotas.
+                </div>
+                <span class="doc-badge">Admin</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BUSINESS -->
+    <!-- ============================================================ -->
+    <div class="doc-section business">
+        <h2 class="doc-section-title">💼 Business</h2>
+        <div class="doc-grid">
+
+            <a href="{% url 'vegetables_fruits:business_plan' %}" class="doc-card">
+                <span class="doc-icon">📊</span>
+                <div class="doc-title">Business Plan</div>
+                <div class="doc-desc">
+                    Vision, marché, stratégie, modèle économique
+                    et roadmap d'Agriculture 2.0.
+                </div>
+                <span class="doc-badge">Stratégie</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:previsionnel_financier' %}" class="doc-card">
+                <span class="doc-icon">💰</span>
+                <div class="doc-title">Prévisionnel financier</div>
+                <div class="doc-desc">
+                    Projections de revenus, coûts, break-even
+                    et hypothèses financières.
+                </div>
+                <span class="doc-badge">Finance</span>
+            </a>
+
+            <a href="{% url 'vegetables_fruits:guide_vente_ecoles' %}" class="doc-card">
+                <span class="doc-icon">🏫</span>
+                <div class="doc-title">Guide de vente écoles</div>
+                <div class="doc-desc">
+                    Argumentaire, tarifs, processus de vente
+                    et onboarding des établissements.
+                </div>
+                <span class="doc-badge">Commercial</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Note de bas de page -->
+    <div class="doc-note">
+        💡 Ces documents sont en constante évolution.
+        Si tu as des suggestions, n'hésite pas à nous contacter.
+    </div>
+
+</div>
+{% endblock %}

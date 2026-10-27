@@ -1,0 +1,92 @@
+{% load user_tags %}
+
+<div class="mes-semis-tab">
+    <h4 style="color: #2d6a4f; margin-bottom: 15px;">🌱 Mes semis</h4>
+    <p class="text-muted">Retrouvez tous vos semis planifiés.</p>
+
+    {% if selected_figure %}
+    <div class="alert alert-info" style="padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">
+        🌾 Parcelle sélectionnée : <strong>{{ selected_figure.name }}</strong>
+    </div>
+    {% endif %}
+
+    {% if semis %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>🌱 Culture</th>
+                    <th>📅 Date de semis</th>
+                    <th>📍 Parcelle</th>
+                    <th>📋 Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for semis_item in semis %}
+                <tr>
+                    <td>
+                        <span style="font-size: 1.2rem;">🌱</span>
+                        <strong>{{ semis_item.culture }}</strong>
+                    </td>
+                    <td>{{ semis_item.date_semis|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if semis_item.figure %}
+                        <a href="{% url 'vegetables_fruits:figure_detail' semis_item.figure.id %}" style="color: #2d6a4f;">
+                            {{ semis_item.figure.name }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Non spécifié</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <a href="{% url 'vegetables_fruits:edit_figure' semis_item.figure.id %}?culture={{ semis_item.culture }}"
+                               class="btn btn-sm btn-outline-success">
+                                ✏️ Modifier
+                            </a>
+                            <button onclick="supprimerSemis({{ semis_item.id }})"
+                                    class="btn btn-sm btn-outline-danger">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 40px; color:#6c757d;">
+        <span style="font-size: 2rem;">🌱</span>
+        <p>Vous n'avez pas encore de semis planifiés.</p>
+        <a href="{% url 'vegetables_fruits:planification_semis' %}" class="btn btn-success btn-sm">
+            📋 Planifier un semis
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function supprimerSemis(semisId) {
+    if (confirm("Supprimer ce semis ?")) {
+        fetch(`/api/supprimer-semis/${semisId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Erreur lors de la suppression");
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert("Erreur lors de la suppression");
+        });
+    }
+}
+</script>

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Mentions Légales - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <!-- En-tête -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">📜 Mentions Légales</h1>
+                <p class="text-muted">Conformément à la loi n° 2004-575 du 21 juin 2004 (LCEN)</p>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <!-- 1. Éditeur du site -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">1. Éditeur du site</h4>
+                        <p>
+                            <strong>AgridomCorp</strong><br>
+                            Forme juridique : [À compléter - ex: SASU, SARL, Auto-entrepreneur]<br>
+                            Capital social : [À compléter]<br>
+                            Siège social : [Adresse complète]<br>
+                            SIRET : [Numéro SIRET]<br>
+                            RCS : [Ville du RCS] [Numéro RCS]<br>
+                            Numéro TVA intracommunautaire : [Numéro TVA]<br>
+                            Email : <a href="mailto:contact@agriculture2-0.fr">contact@agriculture2-0.fr</a><br>
+                            Téléphone : [Numéro de téléphone]
+                        </p>
+                        <div class="alert alert-info">
+                            <strong>💡 À compléter :</strong> Ces informations doivent être renseignées avec tes vraies données d'entreprise.
+                        </div>
+                    </section>
+
+                    <!-- 2. Directeur de la publication -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">2. Directeur de la publication</h4>
+                        <p>
+                            <strong>[Nom et Prénom du responsable]</strong><br>
+                            En qualité de [Fonction - ex: Président, Gérant]<br>
+                            Email : <a href="mailto:contact@agriculture2-0.fr">contact@agriculture2-0.fr</a>
+                        </p>
+                    </section>
+
+                    <!-- 3. Hébergeur -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">3. Hébergeur du site</h4>
+                        <p>
+                            <strong>[Nom de l'hébergeur]</strong><br>
+                            Adresse : [Adresse de l'hébergeur]<br>
+                            Téléphone : [Téléphone de l'hébergeur]<br>
+                            Site web : <a href="[URL]" target="_blank">[URL]</a>
+                        </p>
+                        <div class="alert alert-info">
+                            <strong>💡 Exemples :</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>PythonAnywhere</strong> (à venir)</li>
+                                <li><strong>OVH</strong> : 2 rue Kellermann, 59100 Roubaix</li>
+                                <li><strong>Alwaysdata</strong> : 91 rue du Faubourg Saint-Honoré, 75008 Paris</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- 4. Propriété intellectuelle -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">4. Propriété intellectuelle</h4>
+                        <p>
+                            L'ensemble de ce site (structure, textes, images, logos, code source, base de données) 
+                            est la propriété exclusive d'<strong>AgridomCorp</strong> et est protégé par les lois 
+                            françaises et internationales relatives à la propriété intellectuelle.
+                        </p>
+                        <p>
+                            Toute reproduction, représentation, modification, publication, adaptation de tout 
+                            ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est 
+                            interdite, sauf autorisation écrite préalable d'AgridomCorp.
+                        </p>
+                        <p>
+                            Toute exploitation non autorisée du site ou de l'un des éléments qu'il contient 
+                            sera considérée comme constitutive d'une contrefaçon et poursuivie conformément 
+                            aux dispositions des articles L.335-2 et suivants du Code de Propriété Intellectuelle.
+                        </p>
+                    </section>
+
+                    <!-- 5. Données personnelles -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">5. Données personnelles</h4>
+                        <p>
+                            Conformément au Règlement Général sur la Protection des Données (RGPD) et à la 
+                            loi Informatique et Libertés, vous disposez de droits sur vos données personnelles.
+                        </p>
+                        <p>
+                            Pour plus d'informations, consultez notre 
+                            <a href="{% url 'vegetables_fruits:confidentialite' %}">Politique de Confidentialité</a>.
+                        </p>
+                        <p>
+                            Contact du Délégué à la Protection des Données (DPO) : 
+                            <a href="mailto:dpo@agriculture2-0.fr">dpo@agriculture2-0.fr</a>
+                        </p>
+                    </section>
+
+                    <!-- 6. Cookies -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">6. Cookies</h4>
+                        <p>
+                            Ce site utilise des cookies techniques nécessaires à son fonctionnement 
+                            (session, sécurité). Aucun cookie publicitaire n'est déposé sans votre 
+                            consentement explicite.
+                        </p>
+                        <p>
+                            Pour plus d'informations, consultez notre 
+                            <a href="{% url 'vegetables_fruits:confidentialite' %}">Politique de Confidentialité</a>.
+                        </p>
+                    </section>
+
+                    <!-- 7. Responsabilité -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">7. Responsabilité</h4>
+                        <p>
+                            AgridomCorp s'efforce d'assurer l'exactitude et la mise à jour des informations 
+                            diffusées sur ce site. Toutefois, elle ne peut garantir l'exactitude, la précision 
+                            ou l'exhaustivité des informations mises à disposition.
+                        </p>
+                        <p>
+                            En conséquence, AgridomCorp décline toute responsabilité :
+                        </p>
+                        <ul>
+                            <li>Pour toute imprécision, inexactitude ou omission portant sur des informations disponibles sur le site</li>
+                            <li>Pour tous dommages résultant d'une intrusion frauduleuse d'un tiers</li>
+                            <li>Pour tous dommages indirects résultant de l'utilisation du site</li>
+                        </ul>
+                    </section>
+
+                    <!-- 8. Liens hypertextes -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">8. Liens hypertextes</h4>
+                        <p>
+                            Le site peut contenir des liens vers d'autres sites. AgridomCorp n'exerce aucun 
+                            contrôle sur ces sites et décline toute responsabilité quant à leur contenu.
+                        </p>
+                    </section>
+
+                    <!-- 9. Droit applicable -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">9. Droit applicable</h4>
+                        <p>
+                            Les présentes mentions légales sont régies par le droit français. 
+                            En cas de litige, les tribunaux français seront seuls compétents.
+                        </p>
+                    </section>
+
+                    <!-- 10. Contact -->
+                    <section class="mb-4">
+                        <h4 class="fw-bold">10. Contact</h4>
+                        <p>
+                            Pour toute question relative aux mentions légales :<br>
+                            Email : <a href="mailto:contact@agriculture2-0.fr">contact@agriculture2-0.fr</a><br>
+                            Adresse : [Adresse complète]
+                        </p>
+                    </section>
+
+                    <div class="alert alert-info mt-4">
+                        <strong>📅 Dernière mise à jour :</strong> Septembre 2026
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-center mt-4 mb-5">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

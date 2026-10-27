@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Plan de test - Élève - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:test_eleve' %}">🎓 Test Élève</a></li>
+<li class="breadcrumb-item active" aria-current="page">Scénarios</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .junior-box { background: #fff3e0; border-left: 4px solid #ff6b35; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .box { min-width: 20px; font-size: 1.2rem; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🎓 Plan de test - Élève</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 1.0 – Septembre 2026</p>
+
+        <div class="info-box">
+            <strong>🎯 Objectif :</strong> Vérifier le parcours d'un <strong>élève mineur inscrit
+            dans une classe</strong> par un enseignant. Il bénéficie du mode Junior et de
+            l'accès Premium via sa classe.
+        </div>
+
+        <h2>📋 Informations de test</h2>
+        <table>
+            <thead>
+                <tr><th>Champ</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Profil testé</td><td>Élève (mineur en classe)</td></tr>
+                <tr><td>Email</td><td>eleve.test@example.com</td></tr>
+                <tr><td>Mot de passe</td><td>Test1234!</td></tr>
+                <tr><td>Date de naissance</td><td>01/01/2015 (11 ans)</td></tr>
+                <tr><td>Code de classe</td><td>Fourni par l'enseignant (ex: A1B2C3D4)</td></tr>
+                <tr><td>Mode Junior</td><td>✅ Activé automatiquement</td></tr>
+            </tbody>
+        </table>
+
+        <div class="junior-box">
+            <strong>🧒 Rappel :</strong> Tout utilisateur mineur a automatiquement
+            <code>mode_junior=True</code>, même sans classe. Mais l'accès Premium
+            est conditionné à son appartenance à une classe.
+        </div>
+
+        <h2>🧪 Scénarios de test</h2>
+
+        <h3>📝 Scénario 1 — Inscription avec code de classe</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/inscription-eleve/</code></li>
+            <li><span class="box">☐</span> Remplir : username, email, mot de passe, date de naissance</li>
+            <li><span class="box">☐</span> Saisir le code de classe fourni par l'enseignant</li>
+            <li><span class="box">☐</span> Valider</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : profil <code>Eleve</code> créé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>profil_eleve.classe</code> rempli</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>mode_junior=True</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : notification envoyée à l'enseignant</li>
+        </ul>
+
+        <h3>🚫 Scénario 2 — Inscription avec code invalide</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> S'inscrire avec un code bidon (<code>XXXXXX</code>)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "❌ Code de classe invalide"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : le compte n'est pas créé</li>
+        </ul>
+
+        <h3>🎨 Scénario 3 — Mode Junior visuel</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Se connecter comme élève</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : thème orange (mode junior)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : mascotte Titou visible</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : bouton "Junior" actif</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>dashboard_eleve</code></li>
+        </ul>
+
+        <h3>🏠 Scénario 4 — Dashboard élève</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Vérifier le dashboard</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : nom de la classe affiché</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : points et niveau affichés</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : missions en cours visibles</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : défis de classe visibles</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badges affichés</li>
+        </ul>
+
+        <h3>🌾 Scénario 5 — Créer une parcelle (points)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Noter les points actuels</li>
+            <li><span class="box">☐</span> Créer une parcelle</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : points augmentent (+10)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "+10 points"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : progression des défis mise à jour</li>
+        </ul>
+
+        <h3>🌱 Scénario 6 — Planter et récolter (points)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Ajouter une culture à la parcelle</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +5 points</li>
+            <li><span class="box">☐</span> Recolter la culture (via chronologie)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +10 points</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : notification de progression</li>
+        </ul>
+
+        <h3>🌸 Scénario 7 — Planter une fleur (bonus)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Utiliser "Ajouter une fleur"</li>
+            <li><span class="box">☐</span> Choisir une fleur pollinisatrice</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +8 points (bonus junior)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🌼 +8 points"</li>
+        </ul>
+
+        <h3>📋 Scénario 8 — Quiz</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/quiz/</code></li>
+            <li><span class="box">☐</span> Répondre aux 5 questions</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : score calculé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +2 points par bonne réponse</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +5 bonus si tout juste</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : quiz illimité (élève en classe)</li>
+        </ul>
+
+        <h3>🎯 Scénario 9 — Missions hebdomadaires</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/missions-hebdomadaires/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : missions actives visibles</li>
+            <li><span class="box">☐</span> Compléter une mission</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : validation + points</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badge si applicable</li>
+        </ul>
+
+        <h3>🌳 Scénario 10 — Arbre de compétences</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/arbre-competences/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : compétences débloquées visibles</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : compétences à débloquer visibles</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : conditions claires</li>
+        </ul>
+
+        <h3>🏆 Scénario 11 — Classement de classe</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/classement/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : position de l'élève visible</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : camarades visibles avec points</li>
+        </ul>
+
+        <h3>💬 Scénario 12 — Forum école</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/forum/</code></li>
+            <li><span class="box">☐</span> Créer un sujet</li>
+            <li><span class="box">☐</span> Répondre à un sujet existant</li>
+            <li><span class="box">☐</span> Signaler un message inapproprié</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : toutes les actions fonctionnent</li>
+        </ul>
+
+        <h3>📸 Scénario 13 — Galerie</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Uploader une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : photo "en attente de validation"</li>
+            <li><span class="box">☐</span> Liker une photo validée</li>
+            <li><span class="box">☐</span> Commenter une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : +points pour interaction</li>
+        </ul>
+
+        <h3>🎯 Scénario 14 — Défis de classe</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/defis/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : défis actifs visibles</li>
+            <li><span class="box">☐</span> Progresser sur un défi</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : progression mise à jour</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badge si défi terminé</li>
+        </ul>
+
+        <h3>🏅 Scénario 15 — Badges</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Atteindre 100 points</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badge "Premier pas" débloqué</li>
+            <li><span class="box">☐</span> Atteindre 500 points</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badge "Apprenti jardinier" débloqué</li>
+            <li><span class="box">☐</span> Réussir 3 quiz parfaits</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : badge "Quiz master" débloqué</li>
+        </ul>
+
+        <h3>⭐ Scénario 16 — Accès Premium via classe</h3>
+        <div class="info-box">
+            <strong>💡 Règle :</strong> L'élève en classe accède au Premium via
+            <code>est_eleve_en_classe</code>, même sans abonnement propre.
+        </div>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur l'onglet "Rotation des cultures"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Bilan carbone"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Compagnonnage"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Conseiller Sol"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+        </ul>
+
+        <h3>📓 Scénario 17 — Journal de bord</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Créer une note dans le journal</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : note enregistrée</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : points gagnés</li>
+            <li><span class="box">☐</span> Créer 10 notes</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas de blocage (élève en classe = Premium via classe)</li>
+        </ul>
+
+        <h3>🚫 Scénario 18 — Le mineur ne peut pas payer</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/tarification/</code></li>
+            <li><span class="box">☐</span> Cliquer sur "S'abonner" Basique ou Premium</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers demande d'autorisation parentale</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas d'accès direct à Stripe</li>
+        </ul>
+
+        <h3>🎓 Scénario 19 — Quitter la classe</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> (Optionnel) Retirer l'élève de la classe via enseignant</li>
+            <li><span class="box">☐</span> Se reconnecter</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès Premium perdu</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>dashboard_junior</code></li>
+        </ul>
+
+        <h2>✅ Résultat attendu final</h2>
+        <div class="success-box">
+            <ul style="margin: 0;">
+                <li>✅ Inscription avec code de classe fonctionne</li>
+                <li>✅ Mode Junior automatique</li>
+                <li>✅ Thème orange + mascotte</li>
+                <li>✅ Points attribués à chaque action</li>
+                <li>✅ Missions, défis, compétences OK</li>
+                <li>✅ Forum école + galerie OK</li>
+                <li>✅ Accès Premium via classe</li>
+                <li>✅ Blocage paiement direct (mineur)</li>
+                <li>✅ Perte d'accès si sortie de classe</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Anomalies à signaler</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Scénario</th><th>Description</th><th>Gravité</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>2</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>3</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}⚖️ Sanctions - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Historique des sanctions ⚖️{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalements' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+    <a href="?statut=actif" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'actif' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        🔴 Actives
+    </a>
+    <a href="?statut=termine" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'termine' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        ✅ Terminées
+    </a>
+    <a href="?statut=tous" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'tous' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        📋 Toutes
+    </a>
+</div>
+
+{% for sanction in sanctions %}
+<div style="background: #fff; border-radius: var(--radius-sm); padding: 16px 20px; margin-bottom: 10px; border: 1px solid rgba(109,76,42,0.06);">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div>
+            <strong style="font-size: 1.05rem;">{{ sanction.utilisateur.username }}</strong>
+            <span style="
+                {% if sanction.type_sanction == 'avertissement' %}background: #FFF3E0; color: #E65100;
+                {% elif sanction.type_sanction == 'suspension' %}background: #E3F2FD; color: #0D47A1;
+                {% else %}background: var(--tomate-pale); color: #B71C1C;{% endif %}
+                padding: 2px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">
+                {{ sanction.get_type_sanction_display }}
+            </span>
+            {% if sanction.est_actif %}
+                <span style="background: #FFEBEE; color: #B71C1C; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-left: 6px;">
+                    🔴 En cours
+                </span>
+            {% else %}
+                <span style="background: var(--vert-pale); color: #1B5E20; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-left: 6px;">
+                    ✅ Terminée
+                </span>
+            {% endif %}
+        </div>
+        <div style="font-size: 0.8rem; color: #999;">
+            {{ sanction.date_debut|date:"d/m/Y" }}
+        </div>
+    </div>
+    <div style="font-size: 0.9rem; color: var(--brun-clair); margin-top: 4px;">
+        {{ sanction.raison|truncatechars:100 }}
+    </div>
+    <div style="font-size: 0.8rem; color: #999; margin-top: 4px;">
+        Modérateur : {{ sanction.moderateur.username }}
+        {% if sanction.duree %} • Durée : {{ sanction.duree }}{% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="empty-state">
+    <div class="empty-icon">⚖️</div>
+    <div class="empty-title">Aucune sanction</div>
+    <p>Le forum est bien géré !</p>
+</div>
+{% endfor %}
+
+{% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=sanctions %}
+
+{% endblock %}

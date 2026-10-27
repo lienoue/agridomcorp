@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Quiz</li>
+{% endblock %}
+
+{% block title %}
+    {% if user.is_authenticated and user.mode_junior %}
+        Quiz jardinage - Titou le jardinier 🧑‍🌾
+    {% else %}
+        Quiz jardinage - Testez vos connaissances
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Styles communs */
+    .quiz-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    /* Version Junior (ludique) */
+    .quiz-junior {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #5d4037;
+    }
+    
+    .quiz-junior .question-card {
+        background: rgba(255,255,255,0.95);
+        border: 3px solid #FFD700;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .quiz-junior .btn-option {
+        background: white;
+        border: 2px solid #FF9800;
+        color: #333;
+        transition: all 0.3s;
+    }
+    
+    .quiz-junior .btn-option:hover {
+        background: #FF9800;
+        color: white;
+        transform: scale(1.02);
+    }
+    
+    .badge-points-junior {
+        background: #FFD700;
+        color: #333;
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .form-check-label {
+        color: #4a5568;
+    }
+
+    /* Version Adulte (mature) */
+    .quiz-adulte {
+        background: #f5f5f5;
+        color: #333;
+    }
+    
+    .quiz-adulte .question-card {
+        background: white;
+        border-left: 4px solid #2c5f2d;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .quiz-adulte .btn-option {
+        background: white;
+        border: 1px solid #ddd;
+        color: #555;
+        transition: all 0.2s;
+    }
+    
+    .quiz-adulte .btn-option:hover {
+        background: #2c5f2d;
+        color: #5d4037;
+    }
+    
+    /* Mascotte */
+    .mascotte-junior {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 100px;
+        cursor: pointer;
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .progress-bar-junior {
+        background: linear-gradient(90deg, #FFD700, #FF9800);
+    }
+
+    /* Quota badge */
+    .quota-badge {
+        font-size: 0.9rem;
+        padding: 6px 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated and user.mode_junior %}
+    {# VERSION JUNIOR - LUDIQUE ET COLORÉE #}
+    <div class="quiz-junior min-vh-100 py-5">
+        <div class="quiz-container">
+            <!-- Entête avec mascotte -->
+            <div class="text-center mb-4">
+                <img src="{% static 'vegetables_fruits/images/titou.png' %}"
+                     alt="Titou le jardinier"
+                     style="width: 120px;">
+                <h1 class="display-4 mt-3">🌱 Quiz jardinage 🌻</h1>
+                <p class="lead">Avec Titou, apprends en t'amusant !</p>
+
+                <!-- Infos points -->
+                <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                    <span class="badge-points-junior">
+                        ⭐ +2 points par bonne réponse
+                    </span>
+                    <span class="badge-points-junior">
+                        🎁 +5 bonus si tout juste !
+                    </span>
+                    {% if user.abonnement.plan.nom == 'BASIQUE' %}
+                        <span class="badge-points-junior" style="background: #ff6b6b; color: white;">
+                            📊 {{ nb_quiz_aujourdhui|default:0 }} / 3 quiz aujourd'hui
+                        </span>
+                    {% endif %}
+                </div>
+                {% if user.abonnement.plan.nom == 'BASIQUE' and nb_quiz_aujourdhui >= 3 %}
+                    <div class="alert alert-warning mt-3">
+                        ⚠️ Vous avez atteint votre limite de 3 quiz pour aujourd'hui.<br>
+                        <small>Revenez demain ou passez à Premium pour des quiz illimités !</small>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Question 1 / {{ questions|length }}</span>
+                    <span id="score-temp">⭐ 0 points</span>
+                </div>
+                <div class="progress" style="height: 20px;">
+                    <div class="progress-bar progress-bar-junior"
+                         role="progressbar"
+                         style="width: 0%">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire du quiz -->
+            <form method="post" id="quizForm">
+                {% csrf_token %}
+                {% for qid in question_ids %}
+                <input type="hidden" name="question_ids" value="{{ qid }}">
+                {% endfor %}
+                {% for question in questions %}
+                <div class="question-card" data-question-id="{{ question.id }}">
+                    <h3 class="mb-3">{{ forloop.counter }}. {{ question.question }}</h3>
+                    <div class="options">
+                        {% for option in question.options_list %}
+                            {% if option.text %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="q{{ question.id }}"
+                                       value="{{ option.value }}"
+                                       id="q{{ question.id }}_{{ forloop.counter }}">
+                                <label class="form-check-label" for="q{{ question.id }}_{{ forloop.counter }}">
+                                    {{ option.text }}
+                                </label>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-warning btn-lg" {% if user.abonnement.plan.nom == 'BASIQUE' and nb_quiz_aujourdhui >= 3 %}disabled{% endif %}>
+                        🎯 Valider mes réponses
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Mascotte Titou qui parle #}
+    <div class="mascotte-junior" data-bs-toggle="tooltip" title="Titou a un conseil pour toi !">
+        <img src="{% static 'vegetables_fruits/images/titou-chat.png' %}"
+             alt="Titou"
+             style="width: 100%;">
+    </div>
+
+{% else %}
+    {# VERSION ADULTE - MATURE ET PROFESSIONNELLE #}
+    <div class="quiz-adulte min-vh-100 py-5">
+        <div class="quiz-container">
+            <div class="text-center mb-5">
+                <h1 class="display-5">📋 Évaluation des connaissances</h1>
+                <p class="text-muted">Testez vos compétences en jardinage</p>
+                <hr class="w-50 mx-auto">
+
+                <div class="row justify-content-center mt-3">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <small>
+                                ✅ +2 points par réponse correcte<br>
+                                ✅ +5 points bonus pour un sans-faute
+                            </small>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+                <!-- ✅ AFFICHAGE DU QUOTA POUR BASIQUE -->
+                {% if user.abonnement.plan.nom == 'BASIQUE' %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="alert {% if nb_quiz_aujourdhui >= 3 %}alert-warning{% else %}alert-info{% endif %}">
+                                <strong>📊 Quota du jour :</strong>
+                                {{ nb_quiz_aujourdhui|default:0 }} / 3 quiz
+                                {% if nb_quiz_aujourdhui >= 3 %}
+                                    <br>
+                                    <small>🔒 Limite atteinte. Revenez demain ou passez à Premium !</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="question_ids" value="{{ question_ids|join:',' }}">
+
+                {% for question in questions %}
+                <div class="question-card" data-question-id="{{ question.id }}">
+                    <h3 class="mb-3">{{ forloop.counter }}. {{ question.question }}</h3>
+                    <div class="options">
+                        {% for option in question.options_list %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="q{{ question.id }}"
+                                   value="{{ option.value }}"
+                                   id="q{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                            <label class="form-check-label" for="q{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                {{ option.text }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success" {% if user.abonnement.plan.nom == 'BASIQUE' and nb_quiz_aujourdhui >= 3 %}disabled{% endif %}>
+                        Soumettre le quiz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if user.is_authenticated and user.mode_junior %}
+// Animation pour la version junior
+document.querySelectorAll('.btn-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            this.style.transform = 'scale(1)';
+        }, 100);
+    });
+});
+
+// Tooltip pour la mascotte
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+});
+{% endif %}
+</script>
+{% endblock %}

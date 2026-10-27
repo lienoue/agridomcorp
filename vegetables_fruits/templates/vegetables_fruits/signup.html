@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+          {% extends 'vegetables_fruits/connexion.html' %}
+    <title>{% block title %}Singup{% endblock %}</title>
+
+</head>
+<body>
+        {% block content %}                                                         <!--Début de la balise Heritage des templates pour la redirection des pages-->
+        <h2 style="color: black">HOME</h2>
+        <form action = "" class="auth-buttons" method = "post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">S'inscrire</button>
+        </form>
+        <p>KIKOU MOBUTOU</p>
+        {% endblock %}                                                              <!--fin de la balise Heritage des templates pour la redirection des pages-->
+</body>
+</html>

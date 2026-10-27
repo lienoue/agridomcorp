@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Plan de test - Particulier - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:test_particulier' %}">🌱 Test Particulier</a></li>
+<li class="breadcrumb-item active" aria-current="page">Scénarios</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .box { min-width: 20px; font-size: 1.2rem; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🌱 Plan de test - Particulier</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 1.0 – Septembre 2026</p>
+
+        <div class="info-box">
+            <strong>🎯 Objectif :</strong> Vérifier le parcours complet d'un utilisateur
+            particulier adulte, de l'inscription à l'abonnement Premium.
+        </div>
+
+        <h2>📋 Informations de test</h2>
+        <table>
+            <thead>
+                <tr><th>Champ</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Profil testé</td><td>Particulier adulte (18+)</td></tr>
+                <tr><td>Email</td><td>test.particulier@example.com</td></tr>
+                <tr><td>Mot de passe</td><td>Test1234!</td></tr>
+                <tr><td>Date de naissance</td><td>01/01/1990 (34 ans)</td></tr>
+                <tr><td>Abonnement final</td><td>Premium</td></tr>
+            </tbody>
+        </table>
+
+        <h2>🧪 Scénarios de test</h2>
+
+        <h3>📝 Scénario 1 — Inscription</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur la page d'inscription</li>
+            <li><span class="box">☐</span> Remplir le formulaire (username, email, mot de passe, date de naissance)</li>
+            <li><span class="box">☐</span> Valider l'inscription</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : email de confirmation envoyé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>mode_junior=False</code> (utilisateur majeur)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers le tutoriel</li>
+            <li><span class="box">☐</span> Terminer le tutoriel</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>profile</code></li>
+        </ul>
+
+        <h3>🏠 Scénario 2 — Dashboard</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/dashboard/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : dashboard particulier affiché</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : aucune redirection vers junior</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : météo affichée si parcelle existe</li>
+        </ul>
+
+        <h3>🌾 Scénario 3 — Créer une parcelle</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Cliquer sur "Dessiner une figure"</li>
+            <li><span class="box">☐</span> Dessiner un polygone sur la carte</li>
+            <li><span class="box">☐</span> Nommer la parcelle "Mon potager"</li>
+            <li><span class="box">☐</span> Ajouter une adresse (météo)</li>
+            <li><span class="box">☐</span> Sauvegarder</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : parcelle créée + Parcelle associée automatiquement</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : type de sol assigné (auto ou manuel)</li>
+        </ul>
+
+        <h3>🌱 Scénario 4 — Ajouter des cultures</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Ouvrir la parcelle</li>
+            <li><span class="box">☐</span> Cliquer sur "Modifier les cultures"</li>
+            <li><span class="box">☐</span> Ajouter 3 cultures (tomate, carotte, salade)</li>
+            <li><span class="box">☐</span> Sauvegarder</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : cultures visibles sur la parcelle</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : chronologies créées automatiquement</li>
+        </ul>
+
+        <h3>📊 Scénario 5 — Quota Gratuit</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Créer 3 parcelles au total</li>
+            <li><span class="box">☐</span> Tenter de créer une 4ème parcelle</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>limite_parcelles</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message invitant à passer Premium</li>
+        </ul>
+
+        <h3>🔒 Scénario 6 — Accès Premium bloqué (Gratuit)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur l'onglet "Rotation des cultures"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Bilan carbone"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Dashboard climat"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>tarification</code></li>
+        </ul>
+
+        <h3>💳 Scénario 7 — Souscription Premium</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/tarification/</code></li>
+            <li><span class="box">☐</span> Choisir Premium</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers Stripe Checkout</li>
+            <li><span class="box">☐</span> Utiliser la carte test Stripe : <code>4242 4242 4242 4242</code></li>
+            <li><span class="box">☐</span> Valider le paiement</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : retour sur <code>abonnement_succes</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : abonnement <code>ACTIF</code> dans le profil</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : réception email de confirmation</li>
+        </ul>
+
+        <h3>🌳 Scénario 8 — Accès Premium (Post-abonnement)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur l'onglet "Rotation des cultures"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Bilan carbone"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé</li>
+            <li><span class="box">☐</span> Aller sur <code>/dashboard-climat/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès autorisé + graphiques</li>
+            <li><span class="box">☐</span> Aller sur <code>/previsions-meteo/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : prévisions 7 jours affichées</li>
+        </ul>
+
+        <h3>📓 Scénario 9 — Journal de bord</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/journal/</code></li>
+            <li><span class="box">☐</span> Créer une note avec photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : note visible dans la liste</li>
+            <li><span class="box">☐</span> Créer 11 notes</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas de blocage (Premium = illimité)</li>
+        </ul>
+
+        <h3>💬 Scénario 10 — Forum adulte</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/forum-adulte/</code></li>
+            <li><span class="box">☐</span> Créer un sujet</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : sujet créé, pas de limite</li>
+            <li><span class="box">☐</span> Voter pour un message</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : vote enregistré (Premium)</li>
+        </ul>
+
+        <h3>📸 Scénario 11 — Galerie</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/galerie/upload/</code></li>
+            <li><span class="box">☐</span> Uploader une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : photo compressée + publiée</li>
+            <li><span class="box">☐</span> Liker une photo existante</li>
+            <li><span class="box">☐</span> Commenter</li>
+        </ul>
+
+        <h3>🚪 Scénario 12 — Gestion abonnement</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/profile/</code></li>
+            <li><span class="box">☐</span> Voir son abonnement Premium</li>
+            <li><span class="box">☐</span> Cliquer sur "Gérer mon abonnement"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers Stripe Portal</li>
+        </ul>
+
+        <h3>🔓 Scénario 13 — Résiliation</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Depuis Stripe Portal, annuler l'abonnement</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : webhook reçu, statut → ANNULE</li>
+            <li><span class="box">☐</span> Retourner sur le profil</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : abonnement marqué "Annulé"</li>
+            <li><span class="box">☐</span> Aller sur l'onglet "Rotation des cultures"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès bloqué</li>
+        </ul>
+
+        <h2>✅ Résultat attendu final</h2>
+        <div class="success-box">
+            <ul style="margin: 0;">
+                <li>✅ Tous les scénarios passent</li>
+                <li>✅ Aucun bug bloquant</li>
+                <li>✅ Messages d'erreur clairs</li>
+                <li>✅ Cohérence des droits d'accès</li>
+                <li>✅ Emails envoyés correctement</li>
+                <li>✅ Stripe fonctionne (paiement + webhook)</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Anomalies à signaler</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Scénario</th><th>Description</th><th>Gravité</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>2</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>3</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ categorie.nom }} - Forum{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:forum_index' %}">Forum</a></li>
+<li class="breadcrumb-item active">{{ categorie.nom }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête de la catégorie -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'vegetables_fruits:forum_index' %}" class="btn btn-sm btn-secondary mb-2">
+                ← Retour au forum
+            </a>
+            <h1 class="h3 mb-1">{{ categorie.icone }} {{ categorie.nom }}</h1>
+            <p class="text-muted small mb-0">{{ categorie.description }}</p>
+            <div class="mt-2">
+                <span class="badge bg-secondary me-1">{{ sujets_epingles|length|add:sujets|length }} sujets</span>
+                <span class="badge bg-info text-white">{{ total_messages|default:0 }} messages</span>
+            </div>
+        </div>
+        <a href="{% url 'vegetables_fruits:forum_nouveau_sujet' categorie.id %}" class="btn btn-success">
+            ➕ Nouveau sujet
+        </a>
+    </div>
+
+    <!-- Sujets épinglés -->
+    {% if sujets_epingles %}
+    <div class="mb-4">
+        <h6 class="text-muted mb-2">📌 Sujets épinglés</h6>
+        {% for sujet in sujets_epingles %}
+        <div class="card mb-2 border-warning bg-warning bg-opacity-10">
+            <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-warning text-dark">📌</span>
+                    <a href="{% url 'vegetables_fruits:forum_sujet' sujet.id %}" class="fw-bold">
+                        {{ sujet.titre }}
+                    </a>
+                    <small class="text-muted">par {{ sujet.auteur.username }}</small>
+                </div>
+                <div class="text-muted small text-nowrap">
+                    <i class="bi bi-chat-dots"></i> {{ sujet.messages.count }}
+                    <span class="mx-1">•</span>
+                    <i class="bi bi-clock"></i> {{ sujet.date_dernier_message|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Sujets normaux -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span>📋 Sujets</span>
+            <span class="badge bg-secondary">{{ sujets.paginator.count|default:0 }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% for sujet in sujets %}
+            <div class="border-bottom p-3 hover-row">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            {% if sujet.est_ferme %}
+                            <span class="badge bg-secondary">🔒 Fermé</span>
+                            {% endif %}
+                            {% if not sujet.est_lu %}
+                            <span class="badge bg-success">🆕 Nouveau</span>
+                            {% endif %}
+                            <a href="{% url 'vegetables_fruits:forum_sujet' sujet.id %}" class="fw-bold">
+                                {{ sujet.titre }}
+                            </a>
+                        </div>
+                        <div class="small text-muted">
+                            <i class="bi bi-person-circle"></i> {{ sujet.auteur.username }}
+                            <span class="mx-1">•</span>
+                            <i class="bi bi-calendar3"></i> {{ sujet.date_creation|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <span class="badge bg-light text-dark rounded-pill px-3">{{ sujet.messages.count }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small text-muted text-nowrap">
+                            <i class="bi bi-clock"></i> {{ sujet.date_dernier_message|date:"d/m/Y H:i" }}
+                            <br>
+                            <span class="text-muted">par {{ sujet.dernier_message.auteur.username|default:"Inconnu" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-5 text-center text-muted">
+                <div style="font-size: 3rem; margin-bottom: 15px;">📭</div>
+                <h5>Aucun sujet dans cette catégorie</h5>
+                <p>Soyez le premier à créer un sujet !</p>
+                <a href="{% url 'vegetables_fruits:forum_nouveau_sujet' categorie.id %}" class="btn btn-success">
+                    ➕ Créer un sujet
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if sujets.has_other_pages %}
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if sujets.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ sujets.previous_page_number }}">‹</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">‹</span></li>
+            {% endif %}
+
+            {% for num in sujets.paginator.page_range %}
+            {% if sujets.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > sujets.number|add:'-3' and num < sujets.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if sujets.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ sujets.next_page_number }}">›</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">›</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .hover-row:hover {
+        background-color: #f8f9fa;
+    }
+    .pagination .page-link {
+        color: #28a745;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+</style>
+{% endblock %}

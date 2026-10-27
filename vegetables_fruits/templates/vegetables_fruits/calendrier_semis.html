@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendrier des semis - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:cultures' %}">🌱 Cultures</a></li>
+<li class="breadcrumb-item active" aria-current="page">Calendrier des semis</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendrier-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .calendrier-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 30px 40px;
+    }
+
+    .calendrier-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .calendrier-header h1 {
+        font-size: 2rem;
+        color: #2d6a4f;
+        margin: 0;
+    }
+
+    .calendrier-header .subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+        margin: 5px 0 0;
+    }
+
+    /* ✅ Note explicative */
+    .calendrier-note {
+        background: #fff8e7;
+        border-left: 4px solid #c9a96e;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .calendrier-note .icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .calendrier-note .content {
+        font-size: 0.95rem;
+        color: #5a4a3a;
+        line-height: 1.5;
+    }
+
+    .calendrier-note .content strong {
+        color: #2d3e2f;
+    }
+
+    .calendrier-note .content .highlight {
+        background: #e8e0d5;
+        padding: 1px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    /* Sélecteur de parcelle */
+    .parcelle-selector {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        background: #f8f9fa;
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+    }
+
+    .parcelle-selector label {
+        font-weight: 600;
+        margin: 0;
+        color: #343a40;
+        font-size: 0.95rem;
+    }
+
+    .parcelle-selector select {
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        font-size: 1rem;
+        min-width: 200px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .parcelle-selector .region-badge {
+        background: #2d6a4f;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-left: auto;
+        white-space: nowrap;
+    }
+
+    .parcelle-selector .region-badge i {
+        margin-right: 5px;
+    }
+
+    /* Légende */
+    .legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 12px 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        font-size: 0.9rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .legend-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+    }
+
+    .legend-dot.semis { background: #2d6a4f; }
+    .legend-dot.recolte { background: #ff6b35; }
+
+    /* Grille des mois */
+    .mois-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .mois-card {
+        background: #f8f9fa;
+        border-radius: 14px;
+        padding: 16px 18px;
+        border-left: 4px solid #2d6a4f;
+        transition: 0.3s;
+        min-height: 120px;
+    }
+
+    .mois-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .mois-card.current {
+        border-left-color: #ff6b35;
+        background: #fff8f0;
+    }
+
+    .mois-card .mois-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #2d6a4f;
+    }
+
+    .mois-card.current .mois-header {
+        color: #ff6b35;
+    }
+
+    .mois-card .mois-header .badge-mois {
+        font-size: 0.65rem;
+        background: #ff6b35;
+        color: white;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .mois-card .culture-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 0.9rem;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    .mois-card .culture-item:last-child {
+        border-bottom: none;
+    }
+
+    .mois-card .culture-item .emoji {
+        font-size: 1.1rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .mois-card .culture-item .culture-name {
+        flex: 1;
+        color: #343a40;
+    }
+
+    .mois-card .culture-item .periode {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    .periode.semis {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .periode.recolte {
+        background: #ffe5d0;
+        color: #a04000;
+    }
+
+    .mois-card .culture-item .periode i {
+        margin-right: 3px;
+    }
+
+    .mois-card .empty-message {
+        color: #adb5bd;
+        font-size: 0.85rem;
+        font-style: italic;
+        padding: 5px 0;
+    }
+
+    /* État vide */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        background: #f8f9fa;
+        border-radius: 16px;
+    }
+
+    .empty-state .icon {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        max-width: 400px;
+        margin: 0 auto 20px;
+    }
+
+    .empty-state .btn-primary {
+        background: #2d6a4f;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        transition: 0.3s;
+    }
+
+    .empty-state .btn-primary:hover {
+        background: #1b4332;
+        transform: translateY(-2px);
+    }
+
+    /* Info bas de page */
+    .calendrier-footer {
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .calendrier-footer .update-info i {
+        margin-right: 5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .mois-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .calendrier-card {
+            padding: 20px;
+        }
+
+        .parcelle-selector {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .parcelle-selector .region-badge {
+            margin-left: 0;
+            text-align: center;
+        }
+
+        .mois-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .calendrier-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .calendrier-note {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .mois-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendrier-container">
+    <div class="calendrier-card">
+
+        <!-- Header -->
+        <div class="calendrier-header">
+            <div>
+                <h1>📅 Calendrier des semis</h1>
+                <p class="subtitle">Calendrier personnalisé selon la région de votre parcelle</p>
+            </div>
+        </div>
+
+        <!-- ✅ Note explicative -->
+        <div class="calendrier-note">
+            <span class="icon">💡</span>
+            <div class="content">
+                <strong>Ce calendrier vous propose des suggestions de cultures à planter</strong>
+                selon votre région et la saison.
+                <br>
+                Les périodes indiquées sont <span class="highlight">indicatives</span> et peuvent varier en fonction des conditions climatiques locales.
+                <br>
+                🌱 Utilisez ces informations pour <strong>planifier vos semis</strong> et <strong>organiser vos récoltes</strong> tout au long de l'année.
+            </div>
+        </div>
+
+        <!-- Sélecteur de parcelle -->
+        <div class="parcelle-selector">
+            <label for="parcelleSelect">🌾 Parcelle :</label>
+            <select id="parcelleSelect" onchange="window.location.href='?parcelle_id='+this.value">
+                {% for parcelle in parcelles %}
+                <option value="{{ parcelle.id }}" {% if selected_parcelle and selected_parcelle.id == parcelle.id %}selected{% endif %}>
+                    {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                </option>
+                {% endfor %}
+                {% if not parcelles %}
+                <option value="">Aucune parcelle disponible</option>
+                {% endif %}
+            </select>
+            <span class="region-badge">
+                <i>📍</i> Région : {{ region|capfirst }}
+            </span>
+        </div>
+
+        <!-- Légende -->
+        <div class="legend">
+            <span class="legend-item">
+                <span class="legend-dot semis"></span>
+                🌱 Période de semis
+            </span>
+            <span class="legend-item">
+                <span class="legend-dot recolte"></span>
+                🧺 Période de récolte
+            </span>
+            <span class="legend-item">
+                <span style="font-size:0.9rem;">📌</span>
+                Mois en cours
+            </span>
+            <span class="legend-item">
+                <span style="font-size:0.9rem;">💡</span>
+                Les dates sont indicatives
+            </span>
+        </div>
+
+        {% if selected_parcelle %}
+
+            <!-- Grille des mois -->
+            <div class="mois-grid">
+                {% for mois_num, cultures in mois_data.items %}
+                <div class="mois-card {% if mois_num == mois_actuel %}current{% endif %}">
+                    <div class="mois-header">
+                        <span>
+                            {% if mois_num == 1 %}❄️ Janvier
+                            {% elif mois_num == 2 %}❄️ Février
+                            {% elif mois_num == 3 %}🌱 Mars
+                            {% elif mois_num == 4 %}🌱 Avril
+                            {% elif mois_num == 5 %}🌿 Mai
+                            {% elif mois_num == 6 %}🌿 Juin
+                            {% elif mois_num == 7 %}☀️ Juillet
+                            {% elif mois_num == 8 %}☀️ Août
+                            {% elif mois_num == 9 %}🍂 Septembre
+                            {% elif mois_num == 10 %}🍂 Octobre
+                            {% elif mois_num == 11 %}❄️ Novembre
+                            {% elif mois_num == 12 %}❄️ Décembre
+                            {% endif %}
+                        </span>
+                        {% if mois_num == mois_actuel %}
+                        <span class="badge-mois">En cours</span>
+                        {% endif %}
+                    </div>
+
+                    {% if cultures %}
+                        {% for entry in cultures %}
+                        <div class="culture-item">
+                            <span class="emoji">{{ entry.get_emoji }}</span>
+                            <span class="culture-name">{{ entry.culture }}</span>
+                            <span class="periode semis">
+                                <i>🌱</i> {{ entry.mois_debut_semis }}-{{ entry.mois_fin_semis }}
+                            </span>
+                            <span class="periode recolte">
+                                <i>🧺</i> {{ entry.mois_debut_recolte }}-{{ entry.mois_fin_recolte }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-message">Aucune donnée pour ce mois</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pied de page -->
+            <div class="calendrier-footer">
+                <span class="update-info">
+                    <i>🔄</i> Mis à jour automatiquement en fonction de votre région
+                </span>
+                <span>
+                    🌍 {{ parcelles|length }} parcelle{{ parcelles|pluralize }} disponible{{ parcelles|pluralize }}
+                </span>
+            </div>
+
+        {% else %}
+
+            <!-- État vide -->
+            <div class="empty-state">
+                <div class="icon">🌾</div>
+                <h3>Aucune parcelle disponible</h3>
+                <p>Créez une parcelle pour voir le calendrier des semis adapté à votre région.</p>
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-primary">
+                    ✏️ Créer une parcelle
+                </a>
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

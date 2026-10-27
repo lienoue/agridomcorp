@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if note %}✏️ Modifier la note{% else %}✏️ Nouvelle note{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 10px 15px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(40,167,69,0.1);
+    }
+    
+    .image-preview {
+        max-width: 200px;
+        margin-top: 10px;
+        border-radius: 10px;
+    }
+    
+    .btn-submit {
+        background: var(--primary);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+    
+    .weather-info {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="form-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{% if note %}✏️ Modifier la note{% else %}✏️ Nouvelle note{% endif %}</h1>
+            <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn btn-outline-secondary">
+                ← Retour au journal
+            </a>
+        </div>
+        
+        <div class="form-card">
+            {% if meteo_actuelle %}
+            <div class="weather-info">
+                <div class="d-flex align-items-center gap-3">
+                    <span style="font-size: 2rem;">🌤️</span>
+                    <div>
+                        <strong>Météo du jour</strong><br>
+                        {{ meteo_actuelle }} - {{ temperature_actuelle }}°C
+                        <small class="d-block opacity-75">La météo sera automatiquement enregistrée</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Culture associée -->
+                <div class="mb-3">
+                    <label class="form-label">🌱 Culture associée (optionnel)</label>
+                    <select name="culture_json" class="form-select" id="cultureSelect">
+                        <option value="{}">Aucune culture spécifique</option>
+                        {% for culture in cultures_user %}
+                        <option value='{"id": {{ culture.id }}, "nom": "{{ culture.nom }}", "emoji": "{{ culture.emoji }}", "type": "{{ culture.type }}"}' 
+                                {% if note.culture.nom == culture.nom %}selected{% endif %}>
+                            {{ culture.emoji }} {{ culture.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Titre -->
+                <div class="mb-3">
+                    <label class="form-label">Titre *</label>
+                    <input type="text" name="titre" class="form-control" 
+                           value="{{ note.titre|default:'' }}" required>
+                </div>
+                
+                <!-- Note -->
+                <div class="mb-3">
+                    <label class="form-label">Note *</label>
+                    <textarea name="note" class="form-control" rows="8" required>{{ note.note|default:'' }}</textarea>
+                </div>
+                
+                <!-- Date -->
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date_note" class="form-control" 
+                           value="{{ note.date_note|date:'Y-m-d'|default:'' }}">
+                </div>
+                
+                <!-- Tags -->
+                <div class="mb-3">
+                    <label class="form-label">🏷️ Tags (séparés par des virgules)</label>
+                    <input type="text" name="tags" class="form-control" 
+                           value="{{ note.tags|default:'' }}" 
+                           placeholder="ex: arrosage, maladie, récolte">
+                </div>
+                
+                <!-- Image -->
+                <div class="mb-3">
+                    <label class="form-label">📷 Photo (optionnel)</label>
+                    <input type="file" name="image" class="form-control" accept="image/*" id="imageInput">
+                    <div id="imagePreview"></div>
+                    {% if note.image %}
+                    <div class="mt-2">
+                        <img src="{{ note.image.url }}" class="image-preview" alt="Image actuelle">
+                        <small class="d-block text-muted">Image actuelle</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champs cachés pour la météo -->
+                <input type="hidden" name="meteo" value="{{ meteo_actuelle|default:'' }}">
+                <input type="hidden" name="temperature" value="{{ temperature_actuelle|default:'' }}">
+                
+                <!-- Boutons -->
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-submit flex-grow-1">
+                        💾 Enregistrer
+                    </button>
+                    <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn btn-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Prévisualisation de l'image
+    document.getElementById('imageInput')?.addEventListener('change', function(e) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.className = 'image-preview';
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+</script>
+{% endblock %}

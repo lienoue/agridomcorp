@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}🌤️ Dashboard Climat - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
+<li class="breadcrumb-item active">🌤️ Dashboard Climat</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    {# ============================================================ #}
+    {# EN-TÊTE DU DASHBOARD #}
+    {# ============================================================ #}
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1" style="color: #2d6a4f;">
+                🌤️ Dashboard Climat
+            </h1>
+            <p class="text-muted mb-0">
+                🌱 Visualisez l'impact climatique de votre jardin
+                <span class="badge bg-success ms-2" style="font-weight: 400;">
+                    {% if user.abonnement.plan.nom == 'PREMIUM' %}💎 Premium{% else %}👩‍🏫 Enseignant et eleve{% endif %}
+                </span>
+            </p>
+        </div>
+        <div>
+            <span class="text-muted" style="font-size: 0.9rem;">
+                📅 {{ now|date:"d/m/Y" }}
+            </span>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# SÉLECTEUR DE PARCELLE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <label for="parcelle-select" class="fw-bold mb-0" style="color: #2d6a4f;">
+                    📍 Parcelle :
+                </label>
+                <select id="parcelle-select" class="form-select" style="max-width: 300px; border-color: #d4c8bc; border-radius: 10px;" onchange="window.location.href='?parcelle_id='+this.value">
+                    {% for parcelle in parcelles %}
+                        <option value="{{ parcelle.id }}" {% if selected_parcelle and selected_parcelle.id == parcelle.id %}selected{% endif %}>
+                            {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                        </option>
+                    {% endfor %}
+                </select>
+                <span class="text-muted ms-2" style="font-size: 0.9rem;">
+                    {{ stats.nb_parcelles }} parcelle(s)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# MÉTÉO EN DIRECT #}
+    {# ============================================================ #}
+    {% if meteo %}
+    <div class="card mb-4" style="border-left: 4px solid #2d6a4f;">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="font-size: 3rem;">
+                            {% if meteo.icon %}
+                                <img src="https://openweathermap.org/img/wn/{{ meteo.icon }}@2x.png" alt="Météo" style="width: 64px;">
+                            {% else %}
+                                🌤️
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h2 class="h1 mb-0" style="font-weight: 700; color: #2d6a4f;">
+                                {{ meteo.temperature }}°C
+                            </h2>
+                            <p class="text-muted mb-0">{{ meteo.conditions|capfirst }}</p>
+                            <small class="text-muted">
+                                💧 {{ meteo.humidity }}% • 💨 {{ meteo.wind_speed }} km/h
+                                {% if meteo.ville %}• 📍 {{ meteo.ville }}{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <small class="text-muted">Dernière mise à jour : {{ now|date:"H:i" }}</small>
+                    <a href="{% url 'vegetables_fruits:previsions_meteo' %}?parcelle_id={{ selected_parcelle.id }}" class="btn btn-outline-success btn-sm ms-2">
+                        📅 Voir les prévisions 7 jours
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# STATISTIQUES GLOBALES #}
+    {# ============================================================ #}
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card h-100" style="border-left: 4px solid #2d6a4f;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-0">🌱 Émissions CO₂</p>
+                            <h3 class="h2 mb-0" style="font-weight: 700; color: #dc3545;">
+                                {{ stats.total_emission }} kg
+                            </h3>
+                        </div>
+                        <span style="font-size: 2rem;">🏭</span>
+                    </div>
+                    <small class="text-muted">{{ stats.nb_parcelles }} parcelle(s)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card h-100" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-0">🌳 Séquestration CO₂</p>
+                            <h3 class="h2 mb-0" style="font-weight: 700; color: #28a745;">
+                                {{ stats.total_sequestration }} kg
+                            </h3>
+                        </div>
+                        <span style="font-size: 2rem;">🌳</span>
+                    </div>
+                    <small class="text-muted">{{ stats.surface_totale }} m² de jardin</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card h-100" style="border-left: 4px solid #ffc107;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-0">⚖️ Bilan net CO₂</p>
+                            <h3 class="h2 mb-0" style="font-weight: 700; color: {{ bilan_status.color }};">
+                                {{ stats.total_bilan }} kg
+                            </h3>
+                        </div>
+                        <span style="font-size: 2rem;">{{ bilan_status.icon }}</span>
+                    </div>
+                    <small class="text-muted">{{ bilan_status.label }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card h-100" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-0">🏠 Autosuffisance</p>
+                            <h3 class="h2 mb-0" style="font-weight: 700; color: #17a2b8;">
+                                {{ stats.autosuffisance }}%
+                            </h3>
+                        </div>
+                        <span style="font-size: 2rem;">{{ autosuffisance_niveau.label|slice:":1" }}</span>
+                    </div>
+                    <small class="text-muted">{{ autosuffisance_niveau.label }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# GRAPHIQUE D'ÉVOLUTION #}
+    {# ============================================================ #}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: #2d6a4f;">📈 Évolution des émissions</h5>
+                        <small class="text-muted">6 derniers mois</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="emissionsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+                    <h5 class="mb-0" style="color: #2d6a4f;">💧 Consommation d'eau</h5>
+                </div>
+                <div class="card-body">
+                    <h2 class="h1 mb-0" style="font-weight: 700; color: #0d6efd;">
+                        {{ stats.besoins_eau }} L
+                    </h2>
+                    <p class="text-muted small">par semaine</p>
+                    <hr>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        {% for parcelle in besoins_par_parcelle %}
+                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                <span style="font-size: 0.9rem;">{{ parcelle.parcelle.nom }}</span>
+                                <span class="fw-bold">{{ parcelle.total }} L</span>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Aucune donnée</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# RECOMMANDATIONS PERSONNALISÉES #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+            <h5 class="mb-0" style="color: #2d6a4f;">🌱 Recommandations personnalisées</h5>
+        </div>
+        <div class="card-body">
+            {% if recommandations %}
+                <div class="row g-3">
+                    {% for rec in recommandations %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100" style="border-left: 4px solid 
+                                {% if rec.type == 'success' %}#28a745
+                                {% elif rec.type == 'warning' %}#ffc107
+                                {% elif rec.type == 'info' %}#17a2b8
+                                {% else %}#6c757d{% endif %};
+                            ">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span style="font-size: 1.8rem;">{{ rec.emoji }}</span>
+                                        <h6 class="mb-0 fw-bold">{{ rec.titre }}</h6>
+                                    </div>
+                                    <p class="small text-muted mb-0">{{ rec.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <span style="font-size: 3rem;">✅</span>
+                    <h5 class="mt-2">Tout va bien !</h5>
+                    <p class="text-muted small">Vous êtes sur la bonne voie. Continuez comme ça !</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# DÉTAIL PAR PARCELLE #}
+    {# ============================================================ #}
+    <div class="card">
+        <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+            <h5 class="mb-0" style="color: #2d6a4f;">📋 Détail par parcelle</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background: #f8f9fa;">
+                        <tr>
+                            <th>Parcelle</th>
+                            <th>Surface</th>
+                            <th>Cultures</th>
+                            <th>Émissions</th>
+                            <th>Séquestration</th>
+                            <th>Bilan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for parcelle in details_parcelles %}
+                            <tr>
+                                <td>
+                                    <strong>{{ parcelle.parcelle.nom }}</strong>
+                                </td>
+                                <td>{{ parcelle.parcelle.surface_m2 }} m²</td>
+                                <td>{{ parcelle.cultures }}</td>
+                                <td style="color: #dc3545;">{{ parcelle.emission }} kg</td>
+                                <td style="color: #28a745;">{{ parcelle.sequestration }} kg</td>
+                                <td>
+                                    <span style="color: {% if parcelle.bilan < 0 %}#28a745{% else %}#dc3545{% endif %}; font-weight: 600;">
+                                        {{ parcelle.bilan }} kg
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    🌱 Aucune parcelle
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# BOUTONS D'ACTION #}
+    #}
+    <div class="mt-4 d-flex flex-wrap gap-3">
+        <a href="{% url 'vegetables_fruits:bilan_carbone' %}" class="btn btn-outline-success">
+            🌳 Bilan carbone détaillé
+        </a>
+        <a href="{% url 'vegetables_fruits:autosuffisance' %}" class="btn btn-outline-success">
+            🏠 Autosuffisance
+        </a>
+        <a href="{% url 'vegetables_fruits:plan_irrigation' %}" class="btn btn-outline-success">
+            💧 Plan d'irrigation
+        </a>
+        <a href="{% url 'vegetables_fruits:previsions_meteo' %}?parcelle_id={{ selected_parcelle.id }}" class="btn btn-outline-info">
+            🌡️ Prévisions 5 jours
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary ms-auto">
+            🖨️ Exporter en PDF
+        </button>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{# ============================================================ #}
+{# SCRIPTS - Chart.js pour les graphiques #}
+{# ============================================================ #}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================================ //
+    // GRAPHIQUE D'ÉVOLUTION DES ÉMISSIONS //
+    // ============================================================ //
+    const evolutionData = {{ evolution_emissions|safe }};
+    
+    if (evolutionData.length > 0) {
+        const ctx = document.getElementById('emissionsChart').getContext('2d');
+        
+        // Charger Chart.js depuis CDN (lazy load)
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        script.onload = function() {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: evolutionData.map(d => d.mois),
+                    datasets: [
+                        {
+                            label: 'Émissions CO₂ (kg)',
+                            data: evolutionData.map(d => d.emission),
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: '#dc3545',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Séquestration CO₂ (kg)',
+                            data: evolutionData.map(d => d.sequestration),
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: '#28a745',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)',
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        };
+        document.head.appendChild(script);
+    }
+    
+    // ============================================================ //
+    // AUTO-REFRESH (toutes les 5 minutes) //
+    // ============================================================ //
+    setTimeout(function() {
+        if (document.querySelector('.card-body')) {
+            window.location.reload();
+        }
+    }, 300000); // 5 minutes
+});
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Stratégie de déploiement - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Stratégie de déploiement</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: center; }
+    .doc-card table td { padding: 10px; text-align: center; border-bottom: 1px solid #e9ecef; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .phase { background: #f8f9fa; padding: 15px 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #2d6a4f; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🚀 Stratégie de déploiement</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 1.0 – Juin 2026</p>
+
+        <h2>📌 Vue d'ensemble</h2>
+        <p>La stratégie de déploiement d'Agriculture 2.0 se déroule en 3 phases sur 3 ans.</p>
+
+        <h2>📅 Phase 1 : Lancement (0-6 mois)</h2>
+        <div class="phase">
+            <ul>
+                <li>✅ Version MVP opérationnelle</li>
+                <li>✅ Intégration des fonctionnalités clés (parcelles, cultures, météo, communauté)</li>
+                <li>✅ Partenariats écoles (pilotage)</li>
+                <li>✅ Bouche-à-oreille et réseaux sociaux</li>
+                <li>✅ Mise en place des paiements Stripe</li>
+                <li>✅ Optimisation SEO</li>
+            </ul>
+        </div>
+
+        <h2>📈 Phase 2 : Croissance (6-18 mois)</h2>
+        <div class="phase">
+            <ul>
+                <li>🔄 Version mobile (PWA) optimisée</li>
+                <li>🌍 Internationalisation (anglais, espagnol)</li>
+                <li>🤖 IA conseil</li>
+                <li>🎯 Campagnes écoles nationales</li>
+                <li>📱 Optimisation mobile continue</li>
+                <li>📊 Analyse des données utilisateurs</li>
+            </ul>
+        </div>
+
+        <h2>🏆 Phase 3 : Maturité (18-36 mois)</h2>
+        <div class="phase">
+            <ul>
+                <li>📱 Application mobile native (App Store / Google Play)</li>
+                <li>🌱 Partenariats avec semenciers et jardineries</li>
+                <li>📊 Certification pédagogique</li>
+                <li>🏆 Événements nationaux (concours de jardinage)</li>
+                <li>🤝 Partenariats institutionnels</li>
+                <li>🌍 Expansion internationale</li>
+            </ul>
+        </div>
+
+        <h2>📊 Indicateurs clés de succès</h2>
+        <table>
+            <thead>
+                <tr><th>Indicateur</th><th>Phase 1</th><th>Phase 2</th><th>Phase 3</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Utilisateurs actifs</td><td>2 000</td><td>8 000</td><td>25 000</td></tr>
+                <tr><td>Taux de conversion</td><td>3%</td><td>5%</td><td>8%</td></tr>
+                <tr><td>Écoles partenaires</td><td>20</td><td>100</td><td>500</td></tr>
+                <tr><td>Taux de rétention (J30)</td><td>40%</td><td>50%</td><td>60%</td></tr>
+            </tbody>
+        </table>
+
+        <h2>🛠️ Actions prioritaires</h2>
+        <ul>
+            <li>✅ Finaliser la documentation technique</li>
+            <li>✅ Optimisation PWA (service worker, manifest)</li>
+            <li>✅ Campagne de lancement écoles</li>
+            <li>✅ Mise en place des paiements Stripe</li>
+            <li>✅ Communication sur les réseaux sociaux</li>
+            <li>✅ Recrutement de beta-testeurs</li>
+            <li>✅ Lancement officiel</li>
+            <li>✅ Soumission aux annuaires PWA</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

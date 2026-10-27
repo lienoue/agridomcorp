@@ -1,0 +1,415 @@
+/* ============================================================
+   DARK MODE — Agriculture 2.0
+   ⚠️ Toutes les règles sont scopées dans [data-theme="dark"]
+   → Aucun impact en mode clair
+   ============================================================ */
+
+/* ============================================================
+   BASE
+   ============================================================ */
+[data-theme="dark"] body {
+    background-color: #121212;
+    color: #e0e0e0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] a {
+    color: #4caf50;
+}
+
+[data-theme="dark"] a:hover {
+    color: #66bb6a;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+[data-theme="dark"] .navbar,
+[data-theme="dark"] .navbar-agri {
+    background: linear-gradient(135deg, #1b5e20, #145a32) !important;
+}
+
+/* ============================================================
+   CARTES
+   ============================================================ */
+[data-theme="dark"] .card {
+    background-color: #1e1e1e !important;
+    border-color: #333 !important;
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .card-header {
+    border-color: #333 !important;
+}
+
+[data-theme="dark"] .card-body {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .card-footer {
+    background-color: #1e1e1e !important;
+    border-color: #333 !important;
+}
+
+/* ============================================================
+   TEXTES
+   ============================================================ */
+[data-theme="dark"] .text-muted {
+    color: #a0a0a0 !important;
+}
+
+[data-theme="dark"] .text-dark {
+    color: #e0e0e0 !important;
+}
+
+/* ============================================================
+   FONDS
+   ============================================================ */
+[data-theme="dark"] .bg-white {
+    background-color: #1e1e1e !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #2a2a2a !important;
+}
+
+/* ============================================================
+   FORMULAIRES
+   ============================================================ */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25) !important;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: #a0a0a0 !important;
+}
+
+[data-theme="dark"] label,
+[data-theme="dark"] .form-label {
+    color: #e0e0e0 !important;
+}
+
+/* ============================================================
+   TABLEAUX
+   ============================================================ */
+[data-theme="dark"] .table {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .table > :not(caption) > * > * {
+    border-color: #333 !important;
+    background-color: transparent !important;
+}
+
+/* ============================================================
+   LISTES
+   ============================================================ */
+[data-theme="dark"] .list-group-item {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+/* ============================================================
+   MODALES
+   ============================================================ */
+[data-theme="dark"] .modal-content {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: #333 !important;
+}
+
+/* ============================================================
+   DROPDOWNS
+   ============================================================ */
+[data-theme="dark"] .dropdown-menu {
+    background-color: #1e1e1e !important;
+    border-color: #333 !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background-color: #2a2a2a !important;
+}
+
+/* ============================================================
+   BOUTON TOGGLE (le seul élément non scopé, car visible en clair)
+   ============================================================ */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+/* ============================================================
+   SCROLLBAR (dark uniquement)
+   ============================================================ */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #2a2a2a;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* ============================================================ */
+/* TIMELINE DES CULTURES */
+/* ============================================================ */
+
+.chronologie-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.chronologie-container {
+    margin-top: 15px;
+}
+
+.chronologie-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden; /* empêche le débordement de la carte */
+}
+
+.chrono-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.chrono-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chrono-emoji { font-size: 1.5rem; }
+
+/* ---------- Timeline horizontale (desktop) ---------- */
+.timeline-culture {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 0;
+    overflow-x: auto; /* scroll si débordement */
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    scrollbar-width: thin;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto; /* ✅ NE PAS écraser */
+    width: 80px; /* ✅ largeur FIXE */
+    text-align: center;
+}
+
+.step-dot {
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.step-actuelle .step-dot {
+    animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+}
+
+.step-label {
+    font-size: 0.72rem;
+    margin-top: 4px;
+    color: #495057;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 78px;
+}
+
+.step-date {
+    font-size: 0.68rem;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.step-passee .step-label,
+.step-passee .step-date { color: #28a745; }
+
+.step-actuelle .step-label {
+    color: #0d6efd;
+    font-weight: 700;
+}
+
+.step-future .step-label,
+.step-future .step-date { opacity: 0.55; }
+
+/* ---------- Connecteurs horizontaux ---------- */
+.timeline-connector {
+    flex: 0 0 20px;
+    height: 2px;
+    margin-top: 12px;
+    background: #dee2e6;
+    align-self: flex-start;
+}
+
+.connector-passee { background: #28a745; }
+.connector-actuelle { background: linear-gradient(to right, #28a745, #0d6efd); }
+.connector-future { background: #dee2e6; }
+
+/* ============================================================ */
+/* MOBILE : timeline VERTICALE */
+/* ============================================================ */
+@media (max-width: 576px) {
+
+    .timeline-culture {
+        flex-direction: column;
+        overflow-x: visible;
+        padding-left: 6px;
+        gap: 0;
+    }
+
+    .timeline-step {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        max-width: 100%;
+        text-align: left;
+        gap: 10px;
+        padding: 5px 0;
+    }
+
+    .step-dot {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        width: 24px;
+        text-align: center;
+    }
+
+    .step-label {
+        font-size: 0.85rem;
+        margin-top: 0;
+        flex: 1;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        max-width: none;
+    }
+
+    .step-date {
+        font-size: 0.75rem;
+        margin: 0 0 0 auto;
+        padding-right: 6px;
+        white-space: nowrap;
+    }
+
+    /* Connecteurs verticaux */
+    .timeline-connector {
+        flex: 0 0 14px;
+        width: 2px;
+        height: 14px;
+        margin: 0 0 0 11px;
+        align-self: flex-start;
+        background: #dee2e6;
+    }
+
+    .connector-actuelle {
+        background: linear-gradient(to bottom, #28a745, #0d6efd);
+    }
+}
+
+/* ============================================================ */
+/* DARK MODE */
+/* ============================================================ */
+[data-theme="dark"] .chronologie-section { background: #1a1d21; }
+[data-theme="dark"] .chronologie-section h3 { color: #e9ecef; }
+[data-theme="dark"] .chronologie-section .text-muted { color: #adb5bd !important; }
+[data-theme="dark"] .chronologie-card { background: #212529; }
+
+[data-theme="dark"] .chrono-title strong { color: #e9ecef; }
+[data-theme="dark"] .step-label { color: #ced4da; }
+[data-theme="dark"] .step-date { color: #adb5bd; }
+
+[data-theme="dark"] .step-passee .step-label,
+[data-theme="dark"] .step-passee .step-date { color: #4ade80; }
+
+[data-theme="dark"] .step-actuelle .step-label { color: #60a5fa; }
+
+[data-theme="dark"] .timeline-connector { background: #495057; }
+[data-theme="dark"] .connector-passee { background: #4ade80; }
+[data-theme="dark"] .connector-actuelle {
+    background: linear-gradient(to right, #4ade80, #60a5fa);
+}
+[data-theme="dark"] .connector-future { background: #495057; }
+
+@media (max-width: 576px) {
+    [data-theme="dark"] .timeline-connector { background: #495057; }
+    [data-theme="dark"] .connector-actuelle {
+        background: linear-gradient(to bottom, #4ade80, #60a5fa);
+    }
+}

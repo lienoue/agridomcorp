@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+
+        <meta charset="UTF-8">
+        {% extends 'vegetables_fruits/index.html' %}
+        {% load static %}
+
+
+        <title>{% block title %}Deconnexion{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'vegetables_fruits/style.css' %}">
+
+
+
+    </head>
+        <body>
+            {% block content %}                                                         <!--Début de la balise Heritage des templates pour la redirection des pages-->
+                <h1 align="center" style="color: black">PAGE EN CONSTRUCTION</h1>
+
+                       <div class="card-body">
+                            <!-- Affichage des messages -->
+                            {% if messages %}
+                            <div class="mb-4">
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                  <div align="center">
+                    <label for="id_username">Nom d'utilisateur:</label>
+                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Entrez votre d'utilisateur" required autofocus>
+                      {% if form.username.errors %}
+                          <div>
+                              {% for error in form.username.errors %}
+                                {{ error }}
+                              {% endfor %}
+                          </div>
+                      {% endif %}
+                  </div>
+
+                  <div align="center">
+                    <label for="id_password">Mot de passe:</label>
+                    <input type="password" name="password" id="id_password" required>
+                      {% if form.password.errors %}
+                          <div>
+                              {% for error in form.password.errors %}
+                                {{ error }}
+                              {% endfor %}
+                          </div>
+                      {% endif %}
+                  </div>
+
+                {% if form.non_field_errors %}
+                    <div>
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                  <div>
+                     <a href="{% url 'password_reset' %}"> Mot de passe oublié ?</a>
+                  </div>
+
+                  <button type="submit">Se deconnecter</button>
+
+                  <input type="hidden" name="next" value="{{ next }}">
+                <!--{{ form.as_p }}-->
+            </form>
+            <p>Pas encore de compte ? <a href="{% url 'vegetables_fruits:home' %}">S'inscrire</a></p>
+            <br>
+            <p>Revenir à la page d'acceuille <a href="{% url 'vegetables_fruits:index' %}">Page d'acceuille</a></p>                <!--mettre un timeout qui nous fait revenir à la page d'acceuille!! -->
+            {% endblock %}                                                              <!--fin de la balise Heritage des templates pour la redirection des pages-->
+
+        </body>
+</html>

@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🏫 Classement national des classes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-classement {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        padding: 40px 0;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: white;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    .podium {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 20px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+    }
+    .podium-item {
+        text-align: center;
+        padding: 20px;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        min-width: 180px;
+    }
+    .podium-item.first {
+        background: linear-gradient(135deg, #ffd700, #ffb347);
+        transform: scale(1.05);
+    }
+    .podium-item.second {
+        background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+    }
+    .podium-item.third {
+        background: linear-gradient(135deg, #cd7f32, #b87333);
+    }
+    .podium-rank {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .podium-icon {
+        font-size: 3rem;
+        margin: 10px 0;
+    }
+    .user-position {
+        background: #e8f5e9;
+        border-left: 5px solid #28a745;
+        margin-bottom: 20px;
+    }
+    .rang-medal {
+        font-weight: bold;
+        width: 60px;
+        display: inline-block;
+    }
+    .rang-1 { color: #ffd700; }
+    .rang-2 { color: #c0c0c0; }
+    .rang-3 { color: #cd7f32; }
+    .classe-card {
+        transition: transform 0.2s;
+    }
+    .classe-card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="hero-classement">
+        <h1>🏫 Classement national des classes</h1>
+        <p>Les meilleures classes de France</p>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_classes }}</div>
+            <div class="text-muted">🏫 Classes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_eleves }}</div>
+            <div class="text-muted">👨‍🌾 Élèves</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_points|floatformat:0 }}</div>
+            <div class="text-muted">⭐ Points cumulés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.moyenne_points_par_classe|floatformat:0 }}</div>
+            <div class="text-muted">📊 Moyenne/classe</div>
+        </div>
+    </div>
+
+    <!-- Top 10 Podium des classes -->
+    {% if top10 %}
+    <div class="podium">
+        {% for item in top10|slice:":3" %}
+        <div class="podium-item {% if forloop.counter == 1 %}first{% elif forloop.counter == 2 %}second{% else %}third{% endif %}">
+            <div class="podium-rank">#{{ item.rang }}</div>
+            <div class="podium-icon">🏫</div>
+            <div class="fw-bold">{{ item.classe.nom }}</div>
+            <div class="small">{{ item.classe.enseignant.username|default:"-" }}</div>
+            <div class="mt-2">⭐ {{ item.points_totaux|floatformat:0 }} pts</div>
+            <div class="small">👥 {{ item.nb_eleves }} élèves</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Top 10 liste -->
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">🏆 Top 10 des classes</h5>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for item in top10 %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="rang-medal rang-{{ item.rang }}">#{{ item.rang }}</span>
+                    <strong>{{ item.classe.nom }}</strong>
+                    <small class="text-muted ms-2">({{ item.classe.enseignant.username }})</small>
+                </div>
+                <div>
+                    <span class="badge bg-info">👥 {{ item.nb_eleves }} élèves</span>
+                    <span class="ms-2">⭐ {{ item.points_totaux|floatformat:0 }} pts</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Position de la classe de l'utilisateur -->
+    {% if position_classe %}
+    <div class="card user-position">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">🎯 Position de ta classe</h5>
+                    <p class="text-muted mb-0">{{ position_classe.classe.nom }}</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="display-6 fw-bold text-success">#{{ position_classe.rang }}</span>
+                    <span class="ms-3">⭐ {{ position_classe.points_totaux|floatformat:0 }} points</span>
+                    <span class="ms-3">👥 {{ position_classe.nb_eleves }} élèves</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Classement complet des classes -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">📊 Classement complet des classes</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Classe</th>
+                            <th>Enseignant</th>
+                            <th>Élèves</th>
+                            <th>Points totaux</th>
+                            <th>Moyenne</th>
+                            <th>Meilleur élève</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in classement_classes %}
+                        <tr {% if item.classe == position_classe.classe %}class="table-success"{% endif %}>
+                            <td class="fw-bold">#{{ item.rang }}</td>
+                            <td>
+                                <strong>{{ item.classe.nom }}</strong>
+                            </td>
+                            <td>{{ item.classe.enseignant.username|default:"-" }}</td>
+                            <td>👥 {{ item.nb_eleves }}</td>
+                            <td>⭐ {{ item.points_totaux|floatformat:0 }}</td>
+                            <td>📊 {{ item.moyenne|floatformat:0 }}</td>
+                            <td>
+                                {% if item.meilleur_eleve %}
+                                <span class="badge bg-success">{{ item.meilleur_eleve.user.username }}</span>
+                                <small>({{ item.meilleur_eleve.points }} pts)</small>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Aucune classe disponible.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {% include "vegetables_fruits/pagination.html" with page=classes_page %}
+    </div>
+    
+    <!-- Lien vers classement des élèves -->
+    <div class="text-center mt-4">
+        <a href="{% url 'vegetables_fruits:classement_national_eleves' %}" class="btn btn-outline-primary">
+            🌍 Voir le classement des élèves →
+        </a>
+    </div>
+</div>
+{% endblock %}

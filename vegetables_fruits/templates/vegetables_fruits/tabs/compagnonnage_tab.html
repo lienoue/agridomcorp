@@ -1,0 +1,163 @@
+<div class="companion-container">
+
+    {# ============================================================ #}
+    {# EN-TÊTE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body text-center py-4">
+            <div class="d-flex align-items-center justify-content-center gap-2" style="display: inline-flex; margin: 0 auto;">
+                <span style="font-size: 2.5rem; line-height: 1;">🌿</span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: #2d6a4f; line-height: 1;">Compagnonnage</span>
+            </div>
+            <p class="text-muted mb-0 mt-2">
+                🌱 Associez vos cultures pour de meilleures récoltes
+            </p>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# PARCELLE SÉLECTIONNÉE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span style="font-size: 1.2rem;">📍</span>
+                    <strong>Parcelle :</strong>
+                    {% if selected_figure %}
+                        {{ selected_figure.name }}
+                    {% else %}
+                        <span class="text-muted">Aucune parcelle sélectionnée</span>
+                    {% endif %}
+                </div>
+                {% if selected_figure %}
+                    <span class="badge bg-success">{{ cultures_parcelle|length }} culture(s)</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# CULTURES DE LA PARCELLE #}
+    {# ============================================================ #}
+    {% if cultures_parcelle %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                🌱 Cultures présentes
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for culture in cultures_parcelle %}
+                        <span class="badge bg-success p-2" style="font-size: 0.9rem;">
+                            🌱 {{ culture|capfirst }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Aucune culture détectée sur cette parcelle.
+            <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="alert-link">Ajoutez des cultures</a> pour voir les associations.
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# ASSOCIATIONS PAR CULTURE #}
+    {# ============================================================ #}
+    {% if associations %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-diagram-3"></i> Associations par culture
+            </div>
+            <div class="card-body">
+                {% for assoc in associations %}
+                    <div class="mb-4 p-3 bg-light rounded-3">
+                        <h6 class="mb-2">
+                            <span style="font-size: 1.2rem;">🌱</span>
+                            <strong>{{ assoc.culture|capfirst }}</strong>
+                        </h6>
+
+                        {# Bonnes associations #}
+                        {% if assoc.bonnes %}
+                            <div class="mb-2">
+                                <span class="badge bg-success">✅ Bonnes associations</span>
+                                <div class="mt-1 d-flex flex-wrap gap-1">
+                                    {% for bonne in assoc.bonnes %}
+                                        <span class="badge bg-light text-dark border border-success">
+                                            {% if bonne.culture1 == assoc.culture %}
+                                                {{ bonne.culture2|capfirst }}
+                                            {% else %}
+                                                {{ bonne.culture1|capfirst }}
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {# Mauvaises associations #}
+                        {% if assoc.mauvaises %}
+                            <div>
+                                <span class="badge bg-danger">❌ Mauvaises associations</span>
+                                <div class="mt-1 d-flex flex-wrap gap-1">
+                                    {% for mauvaise in assoc.mauvaises %}
+                                        <span class="badge bg-light text-dark border border-danger">
+                                            {% if mauvaise.culture1 == assoc.culture %}
+                                                {{ mauvaise.culture2|capfirst }}
+                                            {% else %}
+                                                {{ mauvaise.culture1|capfirst }}
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if not assoc.bonnes and not assoc.mauvaises %}
+                            <p class="text-muted small mb-0">Aucune association connue pour cette culture.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# SUGGESTIONS DE FLEURS POLLINISATRICES #}
+    {# ============================================================ #}
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            🐝 Fleurs pollinisatrices
+        </div>
+        <div class="card-body">
+            <p class="text-muted small">
+                🌼 Planter ces fleurs à proximité de vos cultures attire les pollinisateurs et améliore vos récoltes :
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                {% for fleur in suggestions_fleurs %}
+                    <span class="badge bg-light text-dark border border-warning p-2">
+                        {{ fleur }}
+                    </span>
+                {% endfor %}
+            </div>
+            <div class="mt-3">
+                <a href="{% url 'vegetables_fruits:ajouter_fleur' selected_figure.id %}"
+                   class="btn btn-warning btn-sm">
+                    🌼 Ajouter une fleur pollinisatrice
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# LIEN VERS LA PAGE COMPLÈTE (si standalone supprimée) #}
+    {# ============================================================ #}
+    <div class="mt-4 text-center">
+        <a href="{% url 'vegetables_fruits:companion_planting' %}" class="btn btn-outline-success btn-sm">
+            📖 Voir toutes les associations
+        </a>
+    </div>
+
+</div>

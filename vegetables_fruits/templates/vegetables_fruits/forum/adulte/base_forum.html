@@ -1,0 +1,1299 @@
+{# ============================================================ #}
+{# BASE FORUM ADULTE - CSS Local #}
+{# ============================================================ #}
+
+{% load static %}
+{% load cache %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>{% block title %}🌿 Forum Jardin & Partage - Agriculture 2.0{% endblock %}</title>
+    
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/icon-192.png' %}">
+    
+    {# ============================================================ #}
+    {# CSS LOCAL - Tout est intégré ici #}
+    {# ============================================================ #}
+    <style>
+        /* ============================================================ */
+        /* VARIABLES - Identité "Jardin & Partage" */
+        /* ============================================================ */
+        :root {
+            --vert-jardin: #2E7D32;
+            --vert-tendre: #4CAF50;
+            --vert-clair: #81C784;
+            --vert-pale: #E8F5E9;
+            --beige-terre: #F5F0E8;
+            --brun-terre: #6D4C2A;
+            --brun-clair: #8D6E63;
+            --soleil: #FFB300;
+            --soleil-pale: #FFF8E1;
+            --tomate: #E53935;
+            --tomate-clair: #EF5350;
+            --tomate-pale: #FFEBEE;
+            --ombre: rgba(109, 76, 42, 0.08);
+            --ombre-forte: rgba(109, 76, 42, 0.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-pill: 50px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-display: 'Quicksand', var(--font-sans);
+        }
+        
+        /* ============================================================ */
+        /* RESET & BASE */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--beige-terre);
+            color: var(--brun-terre);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .forum-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+        
+        a {
+            color: var(--vert-jardin);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #1B5E20;
+            text-decoration: underline;
+        }
+        
+        /* ============================================================ */
+        /* BREADCRUMB */
+        /* ============================================================ */
+        .forum-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 16px;
+            padding: 8px 0;
+        }
+        
+        .forum-breadcrumb a {
+            color: var(--vert-jardin);
+            text-decoration: none;
+        }
+        
+        .forum-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .forum-breadcrumb .separator {
+            color: #ccc;
+        }
+        
+        .forum-breadcrumb .current {
+            color: var(--brun-terre);
+        }
+        
+        .forum-breadcrumb .quit-link {
+            margin-left: auto;
+            color: var(--brun-clair);
+            font-size: 0.85rem;
+            background: var(--beige-terre);
+            padding: 4px 14px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .forum-breadcrumb .quit-link:hover {
+            background: var(--vert-pale);
+            color: var(--vert-jardin);
+            text-decoration: none;
+        }
+        
+        /* ============================================================ */
+        /* EN-TÊTE DU FORUM */
+        /* ============================================================ */
+        .forum-header {
+            background: linear-gradient(135deg, var(--vert-jardin), var(--vert-tendre));
+            border-radius: var(--radius);
+            padding: 30px 32px;
+            margin-bottom: 28px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(46, 125, 50, 0.25);
+        }
+        
+        .forum-header::before {
+            content: '🌱';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 120px;
+            opacity: 0.15;
+            transform: rotate(-10deg);
+            pointer-events: none;
+        }
+        
+        .forum-header::after {
+            content: '🌾';
+            position: absolute;
+            right: 60px;
+            top: -10px;
+            font-size: 80px;
+            opacity: 0.10;
+            transform: rotate(20deg);
+            pointer-events: none;
+        }
+        
+        .forum-header .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .forum-header .header-top .title-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .forum-header .header-top .quit-btn {
+            background: rgba(255, 255, 255, 0.20);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: var(--radius-pill);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.30);
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        
+        .forum-header .header-top .quit-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .forum-header h1 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .forum-header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .forum-header .stats-badge {
+            display: inline-flex;
+            gap: 16px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .forum-header .stats-badge span {
+            background: rgba(255, 255, 255, 0.20);
+            backdrop-filter: blur(4px);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* ============================================================ */
+        /* BARRE D'ACTIONS */
+        /* ============================================================ */
+        .forum-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        
+        .forum-actions .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .forum-actions .search-box input {
+            width: 100%;
+            padding: 10px 18px 10px 44px;
+            border: 2px solid #e8e0d8;
+            border-radius: var(--radius-pill);
+            font-size: 0.95rem;
+            background: #fff;
+            transition: var(--transition);
+            font-family: var(--font-sans);
+        }
+        
+        .forum-actions .search-box input:focus {
+            border-color: var(--vert-jardin);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
+        }
+        
+        .forum-actions .search-box .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        
+        .btn-primary-forum {
+            background: var(--vert-jardin);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn-primary-forum:hover {
+            background: #1B5E20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(46, 125, 50, 0.30);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .btn-primary-forum:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-outline-forum {
+            background: transparent;
+            color: var(--brun-terre);
+            border: 2px solid #d4c8bc;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn-outline-forum:hover {
+            border-color: var(--vert-jardin);
+            color: var(--vert-jardin);
+            background: rgba(46, 125, 50, 0.06);
+            text-decoration: none;
+        }
+        
+        .btn-premium-forum {
+            background: linear-gradient(135deg, #FFB300, #FF8F00);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 2px 12px rgba(255, 179, 0, 0.30);
+        }
+        
+        .btn-premium-forum:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 179, 0, 0.40);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .btn-danger-forum {
+            background: var(--tomate);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn-danger-forum:hover {
+            background: #C62828;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(229, 57, 53, 0.30);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        /* ============================================================ */
+        /* ALERTES */
+        /* ============================================================ */
+        .alert {
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            border-left: 4px solid transparent;
+        }
+        
+        .alert-success {
+            background: var(--vert-pale);
+            border-color: var(--vert-tendre);
+            color: #1B5E20;
+        }
+        
+        .alert-warning {
+            background: var(--soleil-pale);
+            border-color: var(--soleil);
+            color: #E65100;
+        }
+        
+        .alert-danger {
+            background: var(--tomate-pale);
+            border-color: var(--tomate);
+            color: #B71C1C;
+        }
+        
+        .alert-info {
+            background: #E3F2FD;
+            border-color: #0D47A1;
+            color: #0D47A1;
+        }
+        
+        .alert .btn-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+        }
+        
+        .alert .btn-close:hover {
+            opacity: 1;
+        }
+        
+        /* ============================================================ */
+        /* CARTE SUJET */
+        /* ============================================================ */
+        .sujet-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            border: 1px solid rgba(109, 76, 42, 0.06);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .sujet-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px var(--ombre);
+            border-color: rgba(46, 125, 50, 0.12);
+        }
+        
+        .sujet-card .sujet-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            width: 48px;
+            text-align: center;
+        }
+        
+        .sujet-card .sujet-info {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .sujet-card .sujet-info .titre {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--brun-terre);
+            margin-bottom: 2px;
+        }
+        
+        .sujet-card .sujet-info .titre .badge-premium {
+            font-size: 0.65rem;
+            background: linear-gradient(135deg, #FFB300, #FF8F00);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        
+        .sujet-card .sujet-info .meta {
+            font-size: 0.82rem;
+            color: #999;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .sujet-card .sujet-info .meta .auteur {
+            color: var(--vert-jardin);
+            font-weight: 500;
+        }
+        
+        .sujet-card .sujet-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: #888;
+            flex-shrink: 0;
+        }
+        
+        .sujet-card .sujet-stats span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .badge-epingle {
+            background: var(--soleil);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-resolu {
+            background: var(--vert-tendre);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-ferme {
+            background: #999;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* ============================================================ */
+        /* CATÉGORIES */
+        /* ============================================================ */
+        .categorie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        
+        .categorie-card {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            transition: var(--transition);
+            border: 1px solid rgba(109, 76, 42, 0.06);
+            text-decoration: none;
+            color: var(--brun-terre);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .categorie-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px var(--ombre);
+            border-color: var(--vert-clair);
+            text-decoration: none;
+            color: var(--brun-terre);
+        }
+        
+        .categorie-card .cat-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        
+        .categorie-card .cat-info {
+            flex: 1;
+        }
+        
+        .categorie-card .cat-info .cat-nom {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .categorie-card .cat-info .cat-stats {
+            font-size: 0.75rem;
+            color: #999;
+        }
+        
+        .categorie-card .cat-badge-premium {
+            font-size: 0.6rem;
+            background: linear-gradient(135deg, #FFB300, #FF8F00);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        /* ============================================================ */
+        /* QUOTA */
+        /* ============================================================ */
+        .quota-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            border: 1px solid rgba(109, 76, 42, 0.06);
+            margin-top: 20px;
+        }
+        
+        .quota-card .quota-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .quota-card .quota-header .quota-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .quota-card .quota-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .quota-card .quota-bar .quota-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        
+        .quota-card .quota-bar .quota-fill.vert { background: var(--vert-tendre); }
+        .quota-card .quota-bar .quota-fill.orange { background: var(--soleil); }
+        .quota-card .quota-bar .quota-fill.rouge { background: var(--tomate); }
+        
+        /* ============================================================ */
+        /* PAGINATION */
+        /* ============================================================ */
+        .pagination-forum {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-forum .page-link {
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #e8e0d8;
+            background: #fff;
+            color: var(--brun-terre);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .pagination-forum .page-link:hover {
+            background: var(--beige-terre);
+            border-color: var(--vert-jardin);
+            text-decoration: none;
+        }
+        
+        .pagination-forum .page-link.active {
+            background: var(--vert-jardin);
+            color: #fff;
+            border-color: var(--vert-jardin);
+        }
+        
+        .pagination-forum .page-link.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        
+        /* ============================================================ */
+        /* MESSAGES */
+        /* ============================================================ */
+        .message-card {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--vert-clair);
+            transition: var(--transition);
+        }
+        
+        .message-card.is-premium {
+            border-left-color: #FFB300;
+            background: linear-gradient(135deg, #FFF8E1, #fff);
+        }
+        
+        .message-card.is-solution {
+            border-left-color: var(--vert-tendre);
+            background: linear-gradient(135deg, var(--vert-pale), #fff);
+        }
+        
+        .message-card .message-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .message-card .message-header .auteur {
+            font-weight: 600;
+            color: var(--vert-jardin);
+        }
+        
+        .message-card .message-header .date {
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .message-card .message-content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            word-wrap: break-word;
+        }
+        
+        .message-card .message-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .message-card .message-actions .vote-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #888;
+            font-family: var(--font-sans);
+        }
+        
+        .message-card .message-actions .vote-btn:hover {
+            background: var(--beige-terre);
+        }
+        
+        .message-card .message-actions .vote-btn.upvote.active {
+            color: var(--vert-tendre);
+        }
+        
+        .message-card .message-actions .vote-btn.downvote.active {
+            color: var(--tomate);
+        }
+        
+        .message-card .message-actions .badge-solution {
+            background: var(--vert-tendre);
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .message-card .message-actions .badge-premium-msg {
+            background: linear-gradient(135deg, #FFB300, #FF8F00);
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* ============================================================ */
+        /* FORMULAIRES */
+        /* ============================================================ */
+        .forum-form textarea,
+        .forum-form input[type="text"],
+        .forum-form input[type="email"],
+        .forum-form select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e8e0d8;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            font-family: var(--font-sans);
+            background: #fff;
+        }
+        
+        .forum-form textarea:focus,
+        .forum-form input:focus,
+        .forum-form select:focus {
+            border-color: var(--vert-jardin);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.10);
+        }
+        
+        .forum-form textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .forum-form .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .forum-form .form-hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .forum-form .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .forum-form .form-check input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--vert-jardin);
+        }
+        
+        /* ============================================================ */
+        /* NOTIFICATIONS */
+        /* ============================================================ */
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: #fff;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+        
+        .notification-item.unread {
+            border-left-color: var(--vert-jardin);
+            background: #FAFCFA;
+        }
+        
+        .notification-item .notif-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        
+        .notification-item .notif-content {
+            flex: 1;
+        }
+        
+        .notification-item .notif-content .notif-text {
+            font-size: 0.92rem;
+        }
+        
+        .notification-item .notif-content .notif-date {
+            font-size: 0.75rem;
+            color: #999;
+        }
+        
+        .notification-item .notif-link {
+            color: var(--vert-jardin);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .notification-item .notif-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* ============================================================ */
+        /* SIGNALEMENT */
+        /* ============================================================ */
+        .signalement-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--tomate);
+        }
+        
+        .signalement-card .signalement-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .signalement-card .signalement-header .badge-statut {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .signalement-card .signalement-header .badge-statut.en_attente { background: #FFF3E0; color: #E65100; }
+        .signalement-card .signalement-header .badge-statut.en_cours { background: #E3F2FD; color: #0D47A1; }
+        .signalement-card .signalement-header .badge-statut.traite { background: var(--vert-pale); color: #1B5E20; }
+        .signalement-card .signalement-header .badge-statut.refuse { background: var(--tomate-pale); color: #B71C1C; }
+        
+        /* ============================================================ */
+        /* EMPTY STATE */
+        /* ============================================================ */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #999;
+        }
+        
+        .empty-state .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+        
+        .empty-state .empty-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--brun-terre);
+        }
+        
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 768px) {
+            .forum-header {
+                padding: 20px;
+            }
+            
+            .forum-header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .forum-header .header-top {
+                flex-direction: column;
+            }
+            
+            .forum-header .header-top .quit-btn {
+                align-self: flex-start;
+            }
+            
+            .forum-actions {
+                flex-direction: column;
+            }
+            
+            .forum-actions .search-box {
+                width: 100%;
+            }
+            
+            .forum-actions .btn-primary-forum,
+            .forum-actions .btn-outline-forum,
+            .forum-actions .btn-premium-forum {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .categorie-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .sujet-card {
+                padding: 14px 16px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .sujet-card .sujet-stats {
+                justify-content: flex-start;
+                font-size: 0.8rem;
+            }
+            
+            .message-card .message-actions {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .categorie-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .forum-header .stats-badge span {
+                font-size: 0.7rem;
+                padding: 2px 10px;
+            }
+            
+            .sujet-card .sujet-info .titre {
+                font-size: 0.95rem;
+            }
+            
+            .forum-container {
+                padding: 12px 10px 30px;
+            }
+            
+            .forum-breadcrumb .quit-link {
+                font-size: 0.75rem;
+                padding: 2px 10px;
+            }
+        }
+        
+        /* ============================================================ */
+        /* UTILITAIRES */
+        /* ============================================================ */
+        .text-vert { color: var(--vert-jardin); }
+        .text-brun { color: var(--brun-terre); }
+        .text-soleil { color: var(--soleil); }
+        .text-tomate { color: var(--tomate); }
+        .bg-vert { background: var(--vert-jardin); }
+        .bg-terre { background: var(--beige-terre); }
+        .bg-white { background: #fff; }
+        
+        .mb-8 { margin-bottom: 8px; }
+        .mb-12 { margin-bottom: 12px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-8 { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-20 { margin-top: 20px; }
+        
+        .gap-8 { gap: 8px; }
+        .gap-12 { gap: 12px; }
+        .gap-16 { gap: 16px; }
+        
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .text-center { text-align: center; }
+        
+        .w-full { width: 100%; }
+        .max-w-800 { max-width: 800px; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        
+        .rounded { border-radius: var(--radius); }
+        .rounded-sm { border-radius: var(--radius-sm); }
+        .rounded-pill { border-radius: var(--radius-pill); }
+        
+        .shadow-sm { box-shadow: 0 2px 8px var(--ombre); }
+        .shadow-md { box-shadow: 0 4px 16px var(--ombre-forte); }
+        
+        .border { border: 1px solid rgba(109, 76, 42, 0.06); }
+        .border-vert { border-color: var(--vert-clair); }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    
+<div class="forum-container">
+    
+    {# ✅ BREADCRUMB - Navigation avec lien "Quitter le forum" #}
+    <nav class="forum-breadcrumb" aria-label="Fil d'Ariane">
+        <a href="{% url 'vegetables_fruits:index' %}">🏠 Accueil</a>
+        <span class="separator">›</span>
+        <a href="{% url 'vegetables_fruits:forum_adulte_index' %}">🌿 Forum</a>
+        {% block breadcrumb %}{% endblock %}
+    </nav>
+    
+    {# EN-TÊTE #}
+    <header class="forum-header">
+        <div class="header-top">
+            <div class="title-group">
+                <h1>🌿 Forum Jardin &amp; Partage</h1>
+                <p class="subtitle">{% block header_subtitle %}Le jardinage, c'est mieux quand on le partage 🌱{% endblock %}</p>
+            </div>
+            <a href="{% url 'vegetables_fruits:dashboard_particulier' %}" class="quit-btn">
+                <span>🏠</span> Quitter le forum
+            </a>
+        </div>
+        
+        {% block header_stats %}
+        <div class="stats-badge">
+            <span>📊 <span id="total-sujets">{{ total_sujets|default:0 }}</span> sujets</span>
+            <span>💬 <span id="total-messages">{{ total_messages|default:0 }}</span> messages</span>
+            <span>👤 <span id="total-utilisateurs">{{ total_utilisateurs|default:0 }}</span> jardiniers</span>
+            <span id="sujets-aujourdhui">📅 <span>{{ sujets_aujourdhui|default:0 }}</span> aujourd'hui</span>
+        </div>
+        {% endblock %}
+    </header>
+    
+    {# ACTIONS #}
+    {% block forum_actions %}
+    <div class="forum-actions">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Rechercher un sujet..." aria-label="Rechercher">
+        </div>
+        <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}" class="btn-primary-forum">
+            <span>✏️</span> Nouveau sujet
+        </a>
+        {% if not est_premium %}
+        <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-premium-forum">
+            <span>👑</span> Passer Premium
+        </a>
+        {% endif %}
+    </div>
+    {% endblock %}
+    
+    {# MESSAGES FLASH #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+                <button type="button" class="btn-close" data-dismiss="alert" aria-label="Fermer">&times;</button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    {# CONTENU #}
+    {% block content %}{% endblock %}
+    
+    {# QUOTA BASIQUE #}
+    {% if niveau == 'basique' and quota %}
+    <div class="quota-card">
+        <div class="quota-header">
+            <span class="quota-label">🌱 Plan Basique</span>
+            <span>
+                {{ quota.sujets_utilises|default:0 }}/{{ quota.sujets_max|default:5 }} sujets •
+                {{ quota.messages_utilises|default:0 }}/{{ quota.messages_max|default:50 }} messages
+            </span>
+        </div>
+        <div class="quota-bar">
+            <div class="quota-fill {% if quota.pourcentage < 70 %}vert{% elif quota.pourcentage < 90 %}orange{% else %}rouge{% endif %}" 
+                 style="width: {{ quota.pourcentage|default:0 }}%;"></div>
+        </div>
+        <div style="margin-top: 6px; font-size: 0.8rem; color: #888;">
+            {% if quota.pourcentage < 70 %}
+                🌱 Vous êtes dans la norme
+            {% elif quota.pourcentage < 90 %}
+                ⚠️ Attention, vous approchez de votre limite
+            {% else %}
+                🔴 Vous avez presque atteint votre limite mensuelle
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {# FOOTER #}
+    <footer style="margin-top: 40px; text-align: center; font-size: 0.8rem; color: #bbb; border-top: 1px solid #eee; padding-top: 20px;">
+        <p>🌿 Agriculture 2.0 - Forum Jardin &amp; Partage</p>
+        <p style="font-size: 0.7rem; color: #ddd;">
+            <a href="{% url 'vegetables_fruits:cgu' %}" style="color: #bbb; text-decoration: none;">CGU</a> •
+            <a href="{% url 'vegetables_fruits:confidentialite' %}" style="color: #bbb; text-decoration: none;">Confidentialité</a>
+        </p>
+    </footer>
+</div>
+
+{# ============================================================ #}
+{# SCRIPTS LOCAUX (pas de CDN) #}
+{# ============================================================ #}
+<script>
+    // ============================================================ //
+    // ALERTES (auto-fermeture) //
+    // ============================================================ //
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.alert .btn-close').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                this.closest('.alert').style.display = 'none';
+            });
+        });
+        
+        document.querySelectorAll('.alert:not(.alert-danger)').forEach(function(alert) {
+            setTimeout(function() {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 500);
+            }, 5000);
+        });
+    });
+    
+    // ============================================================ //
+    // CSRFToken pour AJAX //
+    // ============================================================ //
+    function getCSRFToken() {
+        const cookieValue = document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken='));
+        return cookieValue ? cookieValue.split('=')[1] : '';
+    }
+    window.csrftoken = getCSRFToken();
+    
+    // ============================================================ //
+    // RECHERCHE (debounce) //
+    // ============================================================ //
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+                debounceTimer = setTimeout(function() {
+                    if (query.length >= 2) {
+                        performSearch(query);
+                    } else if (query.length === 0) {
+                        window.location.reload();
+                    }
+                }, 400);
+            });
+        }
+    });
+    
+    function performSearch(query) {
+        console.log('🔍 Recherche:', query);
+    }
+    
+    // ============================================================ //
+    // NOTIFICATIONS - Marquer comme lu //
+    // ============================================================ //
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-marquer-lu').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.dataset.url;
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': window.csrftoken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        const item = btn.closest('.notification-item');
+                        item.classList.remove('unread');
+                        const badge = document.querySelector('.notif-badge');
+                        if (badge) {
+                            const count = parseInt(badge.textContent) || 0;
+                            badge.textContent = count > 1 ? count - 1 : '';
+                        }
+                    }
+                });
+            });
+        });
+    });
+    
+    // ============================================================ //
+    // NOTIFICATIONS - Tout marquer comme lu //
+    // ============================================================ //
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnToutLu = document.getElementById('btn-tout-lu');
+        if (btnToutLu) {
+            btnToutLu.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetch(this.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': window.csrftoken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        document.querySelectorAll('.notification-item.unread').forEach(function(el) {
+                            el.classList.remove('unread');
+                        });
+                        const badge = document.querySelector('.notif-badge');
+                        if (badge) badge.textContent = '';
+                    }
+                });
+            });
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

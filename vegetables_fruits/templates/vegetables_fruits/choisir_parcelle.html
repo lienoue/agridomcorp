@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🌱 Choisir une parcelle{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1>🌱 Planter {{ culture_nom }}</h1>
+    <p class="text-muted">Choisissez la parcelle où vous souhaitez planter votre culture</p>
+
+    <div class="row">
+        {% for figure in figures %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-2">
+                        {% if figure.figure_type == 'parcelle_agricole' %}🌾
+                        {% elif figure.figure_type == 'verger' %}🍎
+                        {% elif figure.figure_type == 'potager' %}🥕
+                        {% else %}📍{% endif %}
+                    </div>
+                    <h5 class="card-title">{{ figure.name }}</h5>
+                    <p class="card-text text-muted small">
+                        Type : {{ figure.get_figure_type_display|default:figure.figure_type }}<br>
+                        Créée le {{ figure.created_at|date:"d/m/Y" }}
+                    </p>
+                    <a href="{% url 'vegetables_fruits:placer_culture' figure.id %}?culture={{ culture_nom }}" 
+                       class="btn btn-success">
+                        🌱 Planter ici
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                Vous n'avez pas encore de parcelle.
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-primary mt-2">
+                    ➕ Créer une parcelle
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

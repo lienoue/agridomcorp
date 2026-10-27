@@ -1,0 +1,97 @@
+<div class="alertes-avancees-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+            <i class="bi bi-graph-up text-success"></i> Alertes météo avancées
+        </h5>
+        <div>
+            <span class="badge bg-info rounded-pill">{{ stats.total_parcelles }} parcelles</span>
+            <span class="badge bg-danger rounded-pill">{{ stats.alertes_actives }} alertes</span>
+        </div>
+    </div>
+<br>
+    {% if user_has_parcelles %}
+        <div class="row g-3">
+            {% for item in parcelles_meteo %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card {% if item.alertes %}border-danger{% endif %}">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ item.parcelle.nom }}</h6>
+                            {% if item.has_coords %}
+                                {% if item.meteo %}
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary">🌡️ {{ item.meteo.temperature }}°C</span>
+                                        <span class="badge bg-info">💧 {{ item.meteo.humidity }}%</span>
+                                        <span class="badge bg-secondary">💨 {{ item.meteo.wind_speed }} km/h</span>
+                                    </div>
+                                    <div>{{ item.meteo.conditions }}</div>
+                                {% else %}
+                                    <span class="text-muted">⏳ Météo indisponible</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-warning">⚠️ Pas de coordonnées</span>
+                            {% endif %}
+
+                            {% if item.alertes %}
+                                <hr>
+                                <div class="alert alert-danger small mb-0">
+                                    {% for alerte in item.alertes %}
+                                        <div>{{ alerte.message }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Statistiques -->
+        <div class="row g-3 mt-3">
+            <div class="col">
+                <div class="card text-center bg-danger text-white">
+                    <div class="card-body">
+                        <h5>{{ stats.gel }}</h5>
+                        <small>❄️ Gel</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center bg-warning text-dark">
+                    <div class="card-body">
+                        <h5>{{ stats.canicule }}</h5>
+                        <small>🌡️ Canicule</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center bg-info text-white">
+                    <div class="card-body">
+                        <h5>{{ stats.pluie }}</h5>
+                        <small>🌧️ Pluie</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center bg-secondary text-white">
+                    <div class="card-body">
+                        <h5>{{ stats.vent }}</h5>
+                        <small>💨 Vent</small>
+                    </div>
+                </div>
+            </div>
+            <!-- ✅ NOUVEAU : Statistique humidité -->
+            <div class="col">
+                <div class="card text-center bg-primary text-white">
+                    <div class="card-body">
+                        <h5>{{ stats.humidite }}</h5>
+                        <small>💧 Humidité</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune parcelle avec coordonnées pour les alertes avancées.
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,69 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+{% load cache %}
+
+{% block title %}{{ categorie.nom }} - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}{{ categorie.icone }} {{ categorie.nom }}{% endblock %}
+
+{% block breadcrumb %}
+    <li style="color: #ccc;">›</li>
+    <li style="color: var(--brun-terre);">{{ categorie.icone }} {{ categorie.nom }}</li>
+{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+    <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}?categorie={{ categorie.id }}" class="btn-primary-forum">
+        <span>✏️</span> Nouveau sujet dans {{ categorie.icone }} {{ categorie.nom }}
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if categorie.description %}
+<div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; color: var(--brun-clair);">
+    {{ categorie.description }}
+</div>
+{% endif %}
+
+{# SUJETS ÉPINGLÉS #}
+{% if sujets_epingles %}
+<section class="mb-20">
+    <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+        <span>📌</span> Sujets épinglés
+    </h4>
+    {% for sujet in sujets_epingles %}
+        {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet is_epingle=True %}
+    {% endfor %}
+</section>
+{% endif %}
+
+{# SUJETS NORMAUX #}
+<section>
+    <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+        <span>📋</span> Sujets
+        <span style="font-size: 0.8rem; color: #999; font-weight: 400;">({{ sujets.paginator.count }})</span>
+    </h4>
+
+    {% for sujet in sujets %}
+        {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet %}
+    {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">🌱</div>
+            <div class="empty-title">Aucun sujet dans cette catégorie</div>
+            <p>Soyez le premier à lancer une discussion !</p>
+            <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}?categorie={{ categorie.id }}"
+               class="btn-primary-forum"
+               style="margin-top: 12px; display: inline-flex; background: var(--vert-jardin); color: white; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-weight: 600; font-size: 0.95rem; transition: var(--transition); align-items: center; gap: 8px; text-decoration: none;">
+                <span>✏️</span> Créer un sujet dans {{ categorie.icone }} {{ categorie.nom }}
+            </a>
+        </div>
+    {% endfor %}
+
+    {% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=sujets %}
+</section>
+
+{% endblock %}

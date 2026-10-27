@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block title %}🎯 Missions hebdomadaires{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-missions {
+        background: linear-gradient(135deg, #ff6b35, #ffb347);
+        padding: 30px 0;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: white;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff6b35;
+    }
+    .streak-card {
+        background: linear-gradient(135deg, #ffd700, #ffb347);
+        border-radius: 15px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .streak-fire {
+        font-size: 2rem;
+    }
+    .streak-number {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .mission-card {
+        background: white;
+        border-radius: 15px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e9ecef;
+    }
+    .mission-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .mission-header {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .mission-emoji {
+        font-size: 2.5rem;
+        min-width: 60px;
+        text-align: center;
+    }
+    .mission-info {
+        flex: 1;
+    }
+    .mission-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    .mission-desc {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .mission-points {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #ff6b35;
+        min-width: 80px;
+        text-align: right;
+    }
+    .mission-progress {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .progress {
+        flex: 1;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    .mission-value {
+        font-size: 0.85rem;
+        font-weight: bold;
+        min-width: 80px;
+        text-align: right;
+    }
+    .mission-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        margin-left: 10px;
+    }
+    .mission-complete {
+        background: #d4edda;
+        color: #155724;
+    }
+    .mission-incomplete {
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+    .region-info {
+        background: #e8f5e9;
+        border-radius: 12px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+        .mission-header {
+            flex-wrap: wrap;
+        }
+        .mission-points {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="hero-missions">
+        <h1>🎯 Missions hebdomadaires</h1>
+        <p class="mb-0">Semaine {{ semaine }} - Relevez les défis et gagnez des récompenses !</p>
+    </div>
+
+    <!-- Informations région -->
+    <div class="region-info">
+        <div>
+            <span class="me-2">🌍</span>
+            <strong>Missions adaptées à ta région :</strong>
+            {{ region.continent|title }}
+            {% if region.pays %} - {{ region.pays }}{% endif %}
+            {% if region.region %} ({{ region.region }}){% endif %}
+            - Saison : {{ region.saison|title }}
+        </div>
+        <div>
+            <span class="badge bg-success">🎯 Missions personnalisées</span>
+        </div>
+    </div>
+
+    <!-- Statistiques de la semaine -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="text-muted">Missions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.completees }}</div>
+            <div class="text-muted">Complétées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.points_gagnes }}</div>
+            <div class="text-muted">Points gagnés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.progression_totale|default:0 }}%</div>
+            <div class="text-muted">Progression</div>
+        </div>
+    </div>
+
+    <!-- Streak de connexion -->
+    <div class="streak-card">
+        <div>
+            <span class="streak-fire">🔥</span>
+            <strong>Streak actuel :</strong>
+        </div>
+        <div>
+            <span class="streak-number">{{ streak.jours_actuel }}</span> jours
+            <span class="text-muted ms-3">🏆 Record : {{ streak.jours_max }} jours</span>
+        </div>
+    </div>
+
+    <!-- Liste des missions -->
+    <h3 class="mb-3">📋 Missions de la semaine</h3>
+    
+    {% for mission in missions %}
+    {% with progression=progressions|get_item:mission.id %}
+    <div class="mission-card">
+        <div class="mission-header">
+            <div class="mission-emoji">{{ mission.badge_emoji }}</div>
+            <div class="mission-info">
+                <div class="mission-title">
+                    {{ mission.titre }}
+                    {% if progression.est_complete %}
+                    <span class="mission-badge mission-complete">✅ Complété</span>
+                    {% else %}
+                    <span class="mission-badge mission-incomplete">⏳ En cours</span>
+                    {% endif %}
+                </div>
+                <div class="mission-desc">{{ mission.description }}</div>
+            </div>
+            <div class="mission-points">
+                +{{ mission.points_recompense }} pts
+            </div>
+        </div>
+        <div class="mission-progress">
+            <div class="progress">
+                <div class="progress-bar" style="width: {% widthratio progression.progression mission.objectif 100 %}%;"></div>
+            </div>
+            <div class="mission-value">
+                {{ progression.progression }} / {{ mission.objectif }}
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="alert alert-info text-center">
+        Aucune mission disponible pour cette semaine. Reviens plus tard !
+    </div>
+    {% endfor %}
+
+    <!-- Message de fin de semaine -->
+    {% if stats.completees == stats.total and stats.total > 0 %}
+    <div class="alert alert-success text-center mt-4">
+        🎉 Félicitations ! Tu as complété toutes les missions de la semaine !
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation des barres de progression
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.progress-bar').forEach(function(bar) {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(function() {
+                bar.style.width = width;
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

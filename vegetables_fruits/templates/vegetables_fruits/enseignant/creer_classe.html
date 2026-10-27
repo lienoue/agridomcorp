@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">📚 Créer une nouvelle classe</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nom de la classe</label>
+                            <input type="text" name="nom" class="form-control" required
+                                   placeholder="Ex: CM1 - Jardinage, Atelier du mercredi...">
+                            <small class="text-muted">Choisis un nom facile à retenir pour tes élèves</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100">
+                            ➕ Créer la classe
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'vegetables_fruits:dashboard_enseignant' %}" class="btn btn-link">
+                    ← Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

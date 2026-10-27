@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+
+{% block title %}Alertes météo avancées{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alertes-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+
+    .parcelle-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        border-left: 4px solid var(--primary);
+    }
+
+    .parcelle-card.no-coords {
+        border-left-color: var(--secondary);
+        opacity: 0.7;
+    }
+
+    .parcelle-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .parcelle-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .parcelle-location {
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+
+    .meteo-display {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 15px;
+        background: #f0f7ff;
+        border-radius: 10px;
+        margin: 10px 0;
+        flex-wrap: wrap;
+    }
+
+    .meteo-temp {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .meteo-details {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        color: var(--secondary);
+    }
+
+    .meteo-details span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .alertes-list {
+        margin-top: 10px;
+    }
+
+    .alerte-item {
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+    }
+
+    .alerte-item.gel {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+    }
+
+    .alerte-item.canicule {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+    }
+
+    .alerte-item.pluie {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+    }
+
+    .alerte-item.vent {
+        background: #fce4ec;
+        border-left: 4px solid #f44336;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: var(--secondary);
+    }
+
+    .last-update {
+        text-align: right;
+        font-size: 0.8rem;
+        color: var(--secondary);
+        margin-top: 20px;
+    }
+
+    .refresh-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .refresh-btn:hover {
+        background: var(--primary-dark);
+        transform: scale(1.02);
+    }
+
+    .alertes-recentes {
+        margin-top: 30px;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+
+    .alerte-recente-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .alerte-recente-item:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .meteo-display {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .parcelle-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="alertes-container">
+    <h1>🌤️ Alertes météo avancées</h1>
+    <p style="color: var(--secondary); margin-bottom: 20px;">
+        Surveillance météo en temps réel de toutes vos parcelles
+        <span style="font-size: 0.8rem; margin-left: 10px;" id="last-update-time">
+            Dernière mise à jour : {{ now|date:"H:i:s" }}
+        </span>
+        <button class="refresh-btn" onclick="refreshMeteo()" style="margin-left: 15px;">
+            🔄 Rafraîchir
+        </button>
+    </p>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_parcelles }}</div>
+            <div class="stat-label">🌾 Parcelles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.parcelles_avec_meteo }}</div>
+            <div class="stat-label">📡 Avec météo</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #ff9800;">{{ stats.alertes_actives }}</div>
+            <div class="stat-label">⚠️ Alertes actives</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #2196f3;">{{ stats.gel }}</div>
+            <div class="stat-label">❄️ Gel</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #f44336;">{{ stats.canicule }}</div>
+            <div class="stat-label">🌡️ Canicule</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #4caf50;">{{ stats.pluie }}</div>
+            <div class="stat-label">🌧️ Pluie forte</div>
+        </div>
+    </div>
+
+    <!-- Parcelles -->
+    {% if user_has_parcelles %}
+        {% for item in parcelles_meteo %}
+        <div class="parcelle-card {% if not item.has_coords %}no-coords{% endif %}" data-parcelle-id="{{ item.parcelle.id }}">
+            <div class="parcelle-header">
+                <div>
+                    <span class="parcelle-name">🌱 {{ item.parcelle.nom }}</span>
+                    <span class="parcelle-location">
+                        {% if item.has_coords %}
+                            📍 {{ item.parcelle.figure.adresse|default:"Coordonnées disponibles" }}
+                        {% else %}
+                            ⚠️ Pas de coordonnées GPS
+                        {% endif %}
+                    </span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--secondary);">
+                    {{ item.parcelle.surface_m2 }} m²
+                </span>
+            </div>
+
+            {% if item.has_coords %}
+                {% if item.meteo %}
+                <div class="meteo-display">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if item.meteo.icon %}
+                            <img src="https://openweathermap.org/img/wn/{{ item.meteo.icon }}.png" alt="Météo" width="50" height="50">
+                        {% endif %}
+                        <span class="meteo-temp">{{ item.meteo.temperature }}°C</span>
+                    </div>
+                    <div class="meteo-details">
+                        <span>🌤️ {{ item.meteo.conditions }}</span>
+                        <span>💧 {{ item.meteo.humidity }}%</span>
+                        <span>💨 {{ item.meteo.wind_speed }} km/h</span>
+                        <span>🌧️ {{ item.meteo.precipitation }} mm</span>
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; color: var(--secondary);">
+                    ⏳ Météo non disponible
+                </div>
+                {% endif %}
+
+                <!-- Alertes pour cette parcelle -->
+                {% if item.alertes %}
+                <div class="alertes-list">
+                    {% for alerte in item.alertes %}
+                    <div class="alerte-item {{ alerte.type }}">
+                        <span>{{ alerte.message }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="margin-top: 10px; font-size: 0.9rem; color: #4caf50;">
+                    ✅ Aucune alerte pour cette parcelle
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; color: var(--secondary);">
+                    📍 Ajoutez des coordonnées GPS à cette parcelle pour voir la météo et les alertes.
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-data">
+            <p style="font-size: 3rem;">🌾</p>
+            <p>Vous n'avez pas encore de parcelle.</p>
+            <p>Créez votre première parcelle pour commencer à surveiller la météo.</p>
+            <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-primary" style="display: inline-block; margin-top: 15px; padding: 10px 25px; background: var(--primary); color: white; border-radius: 8px; text-decoration: none;">
+                ✏️ Créer une parcelle
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Alertes récentes -->
+    {% if alertes_recentes %}
+    <div class="alertes-recentes">
+        <h3>📋 Alertes récentes (7 derniers jours)</h3>
+        {% for alerte in alertes_recentes %}
+        <div class="alerte-recente-item">
+            <div>
+                <span style="font-weight: 600;">
+                    {% if alerte.type_alerte == 'gel' %}❄️
+                    {% elif alerte.type_alerte == 'canicule' %}🌡️
+                    {% elif alerte.type_alerte == 'pluie' %}🌧️
+                    {% elif alerte.type_alerte == 'vent' %}💨
+                    {% else %}⚠️
+                    {% endif %}
+                    {{ alerte.type_alerte|capfirst }}
+                </span>
+                <span style="color: var(--secondary); font-size: 0.9rem;">
+                    {{ alerte.message|truncatechars:80 }}
+                </span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--secondary);">
+                {{ alerte.date_declenchement|date:"d/m/Y H:i" }}
+                {% if alerte.temperature %}
+                    ({{ alerte.temperature }}°C)
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="last-update">
+        ⏰ Les données météo sont mises à jour automatiquement toutes les 30 minutes
+    </div>
+</div>
+
+<script>
+// ==================== RAFRAÎCHISSEMENT AUTO ====================
+
+// Fonction de rafraîchissement (recharge la page)
+function refreshMeteo() {
+    const btn = document.querySelector('.refresh-btn');
+    btn.textContent = '⏳ Chargement...';
+    btn.disabled = true;
+
+    // Recharger la page avec un paramètre pour éviter le cache
+    window.location.href = window.location.pathname + '?refresh=' + Date.now();
+}
+
+// Rafraîchissement automatique toutes les 30 minutes (1800000 ms)
+setTimeout(function() {
+    location.reload();
+}, 1800000);
+
+// Afficher l'heure de la dernière mise à jour
+document.addEventListener('DOMContentLoaded', function() {
+    const updateTime = document.getElementById('last-update-time');
+    if (updateTime) {
+        const now = new Date();
+        updateTime.textContent = 'Dernière mise à jour : ' + now.toLocaleTimeString('fr-FR');
+    }
+});
+
+// ==================== ANIMATION DES ALERTES ====================
+
+// Faire clignoter les alertes actives
+document.querySelectorAll('.alerte-item').forEach(function(el) {
+    setInterval(function() {
+        el.style.opacity = el.style.opacity === '0.5' ? '1' : '0.5';
+    }, 1000);
+});
+</script>
+{% endblock %}

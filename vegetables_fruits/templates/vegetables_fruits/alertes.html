@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Agriculture 2.0 - Alertes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">⚠️ Alertes</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Sélecteur de parcelle -->
+    <div class="parcelle-selector">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <label for="parcelle-select" class="form-label fw-bold mb-0 me-2">
+                    <i class="bi bi-geo-alt"></i> Choisir une parcelle :
+                </label>
+                <select id="parcelle-select" class="form-select d-inline-block w-auto" style="display: inline-block !important; width: auto; min-width: 200px;">
+                    {% for figure in figures %}
+                        <option value="{{ figure.id }}" {% if figure.id == selected_figure_id %}selected{% endif %}>
+                            {{ figure.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nouvelle parcelle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <ul class="nav nav-pills mb-3" id="alertesTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="meteo-tab" data-bs-target="#meteo" type="button" role="tab">
+                <i class="bi bi-cloud-sun"></i> Alertes météo
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="avancees-tab" data-bs-target="#avancees" type="button" role="tab">
+                <i class="bi bi-graph-up"></i> Alertes avancées
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="traitements-tab" data-bs-target="#traitements" type="button" role="tab">
+                <i class="bi bi-droplet"></i> Alertes traitements
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="semis-tab" data-bs-target="#semis" type="button" role="tab">
+                <i class="bi bi-calendar-check"></i> Alertes semis
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="alertesTabsContent">
+        <div class="tab-pane fade show active" id="meteo" role="tabpanel">
+            <div id="meteo-content"></div>
+        </div>
+        <div class="tab-pane fade" id="avancees" role="tabpanel">
+            <div id="avancees-content"></div>
+        </div>
+        <div class="tab-pane fade" id="traitements" role="tabpanel">
+            <div id="traitements-content"></div>
+        </div>
+        <div class="tab-pane fade" id="semis" role="tabpanel">
+            <div id="semis-content"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .parcelle-selector {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    #alertesTabs {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 5px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin: 0 !important;
+    }
+
+    #alertesTabs .nav-item {
+        flex: 0 0 auto !important;
+        list-style: none !important;
+    }
+
+    #alertesTabs .nav-link {
+        white-space: nowrap !important;
+        color: #495057;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    #alertesTabs .nav-link:hover {
+        background: #e9ecef;
+    }
+
+    #alertesTabs .nav-link.active {
+        background: #28a745;
+        color: white;
+    }
+
+    .tab-content {
+        padding: 20px 0;
+    }
+</style>
+
+<script>
+// ============================================================
+// CHARGEMENT DES ONGLETS VIA AJAX
+// ============================================================
+function chargerOnglet(tabName) {
+    const parcelleId = document.getElementById('parcelle-select')?.value || '';
+    const url = `/api/tab/alertes/${tabName}/?parcelle_id=${parcelleId}`;
+
+    let contentId = '';
+    if (tabName === 'meteo') contentId = 'meteo-content';
+    else if (tabName === 'avancees') contentId = 'avancees-content';
+    else if (tabName === 'traitements') contentId = 'traitements-content';
+    else if (tabName === 'semis') contentId = 'semis-content';
+    else return;
+
+    const contentDiv = document.getElementById(contentId);
+    if (!contentDiv) return;
+
+    contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Chargement...</p></div>';
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            contentDiv.innerHTML = html;
+        })
+        .catch(error => {
+            contentDiv.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>';
+            console.error('Erreur:', error);
+        });
+}
+
+// ============================================================
+// ACTIONS SUR LES ALERTES SEMIS
+// (placées ici car le HTML injecté via innerHTML n'exécute pas les <script>)
+// ============================================================
+function ignorerAlerteSemis(alerteId) {
+    if (!confirm('Marquer cette alerte comme ignorée ?')) return;
+
+    fetch(`/ignorer-alerte-semis/${alerteId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotif('✅ Alerte ignorée', 'success');
+            chargerOnglet('semis');
+        } else {
+            showNotif('❌ ' + (data.error || 'Erreur'), 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotif('❌ Erreur de communication', 'error');
+    });
+}
+
+function restaurerAlerteSemis(alerteId) {
+    if (!confirm('Restaurer cette alerte ?')) return;
+
+    fetch(`/restaurer-alerte-semis/${alerteId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotif('✅ Alerte restaurée', 'success');
+            chargerOnglet('semis');
+        } else {
+            showNotif('❌ ' + (data.error || 'Erreur'), 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotif('❌ Erreur de communication', 'error');
+    });
+}
+
+// ============================================================
+// NOTIFICATIONS VISUELLES
+// ============================================================
+function showNotif(message, type = 'info') {
+    const notif = document.createElement('div');
+    notif.style.cssText = `
+        position: fixed; top: 20px; right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white; padding: 12px 24px; border-radius: 8px;
+        z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-family: Arial, sans-serif;
+    `;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
+
+// ============================================================
+// RÉCUPÉRATION DU COOKIE CSRF
+// ============================================================
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ============================================================
+// INITIALISATION
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des onglets
+    const tabs = document.querySelectorAll('#alertesTabs button');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            document.querySelectorAll('#alertesTabs .nav-link').forEach(t => {
+                t.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+                pane.style.display = 'none';
+            });
+
+            const target = this.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(target);
+            if (targetPane) {
+                targetPane.style.display = 'block';
+                targetPane.classList.add('show', 'active');
+            }
+
+            const tabName = this.id.replace('-tab', '');
+            chargerOnglet(tabName);
+        });
+    });
+
+    // Changement de parcelle
+    const parcelleSelect = document.getElementById('parcelle-select');
+    if (parcelleSelect) {
+        parcelleSelect.addEventListener('change', function() {
+            const activeTab = document.querySelector('#alertesTabs .nav-link.active');
+            if (activeTab) {
+                const tabName = activeTab.id.replace('-tab', '');
+                chargerOnglet(tabName);
+            }
+        });
+    }
+
+    // Charger le premier onglet
+    chargerOnglet('meteo');
+});
+</script>
+{% endblock %}

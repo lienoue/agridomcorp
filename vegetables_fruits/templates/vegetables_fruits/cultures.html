@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Agriculture 2.0 - Cultures{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">🌱 Cultures</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Sélecteur de parcelle -->
+    <div class="parcelle-selector">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <label for="parcelle-select" class="form-label fw-bold mb-0 me-2">
+                    <i class="bi bi-geo-alt"></i> Choisir une parcelle :
+                </label>
+                <select id="parcelle-select" class="form-select d-inline-block w-auto" style="display: inline-block !important; width: auto; min-width: 200px;">
+                    <option value="">Toutes les parcelles</option>
+                    {% for figure in figures %}
+                        <option value="{{ figure.id }}" {% if figure.id == selected_figure_id %}selected{% endif %}>
+                            {{ figure.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nouvelle parcelle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <ul class="nav nav-pills mb-3" id="culturesTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="calendrier-tab" data-bs-target="#calendrier" type="button" role="tab">
+                <i class="bi bi-calendar3"></i> Calendrier
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mes-semis-tab" data-bs-target="#mes-semis" type="button" role="tab">
+                <i class="bi bi-seedling"></i> Mes semis
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="planification-tab" data-bs-target="#planification" type="button" role="tab">
+                <i class="bi bi-calendar-week"></i> Planification
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="culturesTabsContent">
+        <!-- Calendrier -->
+        <div class="tab-pane fade show active" id="calendrier" role="tabpanel">
+            <div id="calendrier-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+
+        <!-- Mes semis -->
+        <div class="tab-pane fade" id="mes-semis" role="tabpanel">
+            <div id="mes-semis-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+
+        <!-- Planification -->
+        <div class="tab-pane fade" id="planification" role="tabpanel">
+            <div id="planification-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .parcelle-selector {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    #culturesTabs {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 5px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin: 0 !important;
+    }
+
+    #culturesTabs .nav-item {
+        flex: 0 0 auto !important;
+        list-style: none !important;
+    }
+
+    #culturesTabs .nav-link {
+        white-space: nowrap !important;
+        color: #495057;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    #culturesTabs .nav-link:hover {
+        background: #e9ecef;
+    }
+
+    #culturesTabs .nav-link.active {
+        background: #28a745;
+        color: white;
+    }
+
+    .tab-content {
+        padding: 20px 0;
+    }
+</style>
+
+<script>
+    // Variables globales pour le calendrier
+    let currentMois = {{ mois|default:1 }};
+    let currentAnnee = {{ annee|default:2026 }};
+
+    // Fonction pour charger un onglet via AJAX
+    function chargerOnglet(tabName) {
+        const parcelleId = document.getElementById('parcelle-select')?.value || '';
+        const url = `/api/tab/cultures/${tabName}/?parcelle_id=${parcelleId}`;
+
+        let contentId = '';
+        if (tabName === 'calendrier') contentId = 'calendrier-content';
+        else if (tabName === 'mes-semis') contentId = 'mes-semis-content';
+        else if (tabName === 'planification') contentId = 'planification-content';
+        else return;
+
+        const contentDiv = document.getElementById(contentId);
+        if (!contentDiv) return;
+
+        contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Chargement...</p></div>';
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                contentDiv.innerHTML = html;
+            })
+            .catch(error => {
+                contentDiv.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>';
+                console.error('Erreur:', error);
+            });
+    }
+
+    // Fonction pour changer de mois
+    function changerMois(delta) {
+        let mois = currentMois + delta;
+        let annee = currentAnnee;
+
+        if (mois > 12) {
+            mois = 1;
+            annee += 1;
+        } else if (mois < 1) {
+            mois = 12;
+            annee -= 1;
+        }
+
+        currentMois = mois;
+        currentAnnee = annee;
+
+        const parcelleId = document.getElementById('parcelle-select')?.value || '';
+        const url = `/api/tab/cultures/calendrier/?parcelle_id=${parcelleId}&month=${mois}&year=${annee}`;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('calendrier-content').innerHTML = html;
+            })
+            .catch(error => console.error('Erreur:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // ✅ Gestion manuelle des onglets
+        const tabs = document.querySelectorAll('#culturesTabs button');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Supprimer la classe active de tous les onglets
+                document.querySelectorAll('#culturesTabs .nav-link').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                // Ajouter la classe active sur l'onglet cliqué
+                this.classList.add('active');
+
+                // Cacher tous les panneaux
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                    pane.style.display = 'none';
+                });
+
+                // Afficher le panneau cible
+                const target = this.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(target);
+                if (targetPane) {
+                    targetPane.style.display = 'block';
+                    targetPane.classList.add('show', 'active');
+                }
+
+                // Charger le contenu via AJAX
+                const tabName = this.id.replace('-tab', '');
+                chargerOnglet(tabName);
+            });
+        });
+
+        // ✅ Récupérer la parcelle sélectionnée
+        const parcelleSelect = document.getElementById('parcelle-select');
+        if (parcelleSelect) {
+            parcelleSelect.addEventListener('change', function() {
+                const activeTab = document.querySelector('#culturesTabs .nav-link.active');
+                if (activeTab) {
+                    const tabName = activeTab.id.replace('-tab', '');
+                    chargerOnglet(tabName);
+                }
+            });
+        }
+
+        // ✅ Charger le premier onglet
+        chargerOnglet('calendrier');
+    });
+</script>
+{% endblock %}

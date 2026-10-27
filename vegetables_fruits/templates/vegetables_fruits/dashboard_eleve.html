@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Mon Dashboard Junior - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Dashboard Junior</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .junior-header {
+        background: linear-gradient(135deg, #ff6b35, #ffb347);
+        color: white;
+        padding: 25px 20px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .junior-header .points {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    .junior-header .niveau {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
+        transition: 0.3s;
+        border-left: 4px solid #ff6b35;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .stat-card .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #ff6b35;
+    }
+    .stat-card .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .badge-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        transition: 0.3s;
+    }
+    .badge-card .emoji {
+        font-size: 2.5rem;
+    }
+    .badge-card .nom {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .mission-item {
+        background: white;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        border-left: 4px solid #ff6b35;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .mission-item .mission-progress {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .progress-bar-mission {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 10px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+    .progress-bar-mission .fill {
+        height: 100%;
+        background: #ff6b35;
+        border-radius: 10px;
+        transition: width 0.5s;
+    }
+
+    .parcelle-mini {
+        background: white;
+        border-radius: 10px;
+        padding: 10px 15px;
+        border: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+    }
+    .parcelle-mini:hover {
+        background: #f8f9fa;
+    }
+    .parcelle-mini .emoji {
+        font-size: 1.5rem;
+    }
+    .parcelle-mini .nom {
+        font-weight: 600;
+        flex: 1;
+    }
+    .parcelle-mini .cultures {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .btn-junior {
+        background: #ff6b35;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: none;
+        font-weight: 600;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-junior:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .culture-card-junior {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        transition: 0.3s;
+    }
+    .culture-card-junior:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .culture-card-junior .emoji {
+        font-size: 2rem;
+    }
+    .culture-card-junior .nom {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-top: 5px;
+    }
+    .culture-card-junior .parcelle {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    .culture-card-junior .statut-badge {
+        font-size: 0.65rem;
+        padding: 2px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 4px;
+    }
+    .progress-bar-junior {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 10px;
+        margin-top: 6px;
+        overflow: hidden;
+    }
+    .progress-bar-junior .fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- En-tête Junior -->
+<div class="junior-header">
+    <div style="font-size: 3rem;">🧑‍🌾</div>
+    <h2 style="margin: 10px 0 5px;">{{ user.username }}</h2>
+    <div class="niveau">🌟 Niveau {{ progression.niveau }}</div>
+    <div class="points">{{ progression.points }} <small style="font-size: 1rem;">points</small></div>
+    <div class="progress" style="height: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; max-width: 300px; margin: 10px auto 0;">
+        <div class="progress-bar" style="width: {{ progression.pourcentage }}%; background: #ffdd00; border-radius: 10px;"></div>
+    </div>
+    {% if classe %}
+    <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+        🏫 Classe : {{ classe.nom }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-number">{{ progression.points }}</div>
+            <div class="stat-label">⭐ Points</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #28a745;">
+            <div class="stat-number" style="color: #28a745;">{{ badges|length }}</div>
+            <div class="stat-label">🏅 Badges</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #17a2b8;">
+            <div class="stat-number" style="color: #17a2b8;">{{ missions_en_cours|length }}</div>
+            <div class="stat-label">🎯 Missions en cours</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #ffc107;">
+            <div class="stat-number" style="color: #ffc107;">{{ defis|length }}</div>
+            <div class="stat-label">🏆 Défis actifs</div>
+        </div>
+    </div>
+</div>
+
+<!-- Mes badges -->
+<div class="row mt-4">
+    <div class="col-12">
+        <br>
+        <h4 style="color: #2d6a4f;">🏅 Mes badges</h4>
+        <div class="row g-3" style="margin-top: 10px;">
+            {% if badges %}
+                {% for badge in badges %}
+                <div class="col-md-3 col-sm-4 col-6">
+                    <div class="badge-card">
+                        <div class="emoji">{{ badge.emoji }}</div>
+                        <div class="nom">{{ badge.nom }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">🌱 Continue à jardiner pour débloquer tes premiers badges !</p>
+                </div>
+            {% endif %}
+        </div>
+        <div style="margin-top: 10px;">
+            <a href="{% url 'vegetables_fruits:arbre_competences' %}" class="btn-junior" style="font-size: 0.9rem;">
+                🌳 Voir toutes mes compétences
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Missions en cours -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <br>
+            <h4 style="color: #2d6a4f;">🎯 Missions en cours</h4>
+            <br>
+            <a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+        {% if missions_en_cours %}
+            <div style="margin-top: 15px;">
+                {% for prog in missions_en_cours %}
+                <div class="mission-item">
+                    <div>
+                        <div class="mission-title">{{ prog.mission.titre }}</div>
+                        <div class="mission-progress">{{ prog.valeur_actuelle }} / {{ prog.mission.objectif }}</div>
+                        <div class="progress-bar-mission" style="width: 100%;">
+                            <div class="fill" style="width: {% widthratio prog.valeur_actuelle prog.mission.objectif 100 %}%;"></div>
+                        </div>
+                    </div>
+                    <span style="font-size: 1.2rem;">🎯</span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Aucune mission en cours. Reviens demain !</p>
+        {% endif %}
+    </div>
+</div>
+<br>
+
+<!-- Défis de classe -->
+{% if defis %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 style="color: #2d6a4f;">🏆 Défis de classe</h4>
+            <a href="{% url 'vegetables_fruits:defis_liste' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir tous
+            </a>
+        </div>
+        <div style="margin-top: 15px;">
+            {% for defi in defis %}
+            <div class="mission-item" style="border-left-color: #17a2b8;">
+                <div>
+                    <div class="mission-title">{{ defi.titre }}</div>
+                    <div class="mission-progress">{{ defi.progression_classe }} / {{ defi.objectif }}</div>
+                    <div class="progress-bar-mission" style="width: 100%;">
+                        <div class="fill" style="width: {% widthratio defi.progression_classe defi.objectif 100 %}%; background: #17a2b8;"></div>
+                    </div>
+                </div>
+                <span style="font-size: 1.2rem;">🏆</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Mes cultures avec chronologie dynamique (Junior) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 style="color: #2d6a4f;">🌱 Mes cultures</h4>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+        <div class="row g-3" style="margin-top: 10px;">
+            {% if mes_cultures %}
+                {% for culture in mes_cultures %}
+                <div class="col-md-3 col-sm-6">
+                    <a href="{% url 'vegetables_fruits:figure_detail' culture.figure_id %}" style="text-decoration: none; color: inherit;">
+                        <div class="culture-card-junior">
+                            <div class="emoji">{{ culture.emoji }}</div>
+                            <div class="nom">{{ culture.nom }}</div>
+                            <div class="parcelle">{{ culture.parcelle }}</div>
+                            <!-- Statut dynamique Junior -->
+                            <span class="statut-badge
+                                {% if culture.statut == 'Prêt à récolter' or culture.statut == 'Fructification' %}bg-success text-white
+                                {% elif culture.statut == 'Floraison' %}bg-warning text-dark
+                                {% elif culture.statut == 'Croissance' or culture.statut == 'Levée' %}bg-info text-white
+                                {% elif culture.statut == 'Semé' %}bg-secondary text-white
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ culture.statut|default:"Non planifié" }}
+                            </span>
+                            <!-- Barre de progression colorée Junior -->
+                            <div class="progress-bar-junior">
+                                <div class="fill"
+                                    style="width: {{ culture.progression }}%;
+                                           background-color:
+                                           {% if culture.progression >= 100 %}#dc3545
+                                           {% elif culture.progression >= 85 %}#28a745
+                                           {% elif culture.progression >= 60 %}#17a2b8
+                                           {% elif culture.progression >= 30 %}#ffc107
+                                           {% else %}#6c757d{% endif %};">
+                                </div>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.75rem;">{{ culture.progression }}%</small>
+                            {% if culture.date_recolte %}
+                                <div style="font-size: 0.65rem; color: #6c757d; margin-top: 3px;">
+                                    📅 Récolte: {{ culture.date_recolte|date:"d/m/Y" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">Tu n'as pas encore de cultures. Commence à planter ! 🌱</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<br> <br>
+
+<!-- Mes parcelles -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 style="color: #2d6a4f;">🌾 Mes parcelles</h4>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+        <div style="margin-top: 15px;">
+            {% if parcelles %}
+                {% for parcelle in parcelles %}
+                <a href="{% url 'vegetables_fruits:figure_detail' parcelle.id %}" style="text-decoration: none; color: inherit;">
+                    <div class="parcelle-mini">
+                        <span class="emoji">🌱</span>
+                        <span class="nom">{{ parcelle.name }}</span>
+                        <span class="cultures">
+                            {% if parcelle.crops %}
+                                {{ parcelle.crops|length }} culture(s)
+                            {% else %}
+                                Aucune culture
+                            {% endif %}
+                        </span>
+                    </div>
+                    <br>
+                </a>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Tu n'as pas encore de parcelle.</p>
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-junior" style="font-size: 0.9rem;">
+                    ➕ Créer ma première parcelle
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides Junior -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'vegetables_fruits:quiz' %}" class="btn-junior" style="font-size: 0.9rem;">
+                🧠 Quiz
+            </a>
+            <a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}" class="btn-junior" style="font-size: 0.9rem; background: #28a745;">
+                🎯 Missions
+            </a>
+            <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-junior" style="font-size: 0.9rem; background: #17a2b8;">
+                🌱 Nouvelle parcelle
+            </a>
+            <a href="{% url 'vegetables_fruits:classement_eleve' %}" class="btn-junior" style="font-size: 0.9rem; background: #ffc107; color: #343a40;">
+                🏆 Classement
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends 'vegetables_fruits/index.html' %}
+
+{% block title %}Sauvegarder la figure{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<style>
+    #save-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    #map-container {
+        position: relative;
+        width: 100%;
+        height: 600px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+    #draw-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    #coordinates-display {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .btn-save {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .btn-save:hover {
+        background-color: #45a049;
+    }
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    .alert-success {
+        background-color: #dff0d8;
+        color: #3c763d;
+    }
+    .alert-error {
+        background-color: #f2dede;
+        color: #a94442;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="save-container">
+    <h2 class="text-center mb-4">Sauvegarder votre figure géographique</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div id="coordinates-display">
+        <h4>Informations sur la figure</h4>
+        <p id="coordinates-info">Aucune figure dessinée pour le moment</p>
+        <p id="figure-area" style="display: none;">
+            <strong>Surface:</strong> <span id="area-value"></span> km²
+        </p>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+        <div id="draw-controls">
+            <form id="figure-form" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_name">Nom de la figure:</label>
+                    <input type="text" id="id_name" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_description">Description (optionnel):</label>
+                    <textarea id="id_description" name="description" class="form-control" rows="2"></textarea>
+                </div>
+                <input type="hidden" id="geojson-data" name="geojson_data">
+                <button type="button" id="save-btn" class="btn-save">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'view_figures' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à mes figures
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/terraformer/1.0.8/terraformer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/terraformer-wkt-parser/1.2.0/terraformer-wkt-parser.min.js"></script>
+<script>
+    // Initialisation de la carte avec une vue sur la France
+    var map = L.map('map').setView([46.603354, 1.888334], 5);
+    
+    // Couche OpenStreetMap
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3ih6_1_4b54795fabf7d713823323fc&language=fr', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 20
+    }).addTo(appState.map);
+
+    // Groupe pour les éléments dessinés
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    
+    // Contrôles de dessin
+    var drawControl = new L.Control.Draw({
+        position: 'topleft',
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                showArea: true,
+                metric: true,
+                shapeOptions: {
+                    color: '#3388ff',
+                    fillOpacity: 0.3
+                },
+                guidelineDistance: 20,
+                showLength: true
+            },
+            polyline: {
+                shapeOptions: {
+                    color: '#3388ff',
+                    weight: 5
+                },
+                metric: true,
+                showLength: true
+            },
+            rectangle: {
+                shapeOptions: {
+                    color: '#e83e8c',
+                    fillOpacity: 0.3
+                },
+                showArea: true,
+                metric: true
+            },
+            circle: {
+                shapeOptions: {
+                    color: '#fd7e14',
+                    fillOpacity: 0.3
+                },
+                showRadius: true,
+                metric: true
+            },
+            marker: {
+                icon: new L.Icon.Default(),
+                zIndexOffset: 1000
+            }
+        },
+        edit: {
+            featureGroup: drawnItems,
+            remove: true
+        }
+    });
+    map.addControl(drawControl);
+    
+    // Gestion des événements de dessin
+    map.on(L.Draw.Event.CREATED, function (e) {
+        var type = e.layerType,
+            layer = e.layer;
+        
+        layer.featureType = type;
+        drawnItems.addLayer(layer);
+        
+        updateFigureInfo(layer);
+    });
+    
+    map.on(L.Draw.Event.EDITED, function (e) {
+        var layers = e.layers;
+        layers.eachLayer(function(layer) {
+            updateFigureInfo(layer);
+        });
+    });
+    
+    map.on(L.Draw.Event.DELETED, function (e) {
+        document.getElementById('coordinates-info').innerHTML = 'Aucune figure dessinée pour le moment';
+        document.getElementById('figure-area').style.display = 'none';
+        document.getElementById('geojson-data').value = '';
+    });
+    
+    // Mise à jour des informations affichées
+    function updateFigureInfo(layer) {
+        var type = layer.featureType || layer.options.shape;
+        var coords, area = 0, length = 0;
+        var infoHtml = '';
+        
+        if (type === 'marker') {
+            coords = layer.getLatLng();
+            infoHtml = `<strong>Type:</strong> Point<br>
+                       <strong>Coordonnées:</strong> ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`;
+        } 
+        else if (type === 'polygon' || type === 'rectangle') {
+            coords = layer.getLatLngs()[0]; // Pour polygon et rectangle
+            area = L.GeometryUtil.geodesicArea(coords) / 1000000; // en km²
+            
+            infoHtml = `<strong>Type:</strong> ${type === 'polygon' ? 'Polygone' : 'Rectangle'}<br>
+                       <strong>Nombre de points:</strong> ${coords.length}<br>
+                       <strong>Surface:</strong> ${area.toFixed(2)} km²`;
+            
+            document.getElementById('area-value').textContent = area.toFixed(2);
+            document.getElementById('figure-area').style.display = 'block';
+        } 
+        else if (type === 'polyline') {
+            coords = layer.getLatLngs();
+            length = L.GeometryUtil.length(coords) / 1000; // en km
+            
+            infoHtml = `<strong>Type:</strong> Ligne<br>
+                       <strong>Nombre de points:</strong> ${coords.length}<br>
+                       <strong>Longueur:</strong> ${length.toFixed(2)} km`;
+        } 
+        else if (type === 'circle') {
+            coords = layer.getLatLng();
+            var radius = layer.getRadius() / 1000; // en km
+            area = Math.PI * Math.pow(radius, 2);
+            
+            infoHtml = `<strong>Type:</strong> Cercle<br>
+                       <strong>Centre:</strong> ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}<br>
+                       <strong>Rayon:</strong> ${radius.toFixed(2)} km<br>
+                       <strong>Surface:</strong> ${area.toFixed(2)} km²`;
+        }
+        
+        document.getElementById('coordinates-info').innerHTML = infoHtml;
+        
+        // Stockage des données GeoJSON pour l'envoi au serveur
+        var geojson = drawnItems.toGeoJSON();
+        document.getElementById('geojson-data').value = JSON.stringify(geojson);
+    }
+    
+    // Gestion de la sauvegarde
+    document.getElementById('save-btn').addEventListener('click', function() {
+        if (drawnItems.getLayers().length === 0) {
+            alert('Veuillez dessiner une figure avant de sauvegarder');
+            return;
+        }
+        
+        if (!document.getElementById('id_name').value) {
+            alert('Veuillez donner un nom à votre figure');
+            return;
+        }
+        
+        var form = document.getElementById('figure-form');
+        var formData = new FormData(form);
+        
+        fetch('{% url "save_figure" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Afficher un message de succès
+                var alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success';
+                alertDiv.innerHTML = 'Figure sauvegardée avec succès!';
+                document.querySelector('#save-container').insertBefore(alertDiv, document.querySelector('h2').nextSibling);
+                
+                // Réinitialiser le formulaire
+                document.getElementById('figure-form').reset();
+                drawnItems.clearLayers();
+                document.getElementById('coordinates-info').innerHTML = 'Aucune figure dessinée pour le moment';
+                document.getElementById('figure-area').style.display = 'none';
+                
+                // Redirection après 2 secondes
+                setTimeout(function() {
+                    window.location.href = '{% url "view_figures" %}';
+                }, 2000);
+            } else {
+                throw new Error(data.error || 'Erreur inconnue');
+            }
+        })
+        .catch(error => {
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.innerHTML = 'Erreur lors de la sauvegarde: ' + error.message;
+            document.querySelector('#save-container').insertBefore(alertDiv, document.querySelector('h2').nextSibling);
+            console.error('Error:', error);
+        });
+    });
+</script>
+{% endblock %}

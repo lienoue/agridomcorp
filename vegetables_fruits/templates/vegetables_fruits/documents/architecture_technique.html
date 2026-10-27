@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Architecture technique - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Architecture technique</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .code-block { background: #1e1e1e; color: #d4d4d4; padding: 15px 20px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; margin: 10px 0; white-space: pre; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🖥️ Architecture technique</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <div class="info-box">
+            <strong>📌 Nouveautés version 2.0 :</strong>
+            <ul style="margin: 10px 0 0 0;">
+                <li>Mode Junior automatique pour tous les mineurs</li>
+                <li>Distinction Mineur / Élève</li>
+                <li>Autorisation parentale pour les achats de mineurs</li>
+                <li>Vues fusionnées avec onglets AJAX</li>
+                <li>Page de documentation accessible via footer</li>
+            </ul>
+        </div>
+
+        <h2>📌 Vue d'ensemble</h2>
+        <p>Agriculture 2.0 est une application web développée avec le framework Django. Elle est conçue pour être modulaire, sécurisée et évolutive.</p>
+
+        <h2>🛠️ Stack technique</h2>
+        <table>
+            <thead>
+                <tr><th>Couche</th><th>Technologie</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Backend</td><td>Django 5.x (Python)</td></tr>
+                <tr><td>Frontend</td><td>HTML5, CSS3, JavaScript</td></tr>
+                <tr><td>Base de données</td><td>SQLite (dev) / PostgreSQL (prod)</td></tr>
+                <tr><td>Cartographie</td><td>Leaflet + Mapbox</td></tr>
+                <tr><td>Météo</td><td>OpenWeatherMap API</td></tr>
+                <tr><td>Paiements</td><td>Stripe</td></tr>
+                <tr><td>Emails</td><td>Brevo (Sendinblue)</td></tr>
+                <tr><td>Hébergement</td><td>OVH (France)</td></tr>
+                <tr><td>Versionning</td><td>Git + GitHub</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📂 Structure du projet</h2>
+        <div class="code-block">
+agriculture/
+├── vegetablesfruits/ # Configuration Django
+│ ├── settings.py # Configuration
+│ ├── urls.py # Routes principales
+│ └── wsgi.py # Serveur
+├── vegetables_fruits/ # Application principale
+│ ├── models.py # Modèles de données
+│ ├── views.py # Vues
+│ ├── urls.py # Routes de l'app
+│ ├── subscription_utils.py # Helpers abonnements
+│ ├── context_processors.py # Context globaux
+│ ├── middleware.py # ConnexionLog
+│ ├── tasks.py # Tâches Celery
+│ ├── templatetags/ # Filtres custom
+│ │ ├── __init__.py
+│ │ └── user_tags.py # {{ user|mineur }} etc.
+│ └── templates/ # Templates HTML
+│ └── vegetables_fruits/
+│ ├── documents/ # Documentation
+│ ├── tabs/ # Onglets AJAX
+│ ├── draw/ # Dessin parcelle
+│ ├── forum/ # Forums
+│ └── enseignant/ # Espace enseignant
+├── static/ # Fichiers statiques
+└── manage.py
+        </div>
+
+        <h2>👥 Profils utilisateurs</h2>
+        <p>L'application gère <strong>5 profils distincts</strong> :</p>
+        <table>
+            <thead>
+                <tr><th>Profil</th><th>Condition</th><th>Dashboard</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🌱 <strong>Particulier</strong></td>
+                    <td>Adulte non-enseignant</td>
+                    <td><code>dashboard_particulier</code></td>
+                </tr>
+                <tr>
+                    <td>🏫 <strong>Enseignant</strong></td>
+                    <td><code>is_enseignant=True</code></td>
+                    <td><code>dashboard_enseignant</code></td>
+                </tr>
+                <tr>
+                    <td>🎓 <strong>Élève</strong></td>
+                    <td>Mineur avec <code>profil_eleve.classe</code></td>
+                    <td><code>dashboard_eleve</code></td>
+                </tr>
+                <tr>
+                    <td>🧒 <strong>Junior</strong></td>
+                    <td><code>mode_junior=True</code> sans classe</td>
+                    <td><code>dashboard_junior</code></td>
+                </tr>
+                <tr>
+                    <td>⚙️ <strong>Admin</strong></td>
+                    <td><code>is_staff=True</code></td>
+                    <td>Django Admin</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🔑 Logique Mode Junior</h2>
+        <div class="success-box">
+            <strong>Règle :</strong> Tout utilisateur de <strong>moins de 18 ans</strong> voit automatiquement <code>mode_junior=True</code> activé.
+        </div>
+
+        <h3>Signal post_save</h3>
+        <p>Le signal suivant s'assure que tous les mineurs ont <code>mode_junior=True</code>, quel que soit le chemin de création (formulaire, admin, script) :</p>
+        <div class="code-block">
+@receiver(post_save, sender=User)
+def activer_mode_junior_pour_mineurs(sender, instance, created, **kwargs):
+    if not instance.birth_date:
+        return
+
+    today = date.today()
+    age = today.year - instance.birth_date.year - (
+        (today.month, today.day) < (instance.birth_date.month, instance.birth_date.day)
+    )
+
+    if age < 18:
+        if not instance.mode_junior:
+            User.objects.filter(pk=instance.pk).update(mode_junior=True)
+            instance.mode_junior = True
+        </div>
+
+        <h3>⚠️ Ce signal NE crée PAS d'Eleve</h3>
+        <p>Un mineur n'est pas forcément un élève. Le profil <code>Eleve</code> est créé uniquement quand :</p>
+        <ul>
+            <li>L'utilisateur passe par <code>inscription_eleve</code> (avec code de classe)</li>
+            <li>Ou un enseignant crée le compte manuellement</li>
+        </ul>
+
+        <h2>🔒 Blocage Premium pour mineurs</h2>
+        <p>Un mineur <strong>sans classe</strong> n'a <strong>pas accès</strong> aux fonctionnalités Premium, sauf s'il passe par une autorisation parentale.</p>
+
+        <h3>Vérification d'accès</h3>
+        <div class="code-block">
+def verifier_acces_abonnement(user, plan_requis=None):
+    if plan_requis is None:
+        return True, None
+
+    try:
+        abonnement = user.abonnement
+        if abonnement.est_actif and abonnement.plan.nom in ['PREMIUM', 'ENSEIGNANT']:
+            return True, None
+        if abonnement.est_actif and abonnement.plan.nom == plan_requis:
+            return True, None
+        return False, f"Cette fonctionnalité est disponible avec {plan_requis}."
+    except Abonnement.DoesNotExist:
+        return False, f"Cette fonctionnalité est disponible avec {plan_requis}."
+        </div>
+
+        <h2>💳 Autorisation parentale</h2>
+        <p>Modèle <code>AutorisationAchatMineur</code> pour valider les achats des mineurs.</p>
+
+        <h3>Workflow complet</h3>
+        <ol style="line-height: 1.9; color: #495057;">
+            <li>Mineur clique sur "S'abonner"</li>
+            <li>Blocage dans <code>create_checkout_session</code> (pas d'autorisation valide)</li>
+            <li>Redirection vers <code>demander_autorisation_achat</code></li>
+            <li>Formulaire parent (nom, prénom, email)</li>
+            <li>Email envoyé au parent avec token unique</li>
+            <li>Parent clique sur le lien (<code>valider_autorisation_achat</code>)</li>
+            <li>Parent valide OU refuse</li>
+            <li>Si validé → mineur peut payer via Stripe</li>
+            <li>Autorisation valable <strong>7 jours</strong></li>
+        </ol>
+
+        <h3>Champs du modèle</h3>
+        <table>
+            <thead>
+                <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>utilisateur</td><td>ForeignKey</td><td>Le mineur</td></tr>
+                <tr><td>plan_souhaite</td><td>ForeignKey</td><td>Plan visé</td></tr>
+                <tr><td>parent_nom / parent_prenom</td><td>CharField</td><td>Nom du parent</td></tr>
+                <tr><td>parent_email</td><td>EmailField</td><td>Email de validation</td></tr>
+                <tr><td>statut</td><td>Choice</td><td>en_attente / validee / refusee / expiree</td></tr>
+                <tr><td>token_validation</td><td>CharField</td><td>Token URL unique</td></tr>
+                <tr><td>date_expiration</td><td>DateTime</td><td>+7 jours</td></tr>
+                <tr><td>ip_validation</td><td>GenericIP</td><td>Preuve légale</td></tr>
+            </tbody>
+        </table>
+
+        <h2>🧩 Vues fusionnées (Onglets AJAX)</h2>
+        <p>4 pages principales avec onglets chargés en AJAX :</p>
+        <table>
+            <thead>
+                <tr><th>Page</th><th>Vue</th><th>Onglets</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Cultures</strong></td>
+                    <td><code>cultures</code> + <code>cultures_tabs</code></td>
+                    <td>calendrier, mes-semis, planification</td>
+                </tr>
+                <tr>
+                    <td><strong>Guide</strong></td>
+                    <td><code>guide_cultures</code> + <code>guide_tabs</code></td>
+                    <td>conseiller-sol, fertilisation, compagnonnage, rotation</td>
+                </tr>
+                <tr>
+                    <td><strong>Écologie</strong></td>
+                    <td><code>ecologie</code> + <code>ecologie_tabs</code></td>
+                    <td>bilan-carbone, autosuffisance</td>
+                </tr>
+                <tr>
+                    <td><strong>Alertes</strong></td>
+                    <td><code>alertes</code> + <code>alertes_tabs</code></td>
+                    <td>meteo, avancees, traitements</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warning-box">
+            <strong>⚠️ Important :</strong> Les vues directes <code>plan_fertilisation</code> et <code>planification_semis</code> sont <strong>obsolètes</strong>. On passe désormais uniquement par les onglets AJAX.
+        </div>
+
+        <h2>🗄️ Base de données</h2>
+        <h3>Modèles principaux</h3>
+        <ul>
+            <li><strong>CustomUser</strong> : Utilisateurs (particuliers, enseignants, mineurs)</li>
+            <li><strong>Eleve</strong> : Profil élève lié à une classe (pas à tous les mineurs)</li>
+            <li><strong>Classe</strong> : Classes créées par les enseignants</li>
+            <li><strong>GeometricFigure</strong> : Parcelles (GeoJSON)</li>
+            <li><strong>Vegetable / Fruit</strong> : Cultures</li>
+            <li><strong>Parcelle</strong> : Parcelles agricoles</li>
+            <li><strong>ChronologieCulture</strong> : Suivi des cultures</li>
+            <li><strong>JournalBord</strong> : Journal de bord</li>
+            <li><strong>MessageForum</strong> : Forum école</li>
+            <li><strong>PhotoJardin</strong> : Galerie photos</li>
+            <li><strong>Abonnement</strong> : Abonnements payants</li>
+            <li><strong>AutorisationAchatMineur</strong> : Autorisations parentales</li>
+            <li><strong>ConsentementRGPD</strong> : Consentements</li>
+            <li><strong>ConnexionLog</strong> : Détection des abus</li>
+        </ul>
+
+        <h2>🔐 Sécurité</h2>
+        <ul>
+            <li>Protection CSRF et XSS (Django)</li>
+            <li>HTTPS en production</li>
+            <li>Paiements sécurisés Stripe</li>
+            <li>Conforme RGPD</li>
+            <li>Mots de passe hashés (PBKDF2)</li>
+            <li>Détection des connexions suspectes</li>
+            <li>Consentement parental obligatoire (-15 ans)</li>
+            <li>Autorisation parentale pour les achats de mineurs</li>
+        </ul>
+
+        <h2>📡 API externes</h2>
+        <ul>
+            <li><strong>Mapbox</strong> : Géolocalisation et cartographie</li>
+            <li><strong>OpenWeatherMap</strong> : Météo + prévisions 7 jours</li>
+            <li><strong>Stripe</strong> : Paiements et abonnements</li>
+            <li><strong>Brevo</strong> : Envoi d'emails transactionnels</li>
+        </ul>
+
+        <h2>📚 Documentation</h2>
+        <p>Accessible via : <code>/documentation/</code> (lien dans le footer)</p>
+        <ul>
+            <li><strong>Guides</strong> : particulier, enseignant, élève, junior, admin</li>
+            <li><strong>Tests</strong> : 5 plans de test par profil</li>
+            <li><strong>Technique</strong> : architecture, déploiement, admin</li>
+            <li><strong>Business</strong> : business plan, prévisionnel, vente écoles</li>
+        </ul>
+
+        <h2>🔧 Développement</h2>
+        <ul>
+            <li>Framework : Django 5.x</li>
+            <li>Langage : Python 3.10+</li>
+            <li>Base de données : SQLite (dev), PostgreSQL (prod)</li>
+            <li>Serveur : Gunicorn + Nginx</li>
+            <li>Cache : LocMemCache (dev), Redis (prod)</li>
+            <li>Tâches : Celery (optionnel)</li>
+        </ul>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Prévisionnel financier - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Prévisionnel financier</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: center; }
+    .doc-card table td { padding: 10px; text-align: center; border-bottom: 1px solid #e9ecef; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .highlight-box { background: #d4edda; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin: 15px 0; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>📊 Prévisionnel financier</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>💰 Prix officiels (rappel)</h2>
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Mensuel</th><th>Annuel</th><th>Économie</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🌱 Gratuit</td><td>0€</td><td>0€</td><td>—</td></tr>
+                <tr><td>🌿 Basique</td><td>7,49€</td><td>74,90€</td><td>-17%</td></tr>
+                <tr><td>🌳 Premium</td><td>15,99€</td><td>159,90€</td><td>-17%</td></tr>
+                <tr><td>🏫 Enseignant</td><td>9,99€</td><td>99,90€</td><td>-17%</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📊 Hypothèses de calcul</h2>
+        <ul>
+            <li><strong>ARPU pondéré</strong> : 10,72€/mois (mix 55% Basique / 35% Premium / 10% Enseignant)</li>
+            <li><strong>Frais Stripe</strong> : 1,4% + 0,25€ par transaction</li>
+            <li><strong>Charges fixes annuelles</strong> : ~1 455€ (hébergement, domaine, emails, juridique)</li>
+            <li><strong>Charges variables</strong> : ~0,07€/utilisateur/mois</li>
+            <li><strong>Taux de conversion</strong> : 3% (An 1) → 5% (An 2) → 7% (An 3)</li>
+        </ul>
+
+        <h2>📊 Année 1 — Détail mensuel</h2>
+        <table>
+            <thead>
+                <tr><th>Mois</th><th>Utilisateurs</th><th>Abonnés</th><th>CA Mensuel</th><th>CA Cumulé</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Janvier</td><td>100</td><td>3</td><td>32€</td><td>32€</td></tr>
+                <tr><td>Février</td><td>300</td><td>9</td><td>96€</td><td>128€</td></tr>
+                <tr><td>Mars</td><td>600</td><td>18</td><td>193€</td><td>321€</td></tr>
+                <tr><td>Avril</td><td>1 000</td><td>30</td><td>322€</td><td>643€</td></tr>
+                <tr><td>Mai</td><td>1 500</td><td>45</td><td>482€</td><td>1 125€</td></tr>
+                <tr><td>Juin</td><td>2 000</td><td>60</td><td>643€</td><td>1 768€</td></tr>
+                <tr><td>Juillet</td><td>2 500</td><td>75</td><td>804€</td><td>2 572€</td></tr>
+                <tr><td>Août</td><td>3 000</td><td>90</td><td>965€</td><td>3 537€</td></tr>
+                <tr><td>Septembre</td><td>3 500</td><td>105</td><td>1 126€</td><td>4 663€</td></tr>
+                <tr><td>Octobre</td><td>4 000</td><td>120</td><td>1 286€</td><td>5 949€</td></tr>
+                <tr><td>Novembre</td><td>4 500</td><td>135</td><td>1 447€</td><td>7 396€</td></tr>
+                <tr><td>Décembre</td><td>5 000</td><td>150</td><td>1 608€</td><td>9 004€</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📊 Synthèse Année 1</h2>
+        <div class="highlight-box">
+            <ul>
+                <li><strong>Utilisateurs fin d'année</strong> : 5 000</li>
+                <li><strong>Abonnés payants</strong> : 150 (3%)</li>
+                <li><strong>CA annuel</strong> : 9 004€</li>
+                <li><strong>Charges annuelles</strong> : 3 500€</li>
+                <li><strong>Résultat net</strong> : 5 504€</li>
+            </ul>
+        </div>
+
+        <h2>🔮 Projections 3 ans</h2>
+        <table>
+            <thead>
+                <tr><th>Indicateur</th><th>Année 1</th><th>Année 2</th><th>Année 3</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Utilisateurs actifs</td><td>5 000</td><td>25 000</td><td>75 000</td></tr>
+                <tr><td>Taux de conversion</td><td>3%</td><td>5%</td><td>7%</td></tr>
+                <tr><td>Abonnés payants</td><td>150</td><td>1 250</td><td>5 250</td></tr>
+                <tr><td>ARPU mensuel</td><td>10,72€</td><td>10,72€</td><td>10,72€</td></tr>
+                <tr><td>CA mensuel fin d'année</td><td>1 608€</td><td>13 400€</td><td>56 280€</td></tr>
+                <tr><td><strong>CA annuel</strong></td><td><strong>9 004€</strong></td><td><strong>105 000€</strong></td><td><strong>522 000€</strong></td></tr>
+                <tr><td>Charges annuelles</td><td>3 500€</td><td>15 000€</td><td>45 000€</td>
+                </tr>
+                <tr><td><strong>Résultat net</strong></td><td><strong>5 504€</strong></td><td><strong>90 000€</strong></td><td><strong>477 000€</strong></td></tr>
+            </tbody>
+        </table>
+
+        <h2>💳 Détail des frais Stripe</h2>
+        <p>Frais Stripe : <strong>1,4% + 0,25€</strong> par transaction (Europe).</p>
+
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Prix</th><th>Frais Stripe</th><th>Net perçu</th><th>% net</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Basique mensuel</td>
+                    <td>7,49€</td>
+                    <td>0,35€</td>
+                    <td><strong>7,14€</strong></td>
+                    <td>95,3%</td>
+                </tr>
+                <tr>
+                    <td>Premium mensuel</td>
+                    <td>15,99€</td>
+                    <td>0,47€</td>
+                    <td><strong>15,52€</strong></td>
+                    <td>97,1%</td>
+                </tr>
+                <tr>
+                    <td>Enseignant mensuel</td>
+                    <td>9,99€</td>
+                    <td>0,39€</td>
+                    <td><strong>9,60€</strong></td>
+                    <td>96,1%</td>
+                </tr>
+                <tr>
+                    <td>Basique annuel</td>
+                    <td>74,90€</td>
+                    <td>1,30€</td>
+                    <td><strong>73,60€</strong></td>
+                    <td>98,3%</td>
+                </tr>
+                <tr>
+                    <td>Premium annuel</td>
+                    <td>159,90€</td>
+                    <td>2,49€</td>
+                    <td><strong>157,41€</strong></td>
+                    <td>98,4%</td>
+                </tr>
+                <tr>
+                    <td>Enseignant annuel</td>
+                    <td>99,90€</td>
+                    <td>1,65€</td>
+                    <td><strong>98,25€</strong></td>
+                    <td>98,3%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 Avantage annuel :</strong> Les abonnements annuels génèrent
+            <strong>~1% de marge supplémentaire</strong> (moins de frais Stripe par euro encaissé)
+            et assurent une <strong>trésorerie stable</strong> sur 12 mois.
+        </div>
+
+        <h2>🎯 Break-even</h2>
+        <div class="highlight-box">
+            <p><strong>Charges fixes mensuelles</strong> : 121€</p>
+            <p><strong>ARPU net par abonné</strong> : ~10,40€ (après Stripe)</p>
+            <p><strong>Break-even</strong> : 121 / 10,40 ≈ <strong>12 abonnés payants</strong></p>
+            <p>→ Atteint dès les <strong>premiers mois</strong> si la croissance est correcte</p>
+        </div>
+
+        <h2>📈 Graphique de croissance (visuel)</h2>
+        <table>
+            <thead>
+                <tr><th>Année</th><th>Utilisateurs</th><th>Abonnés</th><th>CA annuel</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Année 1</strong></td>
+                    <td>5 000</td>
+                    <td>150</td>
+                    <td>9 004€</td>
+                </tr>
+                <tr>
+                    <td><strong>Année 2</strong></td>
+                    <td>25 000</td>
+                    <td>1 250</td>
+                    <td>105 000€</td>
+                </tr>
+                <tr>
+                    <td><strong>Année 3</strong></td>
+                    <td>75 000</td>
+                    <td>5 250</td>
+                    <td>522 000€</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>💼 Charges détaillées</h2>
+
+        <h3>Charges fixes annuelles</h3>
+        <table>
+            <thead>
+                <tr><th>Poste</th><th>Coût annuel</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🖥️ Hébergement (VPS OVH)</td><td>400€</td></tr>
+                <tr><td>🌐 Domaine</td><td>15€</td></tr>
+                <tr><td>📧 Emails (Brevo)</td><td>240€</td></tr>
+                <tr><td>🧾 Comptabilité / juridique</td><td>800€</td></tr>
+                <tr><td><strong>Total fixe</strong></td><td><strong>1 455€/an</strong></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Charges variables</h3>
+        <ul>
+            <li>Bande passante : ~0,05€/utilisateur/mois</li>
+            <li>Emails transactionnels : ~0,02€/utilisateur/mois</li>
+            <li>Frais Stripe : 1,4% + 0,25€ / transaction</li>
+        </ul>
+
+        <h2>📈 Hypothèses clés</h2>
+        <ul>
+            <li><strong>ARPU</strong> : 10,72€/mois (mix pondéré)</li>
+            <li><strong>Conversion</strong> : 3% → 5% → 7%</li>
+            <li><strong>Frais Stripe</strong> : 1,4% + 0,25€</li>
+            <li><strong>Croissance</strong> : forte (500% An1 → An3)</li>
+            <li><strong>Churn</strong> : non modélisé (à intégrer)</li>
+            <li><strong>Réduction annuelle</strong> : -17% (cohérent partout)</li>
+        </ul>
+
+        <div class="warning-box">
+            <strong>⚠️ Point de vigilance :</strong> Le <strong>churn (taux de résiliation)</strong> n'est pas
+            modélisé ici. En réalité, prévoir 5-10% de churn mensuel est prudent.
+            → Cela peut réduire les projections de 30-50%.
+        </div>
+
+        <h2>🎯 Verdict</h2>
+        <div class="highlight-box">
+            <ul style="margin: 0;">
+                <li>✅ <strong>Rentable dès ~12 abonnés</strong> (break-even)</li>
+                <li>✅ <strong>Marge brute ~95%</strong> après Stripe</li>
+                <li>✅ <strong>ARPU sain</strong> (10,72€/mois)</li>
+                <li>✅ <strong>Prix cohérents</strong> partout (-17% annuel)</li>
+                <li>✅ <strong>Stratégie Enseignant forte</strong> (filtre académique)</li>
+            </ul>
+        </div>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

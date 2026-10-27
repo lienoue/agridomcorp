@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🏆 {{ defi.titre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🏆 {{ defi.titre }}</h1>
+        <a href="{% url 'vegetables_fruits:defis_liste' %}" class="btn btn-secondary">
+            ← Retour aux défis
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="card-text">{{ defi.description }}</p><br>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <strong>📅 Période</strong><br>
+                    {{ defi.date_debut|date:"d/m/Y" }} - {{ defi.date_fin|date:"d/m/Y" }}
+                </div>
+                <div class="col-md-4">
+                    <strong>🎯 Objectif</strong><br>
+                    {{ defi.objectif }}
+                    {% if defi.type_action == 'planter' %}plantations
+                    {% elif defi.type_action == 'recolter' %}récoltes
+                    {% elif defi.type_action == 'quiz' %}quiz
+                    {% elif defi.type_action == 'journal' %}notes
+                    {% elif defi.type_action == 'fleur' %}fleurs
+                    {% else %}points{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <strong>🏆 Récompense</strong><br>
+                    {{ defi.badge_emoji }} {{ defi.badge_nom }} (+{{ defi.points_recompense }} points)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progression de la classe -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">📊 Progression de la classe</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Objectif: {{ defi.objectif }}</span>
+                <span>Progression: {{ progression_classe }}/{{ defi.objectif }}</span>
+            </div>
+            <div class="progress mb-3">
+                <div class="progress-bar bg-success" role="progressbar"
+                     style="width: {{ pourcentage_classe }}%;"
+                     aria-valuenow="{{ pourcentage_classe }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ pourcentage_classe }}%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progression par élève -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">👨‍🎓 Progression par élève</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Élève</th>
+                            <th>Progression</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prog in progres_eleves %}
+                        <tr>
+                            <td>{{ prog.eleve.user.username }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: {{ prog.pourcentage }}%;"></div>
+                                    </div>
+                                    <span class="ms-2">{{ prog.progression }}/{{ prog.objectif }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if prog.complete %}
+                                    <span class="badge bg-success">✅ Complété</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">⏳ En cours</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

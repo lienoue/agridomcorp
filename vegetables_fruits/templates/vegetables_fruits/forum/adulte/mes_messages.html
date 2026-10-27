@@ -1,0 +1,74 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}💬 Mes messages - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Tous vos messages 💬{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="?statut=tous" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'tous' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            📋 Tous
+        </a>
+        <a href="?statut=messages" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'messages' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            💬 Messages
+        </a>
+        <a href="?statut=solutions" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'solutions' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+            ✅ Solutions
+        </a>
+    </div>
+    <span style="font-size: 0.85rem; color: #999;">{{ messages.paginator.count }} message(s)</span>
+</div>
+
+{% for msg in messages %}
+<div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 10px; border: 1px solid rgba(109,76,42,0.06);">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">
+        <div>
+            <span style="font-size: 0.85rem; color: #888;">
+                Dans : <a href="{% url 'vegetables_fruits:forum_adulte_sujet' msg.sujet.id %}#message-{{ msg.id }}" style="color: var(--vert-jardin);">
+                    {{ msg.sujet.titre|truncatechars:50 }}
+                </a>
+            </span>
+            {% if msg.est_solution %}
+                <span class="badge-resolu" style="margin-left: 6px;">✅ Solution</span>
+            {% endif %}
+            {% if msg.est_premium %}
+                <span class="badge-premium" style="font-size:0.65rem;">🔒 Premium</span>
+            {% endif %}
+        </div>
+        <span style="font-size: 0.75rem; color: #999;">{{ msg.date_creation|date:"d/m/Y H:i" }}</span>
+    </div>
+    <div style="font-size: 0.9rem; color: var(--brun-terre);">
+        {{ msg.contenu|truncatechars:150 }}
+    </div>
+    <div style="margin-top: 6px; display: flex; gap: 12px; font-size: 0.8rem; color: #999;">
+        <span>👍 {{ msg.nb_upvotes }}</span>
+        <span>👎 {{ msg.nb_downvotes }}</span>
+        <a href="{% url 'vegetables_fruits:forum_adulte_sujet' msg.sujet.id %}#message-{{ msg.id }}" style="color: var(--vert-jardin);">
+            Voir →
+        </a>
+    </div>
+</div>
+{% empty %}
+    <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <div class="empty-title">Vous n'avez pas encore de message</div>
+        <p>Participez aux discussions du forum !</p>
+        <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-primary-forum" style="margin-top: 12px; display: inline-flex;">
+            <span>🌿</span> Explorer le forum
+        </a>
+    </div>
+{% endfor %}
+
+{% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=messages %}
+
+{% endblock %}

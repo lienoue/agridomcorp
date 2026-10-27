@@ -1,0 +1,88 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}👤 Profil forum - {{ profil_user.username }}{% endblock %}
+
+{% block header_subtitle %}Profil de {{ profil_user.username }} 👤{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: grid; grid-template-columns: 280px 1fr; gap: 24px;">
+    {# COLONNE GAUCHE - INFOS #}
+    <div style="background: #fff; border-radius: var(--radius); padding: 24px; border: 1px solid rgba(109,76,42,0.06); text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 8px;">
+            {% if profil_user.avatar_url %}
+                <img src="{{ profil_user.avatar_url }}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+            {% else %}
+                👤
+            {% endif %}
+        </div>
+        <h3 style="font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; color: var(--brun-terre);">
+            {{ profil_user.username }}
+        </h3>
+        <div style="font-size: 0.85rem; color: #888; margin-bottom: 12px;">
+            Membre depuis {{ profil_user.date_joined|date:"F Y" }}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+            <div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 10px;">
+                <div style="font-size: 0.7rem; color: #999;">Sujets</div>
+                <div style="font-size: 1.4rem; font-weight: 700; color: var(--vert-jardin);">{{ stats.sujets|default:0 }}</div>
+            </div>
+            <div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 10px;">
+                <div style="font-size: 0.7rem; color: #999;">Messages</div>
+                <div style="font-size: 1.4rem; font-weight: 700; color: var(--vert-jardin);">{{ stats.messages|default:0 }}</div>
+            </div>
+            <div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 10px;">
+                <div style="font-size: 0.7rem; color: #999;">Solutions</div>
+                <div style="font-size: 1.4rem; font-weight: 700; color: var(--soleil);">{{ stats.solutions|default:0 }}</div>
+            </div>
+            <div style="background: var(--beige-terre); border-radius: var(--radius-sm); padding: 10px;">
+                <div style="font-size: 0.7rem; color: #999;">Votes reçus</div>
+                <div style="font-size: 1.4rem; font-weight: 700; color: var(--tomate);">{{ stats.votes|default:0 }}</div>
+            </div>
+        </div>
+        
+        {% if badges %}
+        <div style="border-top: 1px solid #eee; padding-top: 12px;">
+            <div style="font-size: 0.85rem; color: #888; margin-bottom: 8px;">🏅 Badges</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                {% for badge in badges %}
+                <span style="background: var(--beige-terre); border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                    {{ badge.emoji }} {{ badge.nom }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if profil_user.is_moderateur_forum %}
+        <div style="margin-top: 12px; padding: 6px 16px; background: var(--soleil-pale); border-radius: 20px; display: inline-block; font-size: 0.8rem; color: #E65100; font-weight: 600;">
+            🛡️ Modérateur
+        </div>
+        {% endif %}
+    </div>
+    
+    {# COLONNE DROITE - DERNIERS SUJETS #}
+    <div>
+        <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; margin-bottom: 12px;">
+            📝 Derniers sujets
+        </h4>
+        {% for sujet in derniers_sujets %}
+            {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet %}
+        {% empty %}
+            <div style="background: #fff; border-radius: var(--radius-sm); padding: 20px; text-align: center; color: #999;">
+                Aucun sujet
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

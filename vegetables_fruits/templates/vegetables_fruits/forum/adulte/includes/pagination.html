@@ -1,0 +1,33 @@
+{# ============================================================ #}
+{# PAGINATION - Réutilisable #}
+{# ============================================================ #}
+
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Navigation des pages">
+    <ul class="pagination-forum">
+        {% if page_obj.has_previous %}
+            <li><a href="?page=1" class="page-link" aria-label="Première">«</a></li>
+            <li><a href="?page={{ page_obj.previous_page_number }}" class="page-link" aria-label="Précédente">‹</a></li>
+        {% else %}
+            <li><span class="page-link disabled">«</span></li>
+            <li><span class="page-link disabled">‹</span></li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li><span class="page-link active">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li><a href="?page={{ num }}" class="page-link">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <li><a href="?page={{ page_obj.next_page_number }}" class="page-link" aria-label="Suivante">›</a></li>
+            <li><a href="?page={{ page_obj.paginator.num_pages }}" class="page-link" aria-label="Dernière">»</a></li>
+        {% else %}
+            <li><span class="page-link disabled">›</span></li>
+            <li><span class="page-link disabled">»</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

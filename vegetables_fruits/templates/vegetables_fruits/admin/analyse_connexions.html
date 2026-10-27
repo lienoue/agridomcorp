@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyse des connexions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>🔍 Analyse des connexions</h1>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ stats.total_connexions }}</h3>
+                    <p>Connexions totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ stats.connexions_suspectes }}</h3>
+                    <p>Connexions suspectes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ stats.utilisateurs_actifs }}</h3>
+                    <p>Utilisateurs actifs (7j)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Utilisateurs suspects -->
+    <div class="card mb-4">
+        <div class="card-header">
+            ⚠️ Utilisateurs avec le plus d'IP différentes (7 derniers jours)
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Plan</th>
+                        <th>IP uniques</th>
+                        <th>Appareils</th>
+                        <th>Connexions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in utilisateurs_suspects %}
+                    <tr {% if user.nb_ips > 3 %}class="table-warning"{% endif %}>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.abonnement.plan.nom|default:"GRATUIT" }}</td>
+                        <td>
+                            {{ user.nb_ips }}
+                            {% if user.nb_ips > 3 %}
+                                <span class="badge bg-danger">⚠️ Suspect</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.nb_appareils }}</td>
+                        <td>{{ user.nb_connexions }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Connexions suspectes récentes -->
+    <div class="card">
+        <div class="card-header">
+            🚨 Connexions suspectes récentes
+        </div>
+        <div class="card-body">
+            {% if connexions_suspectes %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>IP</th>
+                            <th>Raison</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conn in connexions_suspectes %}
+                        <tr>
+                            <td>{{ conn.date_connexion|date:"d/m/Y H:i" }}</td>
+                            <td>{{ conn.utilisateur.username }}</td>
+                            <td>{{ conn.ip }}</td>
+                            <td>{{ conn.raison_suspicion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted">Aucune connexion suspecte détectée. ✅</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

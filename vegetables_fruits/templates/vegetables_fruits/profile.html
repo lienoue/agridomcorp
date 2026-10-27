@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Profil</li>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- En-tête du profil -->
+        <div class="col-12">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="h3 mb-0">
+                            <i class="bi bi-person-circle"></i> 
+                            Profil de {{ user.username }}
+                        </h1>
+                        <span class="badge bg-light text-success p-2">
+                            Membre depuis {{ user.date_joined|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Colonne de gauche : Informations personnelles -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> 
+                        Informations personnelles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush" style="padding-left: 30px;">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <strong>Nom d'utilisateur:</strong>
+                            <span>{{ user.username }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <strong>Email:</strong>
+                            <span>{{ user.email|default:"Non renseigné" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <strong>Dernière connexion:</strong>
+                            <span>{{ user.last_login|date:"d/m/Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <strong>Statut:</strong>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Actif</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactif</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'vegetables_fruits:password_reset' %}" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-key"></i> Changer mon mot de passe
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne du milieu : Activité récente -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity"></i> 
+                        Activité récente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user.drawings.exists %}
+                        <div class="list-group">
+                            {% for drawing in user.drawings.all|slice:":5" %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ drawing.title|default:"Sans titre" }}</span>
+                                        <small>{{ drawing.created_at|date:"d/m/Y" }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if user.drawings.count > 5 %}
+                            <p class="text-muted mt-2 mb-0">
+                                Et {{ user.drawings.count|add:"-5" }} autre(s) figure(s)...
+                            </p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted text-center my-4">
+                            <i class="bi bi-pencil"></i><br>
+                            Aucune activité récente
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-pencil"></i> Nouveau dessin
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne de droite : Actions rapides -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning"></i> 
+                        Actions rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success">
+                            <i class="bi bi-pencil"></i> Dessiner une figure
+                        </a>
+                        <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-success">
+                            <i class="bi bi-images"></i> Voir mes figures
+                        </a>
+                        <a href="{% url 'vegetables_fruits:index' %}" class="btn btn-outline-success">
+                            <i class="bi bi-house"></i> Retour à l'accueil
+                        </a>
+                        {% if user.tutoriel_termine %}
+                        <a href="{% url 'vegetables_fruits:tutoriel' %}" class="btn btn-outline-success">
+                           🔄 Revoir le tutoriel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION RGPD : MES DONNÉES -->
+    <!-- ============================================================ -->
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        🔒 Mes données personnelles (RGPD)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Conformément au RGPD, vous disposez d'un droit d'accès, de portabilité et d'effacement de vos données.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <!-- Exporter -->
+                        <a href="{% url 'vegetables_fruits:exporter_mes_donnees' %}"
+                           class="btn btn-outline-info">
+                            📦 Exporter mes données (ZIP)
+                        </a>
+
+                        <!-- Supprimer -->
+                        <a href="{% url 'vegetables_fruits:supprimer_mon_compte' %}"
+                           class="btn btn-outline-danger">
+                            🗑️ Supprimer mon compte
+                        </a>
+                    </div>
+
+                    <small class="text-muted d-block mt-3">
+                        💡 L'export contient toutes vos données (profil, parcelles, journal, photos...).
+                        La suppression est définitive et anonymise votre compte.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION ABONNEMENT ===== -->
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        💎 Mon Abonnement
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    {% if mineur %}
+                        {# ============================================================ #}
+                        {# VERSION MINEUR #}
+                        {# ============================================================ #}
+
+                        {# Cas 1 : le mineur a déjà un abonnement actif #}
+                        {% if user.abonnement %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush" style="padding-left: 30px;">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Plan :</strong>
+                                            <span class="badge bg-success">{{ user.abonnement.plan.get_nom_display }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Statut :</strong>
+                                            {% if user.abonnement.statut == 'ACTIF' %}
+                                                {% if user.abonnement.resiliation_programmee %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        ⏸️ Résiliation le {{ user.abonnement.date_fin_prevue|date:"d/m/Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-success">✅ Actif</span>
+                                                {% endif %}
+                                            {% elif user.abonnement.statut == 'ESSAI' %}
+                                                <span class="badge bg-info">🧪 Essai</span>
+                                            {% elif user.abonnement.statut == 'ANNULE' %}
+                                                <span class="badge bg-warning">❌ Annulé</span>
+                                            {% elif user.abonnement.statut == 'EXPIRE' %}
+                                                <span class="badge bg-secondary">⚠️ Expiré</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ user.abonnement.statut }}</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Parcelles :</strong>
+                                            <span>{{ user.geometricfigure_set.count }} / {{ user.abonnement.plan.max_parcelles }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush" style="padding-left: 30px;">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Fréquence :</strong>
+                                            <span>{{ user.abonnement.get_frequence_display }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Depuis :</strong>
+                                            <span>{{ user.abonnement.date_debut|date:"d/m/Y" }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3 mb-3">
+                                ℹ️ Cet abonnement a été souscrit avec l'autorisation d'un représentant légal.
+                            </div>
+                            <div class="text-center">
+                                {% if user.abonnement.resiliation_programmee %}
+                                    <a href="{% url 'vegetables_fruits:reactiver_abonnement' %}" class="btn btn-warning btn-sm">
+                                        🔄 Réactiver mon abonnement
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {# Cas 2 : pas d'abonnement, on gère la demande d'autorisation #}
+                        {% else %}
+                            {# Chercher une autorisation récente #}
+                            {% with autorisations=user.autorisations_achat.all %}
+                                {% if autorisations %}
+                                    {% for autorisation in autorisations|slice:":1" %}
+
+                                        {% if autorisation.statut == 'en_attente' %}
+                                            <div class="alert alert-info">
+                                                <div style="font-size: 2.5rem; text-align: center;">⏳</div>
+                                                <h5 class="text-center mt-2">Autorisation en attente</h5>
+                                                <p class="text-center mb-2">
+                                                    Un email a été envoyé à <strong>{{ autorisation.parent_email }}</strong>.<br>
+                                                    Ton parent doit valider ta demande pour le plan
+                                                    <strong>{{ autorisation.plan_souhaite.get_nom_display }}</strong>.
+                                                </p>
+                                                <p class="text-center text-muted small mb-0">
+                                                    Lien valable jusqu'au {{ autorisation.date_expiration|date:"d/m/Y à H:i" }}
+                                                </p>
+                                            </div>
+
+                                        {% elif autorisation.statut == 'validee' %}
+                                            <div class="alert alert-success">
+                                                <div style="font-size: 2.5rem; text-align: center;">✅</div>
+                                                <h5 class="text-center mt-2">Autorisation accordée !</h5>
+                                                <p class="text-center mb-3">
+                                                    Ton parent a validé ta demande pour le plan
+                                                    <strong>{{ autorisation.plan_souhaite.get_nom_display }}</strong>.
+                                                    Tu peux maintenant souscrire !
+                                                </p>
+                                                <div class="text-center">
+                                                    <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan={{ autorisation.plan_souhaite.nom|lower }}&frequence={{ autorisation.frequence }}"
+                                                       class="btn btn-success">
+                                                        💳 Finaliser mon abonnement
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                        {% elif autorisation.statut == 'refusee' %}
+                                            <div class="alert alert-danger">
+                                                <div style="font-size: 2.5rem; text-align: center;">❌</div>
+                                                <h5 class="text-center mt-2">Demande refusée</h5>
+                                                <p class="text-center mb-0">
+                                                    Ton parent a refusé la demande d'abonnement
+                                                    <strong>{{ autorisation.plan_souhaite.get_nom_display }}</strong>.
+                                                </p>
+                                            </div>
+
+                                        {% elif autorisation.statut == 'expiree' %}
+                                            <div class="alert alert-warning">
+                                                <div style="font-size: 2.5rem; text-align: center;">⌛</div>
+                                                <h5 class="text-center mt-2">Demande expirée</h5>
+                                                <p class="text-center mb-3">
+                                                    Le lien de validation est expiré (7 jours).
+                                                    Tu peux faire une nouvelle demande.
+                                                </p>
+                                                <div class="text-center">
+                                                    <a href="{% url 'vegetables_fruits:demander_autorisation_achat' %}?plan=basique"
+                                                       class="btn btn-outline-warning">
+                                                        🔄 Refaire une demande
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                {% else %}
+                                    {# Aucune demande en cours : proposer d'en faire une #}
+                                    <div class="text-center py-4">
+                                        <div style="font-size: 3rem;">🔒</div>
+                                        <h5 class="mt-3">Abonnement payant sur autorisation</h5>
+                                        <p class="text-muted">
+                                            Pour souscrire à un abonnement Basique ou Premium,<br>
+                                            tu dois obtenir l'autorisation d'un parent ou tuteur légal.
+                                        </p>
+                                        <a href="{% url 'vegetables_fruits:demander_autorisation_achat' %}?plan=basique"
+                                           class="btn btn-success">
+                                            ✉️ Demander l'autorisation d'un parent
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+
+                    {% else %}
+                        {# ============================================================ #}
+                        {# VERSION ADULTE #}
+                        {# ============================================================ #}
+                        {% if user.abonnement %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush" style="padding-left: 30px;">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Plan :</strong>
+                                            <span class="badge bg-success">{{ user.abonnement.plan.get_nom_display }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Statut :</strong>
+                                            {% if user.abonnement.statut == 'ACTIF' %}
+                                                {% if user.abonnement.resiliation_programmee %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        ⏸️ Résiliation le {{ user.abonnement.date_fin_prevue|date:"d/m/Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-success">✅ Actif</span>
+                                                {% endif %}
+                                            {% elif user.abonnement.statut == 'ESSAI' %}
+                                                <span class="badge bg-info">🧪 Essai</span>
+                                            {% elif user.abonnement.statut == 'ANNULE' %}
+                                                <span class="badge bg-warning">❌ Annulé</span>
+                                            {% elif user.abonnement.statut == 'EXPIRE' %}
+                                                <span class="badge bg-secondary">⚠️ Expiré</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ user.abonnement.statut }}</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Parcelles :</strong>
+                                            <span>{{ user.geometricfigure_set.count }} / {{ user.abonnement.plan.max_parcelles }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush" style="padding-left: 30px;">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Fréquence :</strong>
+                                            <span>{{ user.abonnement.get_frequence_display }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Depuis :</strong>
+                                            <span>{{ user.abonnement.date_debut|date:"d/m/Y" }}</span>
+                                        </li>
+                                        {% if user.abonnement.date_prochain_paiement %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <strong>Prochain paiement :</strong>
+                                            <span>{{ user.abonnement.date_prochain_paiement|date:"d/m/Y" }}</span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-outline-success btn-sm">
+                                    🔄 Changer de plan
+                                </a>
+                                <a href="{% url 'vegetables_fruits:stripe_portal' %}" class="btn btn-outline-secondary btn-sm">
+                                    ⚙️ Gérer mon abonnement
+                                </a>
+                                {% if user.abonnement.resiliation_programmee %}
+                                    <a href="{% url 'vegetables_fruits:reactiver_abonnement' %}" class="btn btn-warning btn-sm">
+                                        🔄 Réactiver mon abonnement
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center my-3">
+                                Vous n'avez pas encore d'abonnement actif.
+                            </p>
+                            <div class="text-center">
+                                <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-success">
+                                    💎 Voir les offres
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BADGES (uniquement pour les juniors) ===== -->
+    {% if user.mode_junior and user.profil_eleve %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        🏅 Mes badges
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profil_eleve.badges.all %}
+                        <div class="row">
+                            {% for badge in user.profil_eleve.badges.all %}
+                            <div class="col-md-3 col-sm-4 col-6 mb-3">
+                                <div class="text-center p-3 border rounded bg-light">
+                                    <div style="font-size: 2.5rem;">{{ badge.emoji }}</div>
+                                    <div class="fw-bold mt-2">{{ badge.nom }}</div>
+                                    <div class="small text-success">{{ badge.points }} points</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">
+                            🌱 Continue à jardiner pour débloquer tes premiers badges !
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== SECTION CLASSE ===== -->
+    {# ✅ MODIF : On affiche cette section pour TOUS les mineurs (mode_junior) #}
+    {% if user.mode_junior %}
+        {% if user.profil_eleve and user.profil_eleve.classe %}
+            {# Mineur DÉJÀ dans une classe → résumé #}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                🎓 Ma classe
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Tu es dans la classe : <strong>{{ user.profil_eleve.classe.nom }}</strong></p>
+                            <p>Code de ta classe : <code>{{ user.profil_eleve.classe.code }}</code></p>
+                            <a href="{% url 'vegetables_fruits:classement_eleve' %}" class="btn btn-success">
+                                🏆 Voir le classement
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            {# Mineur SANS classe (particulier ou élève sans classe) → formulaire #}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                🎓 Rejoindre une classe
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Demande le code d'invitation à ton professeur et rejoins ta classe !</p>
+                            <form method="post" action="{% url 'vegetables_fruits:rejoindre_classe' %}" class="row g-3">
+                                {% csrf_token %}
+                                <div class="col-md-6">
+                                    <input type="text" name="code_classe" class="form-control" placeholder="Code d'invitation (ex: A1B2C3D4)" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-info w-100">
+                                        🎓 Rejoindre
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- ===== SECTION COORDONNÉES ===== -->
+    <div class="row mt-4">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bell"></i>
+                        📱 Mes coordonnées pour les alertes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="post" action="{% url 'vegetables_fruits:mettre_a_jour_coordonnees' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">📧 Email</label>
+                                    <input type="email" name="email" id="email" class="form-control"
+                                           value="{{ user.email }}" required>
+                                    <small class="text-muted">Recevez les alertes par email</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="telephone" class="form-label">📱 Téléphone</label>
+                                    <input type="tel" name="telephone" id="telephone" class="form-control"
+                                           value="{{ user.telephone|default:'' }}"
+                                           placeholder="+33612345678">
+                                    <small class="text-muted">
+                                        Format international : +33 pour la France, +1 pour le Canada, etc.
+                                    </small>
+                                </div>
+                                <button type="submit" class="btn btn-info w-100">
+                                    <i class="bi bi-save"></i> 💾 Enregistrer mes coordonnées
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info small">
+                                <i class="bi bi-info-circle"></i> <strong>À quoi servent ces informations ?</strong><br>
+                                Elles servent à vous envoyer des alertes par email ou SMS.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== STATISTIQUES ===== -->
+    {% if user.drawings.exists %}
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        Statistiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <h3 class="text-success">{{ user.drawings.count }}</h3>
+                                <p class="text-muted mb-0">Figures créées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <h3 class="text-success">{{ user.drawings.all|length }}</h3>
+                                <p class="text-muted mb-0">Total</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <h3 class="text-success">{{ user.last_login|timesince }}</h3>
+                                <p class="text-muted mb-0">Dernière visite</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}

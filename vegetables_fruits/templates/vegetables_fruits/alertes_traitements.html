@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alertes traitements - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Alertes traitements</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alertes-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .alertes-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .alertes-header h1 {
+        font-size: 2rem;
+        color: #2d6a4f;
+        margin: 0;
+    }
+
+    .alertes-header .subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+        margin: 5px 0 0;
+    }
+
+    /* Statistiques */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        text-align: center;
+        border-left: 4px solid #2d6a4f;
+    }
+
+    .stat-card .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d6a4f;
+        line-height: 1.2;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .stat-card.critique { border-left-color: #dc3545; }
+    .stat-card.elevee { border-left-color: #fd7e14; }
+    .stat-card.moyenne { border-left-color: #ffc107; }
+    .stat-card.faible { border-left-color: #28a745; }
+    .stat-card.contamination { border-left-color: #9b59b6; }
+
+    .stat-card.critique .stat-number { color: #dc3545; }
+    .stat-card.elevee .stat-number { color: #fd7e14; }
+    .stat-card.moyenne .stat-number { color: #ffc107; }
+    .stat-card.faible .stat-number { color: #28a745; }
+    .stat-card.contamination .stat-number { color: #9b59b6; }
+
+    /* Liste des alertes */
+    .alerte-item {
+        background: white;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-left: 5px solid #2d6a4f;
+        transition: 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .alerte-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .alerte-item.critique { border-left-color: #dc3545; }
+    .alerte-item.elevee { border-left-color: #fd7e14; }
+    .alerte-item.moyenne { border-left-color: #ffc107; }
+    .alerte-item.faible { border-left-color: #28a745; }
+    .alerte-item.contamination { border-left-color: #9b59b6; }
+
+    .alerte-item .alerte-contenu {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .alerte-item .alerte-contenu .alerte-titre {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .alerte-item .alerte-contenu .alerte-titre .badge-gravite {
+        font-size: 0.7rem;
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        color: white;
+    }
+
+    .badge-gravite.critique { background: #dc3545; }
+    .badge-gravite.elevee { background: #fd7e14; }
+    .badge-gravite.moyenne { background: #ffc107; color: #343a40; }
+    .badge-gravite.faible { background: #28a745; }
+    .badge-gravite.contamination { background: #9b59b6; }
+
+    .alerte-item .alerte-contenu .alerte-message {
+        color: #495057;
+        margin-top: 5px;
+        font-size: 0.95rem;
+    }
+
+    .alerte-item .alerte-contenu .alerte-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .alerte-item .alerte-contenu .alerte-details span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* BOÎTE CONTAMINATION */
+    .contamination-box {
+        margin-top: 10px;
+        padding: 12px 16px;
+        background: #fff3cd;
+        border-radius: 10px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .contamination-box .contamination-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .contamination-box .contamination-header .icon {
+        font-size: 1.2rem;
+    }
+
+    .contamination-box .contamination-header strong {
+        color: #856404;
+    }
+
+    .contamination-box .contamination-message {
+        margin: 5px 0 0;
+        font-size: 0.9rem;
+        color: #856404;
+    }
+
+    .contamination-box .parcelles-voisines {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: #fff8e1;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+
+    .contamination-box .parcelles-voisines strong {
+        color: #856404;
+    }
+
+    .contamination-box .parcelles-voisines ul {
+        margin: 5px 0 0 20px;
+        padding: 0;
+        list-style: disc;
+        color: #856404;
+    }
+
+    .contamination-box .actions-contamination {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #856404;
+        background: #fff3cd;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+
+    .contamination-box .actions-contamination ul {
+        margin: 5px 0 0 20px;
+        padding: 0;
+        list-style: disc;
+    }
+
+    .alerte-item .alerte-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        min-width: 120px;
+    }
+
+    .alerte-item .alerte-actions .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-traiter {
+        background: #28a745;
+        color: white;
+    }
+    .btn-traiter:hover { background: #218838; }
+
+    .btn-ignorer {
+        background: #6c757d;
+        color: white;
+    }
+    .btn-ignorer:hover { background: #5a6268; }
+
+    .btn-voir {
+        background: #2d6a4f;
+        color: white;
+    }
+    .btn-voir:hover { background: #1b4332; }
+
+    /* Pas d'alertes */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        background: #f8f9fa;
+        border-radius: 16px;
+    }
+
+    .empty-state .icon {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    /* Alertes traitées */
+    .alertes-traitees {
+        margin-top: 40px;
+    }
+
+    .alertes-traitees h3 {
+        color: #6c757d;
+        font-size: 1.1rem;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .alerte-item.traitee {
+        opacity: 0.7;
+        border-left-color: #6c757d;
+    }
+
+    .alerte-item.traitee .alerte-contenu .alerte-titre {
+        text-decoration: line-through;
+        color: #6c757d;
+    }
+
+    .badge-statut {
+        font-size: 0.7rem;
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .badge-statut.traitee { background: #d4edda; color: #155724; }
+    .badge-statut.ignoree { background: #f8d7da; color: #721c24; }
+
+    .badge-contamination {
+        font-size: 0.65rem;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        background: #9b59b6;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: 768px) {
+        .alerte-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .alerte-item .alerte-actions {
+            justify-content: flex-end;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .contamination-box .parcelles-voisines ul {
+            padding-left: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="alertes-container">
+
+    <!-- Header -->
+    <div class="alertes-header">
+        <div>
+            <h1>⚠️ Alertes traitements</h1>
+            <p class="subtitle">Suivez les traitements recommandés pour vos cultures</p>
+        </div>
+        <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-secondary">
+            🌾 Voir mes parcelles
+        </a>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_alertes }}</div>
+            <div class="stat-label">🟡 Alertes actives</div>
+        </div>
+        <div class="stat-card critique">
+            <div class="stat-number">{{ alertes_par_gravite.critique }}</div>
+            <div class="stat-label">🔴 Critique</div>
+        </div>
+        <div class="stat-card elevee">
+            <div class="stat-number">{{ alertes_par_gravite.elevee }}</div>
+            <div class="stat-label">🟠 Élevée</div>
+        </div>
+        <div class="stat-card moyenne">
+            <div class="stat-number">{{ alertes_par_gravite.moyenne }}</div>
+            <div class="stat-label">🟡 Moyenne</div>
+        </div>
+        <div class="stat-card faible">
+            <div class="stat-number">{{ alertes_par_gravite.faible }}</div>
+            <div class="stat-label">🟢 Faible</div>
+        </div>
+        <div class="stat-card contamination">
+            <div class="stat-number">{{ alertes_par_gravite.contamination|default:0 }}</div>
+            <div class="stat-label">🟣 Contamination</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ alertes_traitees }}</div>
+            <div class="stat-label">✅ Traitées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ alertes_ignorees }}</div>
+            <div class="stat-label">⏭️ Ignorées</div>
+        </div>
+    </div>
+
+    <!-- Alertes actives -->
+    <h2 style="color: #2d6a4f; margin-bottom: 15px;">🟡 Alertes actives</h2>
+
+    {% if alertes_actives %}
+        {% for alerte in alertes_actives %}
+        <div class="alerte-item
+            {% if alerte.est_contamination %}contamination{% else %}{{ alerte.niveau_risque }}{% endif %}">
+            <div class="alerte-contenu">
+                <div class="alerte-titre">
+                    <span>{{ alerte.maladie.emoji }} {{ alerte.maladie.nom }}</span>
+                    <span class="badge-gravite
+                        {% if alerte.est_contamination %}contamination{% else %}{{ alerte.niveau_risque }}{% endif %}">
+                        {% if alerte.est_contamination %}
+                            ⚠️ CONTAMINATION
+                        {% else %}
+                            {{ alerte.get_niveau_risque_display }}
+                        {% endif %}
+                    </span>
+                    {% if alerte.est_contamination %}
+                    <span class="badge-contamination">⚠️ RISQUE DE PROPAGATION</span>
+                    {% endif %}
+                    <span style="font-size:0.8rem; color:#6c757d; font-weight:400;">
+                        🌱 {{ alerte.culture.nom }}
+                    </span>
+                </div>
+                <div class="alerte-message">
+                    {{ alerte.message }}
+                </div>
+                <div class="alerte-details">
+                    <span>📍 {{ alerte.figure.name }}</span>
+                    <span>🌡️ {{ alerte.temperature }}°C</span>
+                    <span>💧 {{ alerte.humidite }}%</span>
+                    <span>🌧️ {{ alerte.precipitation }} mm</span>
+                    <span>📅 {{ alerte.date_creation|date:"d/m/Y H:i" }}</span>
+                </div>
+
+                <!-- ⭐ SECTION CONTAMINATION -->
+                {% if alerte.est_contamination %}
+                <div class="contamination-box">
+                    <div class="contamination-header">
+                        <span class="icon">⚠️</span>
+                        <strong>Risque de contamination détecté</strong>
+                    </div>
+                    <p class="contamination-message">
+                        {{ alerte.message_contamination }}
+                    </p>
+
+                    {% if alerte.parcelles_voisines %}
+                    <div class="parcelles-voisines">
+                        <strong>📋 Parcelles voisines à surveiller :</strong>
+                        <ul>
+                            {% for voisine in alerte.parcelles_voisines %}
+                            <li>{{ voisine.nom }} ({{ voisine.distance }}m) - Cultures : {{ voisine.cultures|join:", " }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="actions-contamination">
+                        💡 <strong>Actions recommandées :</strong>
+                        <ul>
+                            <li>Isolez immédiatement les parcelles concernées</li>
+                            <li>Désinfectez vos outils et chaussures</li>
+                            <li>Appliquez un traitement préventif sur les parcelles voisines</li>
+                            <li>Surveillez quotidiennement l'apparition de symptômes</li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                <!-- ===== FIN CONTAMINATION ===== -->
+
+                {% if alerte.conseils and not alerte.est_contamination %}
+                <div style="margin-top:8px; padding:8px 12px; background:#f8f9fa; border-radius:8px; font-size:0.9rem; color:#495057;">
+                    💡 {{ alerte.conseils|linebreaksbr }}
+                </div>
+                {% elif alerte.conseils and alerte.est_contamination %}
+                <div style="margin-top:8px; padding:8px 12px; background:#f8f9fa; border-radius:8px; font-size:0.9rem; color:#495057; border-left:3px solid #9b59b6;">
+                    💡 {{ alerte.conseils|linebreaksbr }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="alerte-actions">
+                <form method="POST" action="{% url 'vegetables_fruits:traiter_alerte' alerte.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-traiter">✅ Traité</button>
+                </form>
+                <form method="POST" action="{% url 'vegetables_fruits:ignorer_alerte_traitement' alerte.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ignorer">⏭️ Ignorer</button>
+                </form>
+                <a href="{% url 'vegetables_fruits:figure_detail' alerte.figure.id %}" class="btn btn-voir">
+                    👁️ Voir
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">🌱</div>
+            <h3>Aucune alerte active</h3>
+            <p>Vos cultures sont en bonne santé ! Les alertes apparaîtront ici si une maladie est détectée ou si un risque de contamination est identifié.</p>
+        </div>
+    {% endif %}
+
+    <!-- Alertes traitées et ignorées -->
+    <div class="alertes-traitees">
+        <h3>📋 Historique des alertes</h3>
+        <p class="text-muted" style="font-size:0.9rem;">
+            ✅ {{ alertes_traitees }} traitée{{ alertes_traitees|pluralize }} ·
+            ⏭️ {{ alertes_ignorees }} ignorée{{ alertes_ignorees|pluralize }}
+        </p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh toutes les 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+});
+</script>
+{% endblock %}

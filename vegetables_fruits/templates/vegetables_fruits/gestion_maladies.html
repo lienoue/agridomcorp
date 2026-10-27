@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Gestion maladies</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .symptome-tag {
+        display: inline-block;
+        padding: 8px 16px;
+        margin: 4px;
+        border: 2px solid #dee2e6;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    .symptome-tag:hover {
+        border-color: #28a745;
+        background: #f8f9fa;
+    }
+    .symptome-tag.selected {
+        border-color: #28a745;
+        background: #d4edda;
+        color: #155724;
+    }
+    .maladie-card {
+        transition: transform 0.2s;
+    }
+    .maladie-card:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                🦠 Gestion des maladies
+            </div>
+            <br>
+            <!-- Localisation -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <p class="text-muted">
+                            📍 Région : <strong>{{ region }}</strong> • Pays : <strong>{{ pays }}</strong>
+                            {% if selected_parcelle %}
+                                • Parcelle : {{ selected_parcelle.nom }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+            <div class="card-body">
+
+                <!-- Sélecteur de parcelle -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <form method="get" class="d-flex align-items-center gap-3">
+                            <label class="fw-bold">Parcelle :</label>
+                            <select name="parcelle_id" class="form-select" style="max-width: 250px;" onchange="this.form.submit()">
+                                <option value="">-- Sélectionnez une parcelle --</option>
+                                {% for parcelle in parcelles %}
+                                    <option value="{{ parcelle.id }}"
+                                            {% if parcelle.id == selected_parcelle.id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Cultures présentes -->
+                {% if selected_parcelle %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded text-center">
+                            <h6 class="mb-2">🌱 Cultures sur cette parcelle</h6>
+                            {% if cultures_plantees %}
+                                {% for culture in cultures_plantees %}
+                                    <span class="badge bg-success me-1">{{ culture }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted mb-0">Aucune culture sur cette parcelle.</p>
+                            {% endif %}
+                        </div>
+                        <br>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Formulaire de détection -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">🔍 Détection par symptômes</h5>
+                                <p class="text-muted mb-3">Sélectionnez les symptômes observés sur vos plantes :</p>
+                                <br>
+
+                                <form method="post" id="detectionForm">
+                                    {% csrf_token %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'taches brunes' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="taches brunes" hidden>
+                                                🟤 Taches brunes
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'flétrissure' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="flétrissure" hidden>
+                                                🥀 Flétrissure
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'décoloration' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="décoloration" hidden>
+                                                🟡 Décoloration
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'mildiou' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="mildiou" hidden>
+                                                🌧️ Mildiou
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'oïdium' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="oïdium" hidden>
+                                                ⚪ Oïdium
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'rouille' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="rouille" hidden>
+                                                🧡 Rouille
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'virus' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="virus" hidden>
+                                                🧬 Virus
+                                            </label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="symptome-tag {% if 'bactérie' in symptomes_selectionnes %}selected{% endif %}">
+                                                <input type="checkbox" name="symptomes" value="bactérie" hidden>
+                                                🦠 Bactérie
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <button type="submit" class="btn btn-success">
+                                        🔍 Détecter
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Résultats de la détection -->
+                {% if resultats_detection %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">📋 Résultats de la détection</h5>
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for resultat in resultats_detection %}
+                            <div class="col">
+                                <div class="card maladie-card">
+                                    <div class="card-header">
+                                        {{ resultat.maladie.emoji }} {{ resultat.maladie.nom }}
+                                        <span class="badge
+                                            {% if resultat.confiance == 'forte' %}bg-success
+                                            {% elif resultat.confiance == 'moyenne' %}bg-warning text-dark
+                                            {% else %}bg-danger{% endif %}
+                                        ">
+                                            Confiance {{ resultat.confiance }} ({{ resultat.taux }}%)
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Symptômes :</strong> {{ resultat.maladie.symptomes|join:", " }}</p>
+                                        <p><strong>Cultures ciblées :</strong> {{ resultat.maladie.cultures_cible|join:", " }}</p>
+                                        <p><strong>Traitement biologique :</strong> {{ resultat.maladie.traitement_biologique }}</p>
+                                        <p><strong>Prévention :</strong> {{ resultat.maladie.prevention }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Maladies connues -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                🧬 Maladies courantes
+                            </div>
+                            <div class="card-body">
+                                {% if maladies_connues %}
+                                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                                        {% for maladie in maladies_connues %}
+                                        <div class="col">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ maladie.emoji }} {{ maladie.nom }}</h5>
+                                                    <p class="card-text small">{{ maladie.description|truncatewords:20 }}</p>
+                                                    <p class="card-text small text-muted">
+                                                        🎯 {{ maladie.cultures_cible|join:", " }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">Aucune maladie courante enregistrée.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.symptome-tag').forEach(tag => {
+            tag.addEventListener('click', function(e) {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('selected');
+                e.preventDefault(); // Empêche le comportement par défaut du label
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🔄 Rotation des cultures{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>🔄 Rotation des cultures sur 4 ans</h1>
+            <p class="text-muted">Optimisez votre potager avec une rotation intelligente</p>
+        </div>
+        <div>
+            <span class="badge bg-info">Cycle année {{ annee_cycle }}/4</span>
+        </div>
+    </div>
+
+    <!-- Sélecteur de parcelle -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">📌 Choisir une parcelle</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3" action="">
+                <div class="col-md-8">
+                    <select name="figure_id" class="form-select" id="figureSelect">
+                        <option value="">-- Sélectionnez une parcelle --</option>
+                        {% for f in figures %}
+                        <option value="{{ f.id }}" {% if figure.id == f.id %}selected{% endif %}>
+                            {{ f.name }} ({{ f.crops|length }} cultures)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">✓ Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if figure %}
+        <!-- Plan de rotation -->
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">📅 Plan de rotation recommandé</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 {% if annee_cycle == 1 %}bg-success text-white{% endif %}">
+                                    <strong>Année 1</strong>
+                                    <p class="small mt-2 mb-0">Légumes-fruits<br>Solanacées, Cucurbitacées</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 {% if annee_cycle == 2 %}bg-success text-white{% endif %}">
+                                    <strong>Année 2</strong>
+                                    <p class="small mt-2 mb-0">Légumes-feuilles<br>Brassicacées, Chénopodiacées</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 {% if annee_cycle == 3 %}bg-success text-white{% endif %}">
+                                    <strong>Année 3</strong>
+                                    <p class="small mt-2 mb-0">Légumes-racines<br>Apiacées, Liliacées</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 {% if annee_cycle == 0 %}bg-success text-white{% endif %}">
+                                    <strong>Année 4</strong>
+                                    <p class="small mt-2 mb-0">Légumineuses<br>Haricots, Pois, Fèves</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommandations pour les cultures existantes -->
+        {% if recommandations %}
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">🌱 Recommandations pour vos cultures</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Culture</th>
+                                <th>Famille</th>
+                                <th>Recommandation cette année</th>
+                                <th>À éviter</th>
+                                <th>Conseils</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recommandations %}
+                            <tr>
+                                <td><strong>{{ item.culture }}</strong></td>
+                                <td>{{ item.famille }}</td>
+                                <td><span class="badge bg-success">{{ item.recommande }}</span></td>
+                                <td>{{ item.plan_annee2 }}</td>
+                                <td>{{ item.conseils|truncatewords:10 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning text-center">
+            <p>Aucune culture sur cette parcelle.</p>
+            <a href="{% url 'vegetables_fruits:edit_figure' figure.id %}" class="btn btn-primary">
+                🌱 Ajouter des cultures
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Tableau de rotation 4 ans -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">📋 Tableau de rotation idéal sur 4 ans</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Famille</th>
+                                <th>Année 1</th>
+                                <th>Année 2</th>
+                                <th>Année 3</th>
+                                <th>Année 4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Solanacées</strong> (tomate, poivron)</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+                            <tr><td><strong>Cucurbitacées</strong> (courgette)</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+                            <tr><td><strong>Brassicacées</strong> (chou)</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                            <tr><td><strong>Apiacées</strong> (carotte)</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                            <tr><td><strong>Liliacées</strong> (oignon)</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                            <tr><td><strong>Légumineuses</strong> (haricot)</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+                            <tr><td><strong>Poacées</strong> (maïs)</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>Sélectionnez une parcelle pour voir les recommandations de rotation.</p>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-primary">
+                📍 Voir mes parcelles
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

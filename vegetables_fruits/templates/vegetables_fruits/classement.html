@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">🏆 Classement de ma classe</h1>
+    
+    {% if user.profil_eleve and user.profil_eleve.classe %}
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0">📊 {{ user.profil_eleve.classe.nom }}</h4>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for eleve in user.profil_eleve.classe.eleves.all|dictsortreversed:"points" %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if forloop.counter == 1 %}
+                            <span style="font-size: 1.5rem;">🥇</span>
+                        {% elif forloop.counter == 2 %}
+                            <span style="font-size: 1.5rem;">🥈</span>
+                        {% elif forloop.counter == 3 %}
+                            <span style="font-size: 1.5rem;">🥉</span>
+                        {% else %}
+                            <span class="badge bg-secondary rounded-circle me-2">{{ forloop.counter }}</span>
+                        {% endif %}
+                        <strong>{{ eleve.user.username }}</strong>
+                        {% if eleve.user == user %}
+                            <span class="badge bg-primary">C'est toi !</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="badge bg-success fs-6">{{ eleve.points }} pts</span>
+                        <span class="badge bg-warning text-dark">Niveau {{ eleve.niveau }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success">
+            🌱 Continuer à gagner des points
+        </a>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>Tu n'es pas encore dans une classe ou ton professeur n'a pas configuré le classement.</p>
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-primary">
+            🌱 Retour à mes parcelles
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

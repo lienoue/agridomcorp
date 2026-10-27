@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Dashboard - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
+        transition: 0.3s;
+        border-left: 4px solid #2d6a4f;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .stat-card .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d6a4f;
+    }
+    .stat-card .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .stat-card.warning { border-left-color: #ffc107; }
+    .stat-card.danger { border-left-color: #dc3545; }
+    .stat-card.info { border-left-color: #17a2b8; }
+    .stat-card.success { border-left-color: #28a745; }
+
+    .action-item {
+        background: white;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        border-left: 4px solid #2d6a4f;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.2s;
+    }
+    .action-item:hover {
+        background: #f8f9fa;
+    }
+    .action-item .action-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .action-item .action-titre {
+        font-weight: 600;
+    }
+    .action-item .action-parcelle {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .culture-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        transition: 0.3s;
+    }
+    .culture-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .culture-card .emoji {
+        font-size: 2.5rem;
+    }
+    .culture-card .nom {
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    .culture-card .parcelle {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .culture-card .statut-badge {
+        font-size: 0.7rem;
+        padding: 2px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 4px;
+    }
+    .progress-bar-culture {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 10px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    .progress-bar-culture .fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s;
+    }
+
+    .weather-box {
+        background: linear-gradient(135deg, #2d6a4f, #1b4332);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .weather-box .temp {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    .weather-box .conditions {
+        font-size: 1rem;
+    }
+    .weather-box .details {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    .quick-actions .btn {
+        flex: 1;
+        min-width: 150px;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .section-header h4 {
+        color: #2d6a4f;
+        margin: 0;
+    }
+    .section-header .btn-sm {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+    }
+
+    .moderation-badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-left: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .stat-card .stat-number {
+            font-size: 1.8rem;
+        }
+        .weather-box {
+            flex-direction: column;
+            text-align: center;
+        }
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <h2 style="color: #2d6a4f; font-weight: 700;">
+            🌱 Mon tableau de bord agricole
+        </h2>
+        <p style="color: #6c757d;">Bienvenue {{ user.username }} ! Voici un résumé de votre jardin.</p>
+        <hr>
+        <br>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4">
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'vegetables_fruits:view_figure' %}" style="text-decoration: none; color: inherit;">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_parcelles }}</div>
+                <div class="stat-label">🌾 Parcelles</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'vegetables_fruits:view_figure' %}" style="text-decoration: none; color: inherit;">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.cultures_actives }}</div>
+                <div class="stat-label">🌱 Cultures actives</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'vegetables_fruits:alertes_traitements' %}" style="text-decoration: none; color: inherit;">
+            <div class="stat-card warning">
+                <div class="stat-number">{{ stats.alertes_actives }}</div>
+                <div class="stat-label">⚠️ Alertes actives</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'vegetables_fruits:autosuffisance' %}" style="text-decoration: none; color: inherit;">
+            <div class="stat-card success">
+                <div class="stat-number">{{ stats.recoltes_mois }}</div>
+                <div class="stat-label">🍅 Récoltes du mois</div>
+            </div>
+        </a>
+    </div>
+</div>
+<br>
+
+<!-- Météo -->
+{% if meteo %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="weather-box">
+            <div>
+                <div style="font-size: 1.2rem; font-weight: 600;">🌤️ Météo du jour</div>
+                <div class="temp">{{ meteo.temperature }}°C</div>
+                <div class="conditions">{{ meteo.conditions }}</div>
+                <div class="details">{{ meteo.ville }} · 💧 {{ meteo.humidity }}% · 💨 {{ meteo.wind_speed }} km/h</div>
+            </div>
+            <div style="font-size: 4rem;">
+                {% if meteo.icon == '01d' or meteo.icon == '01n' %}☀️
+                {% elif meteo.icon == '02d' or meteo.icon == '02n' %}⛅
+                {% elif meteo.icon == '03d' or meteo.icon == '03n' %}☁️
+                {% elif meteo.icon == '04d' or meteo.icon == '04n' %}☁️
+                {% elif meteo.icon == '09d' or meteo.icon == '09n' %}🌧️
+                {% elif meteo.icon == '10d' or meteo.icon == '10n' %}🌦️
+                {% elif meteo.icon == '11d' or meteo.icon == '11n' %}⛈️
+                {% elif meteo.icon == '13d' or meteo.icon == '13n' %}❄️
+                {% elif meteo.icon == '50d' or meteo.icon == '50n' %}🌫️
+                {% else %}🌤️{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Prochaines actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <br>
+        <div class="section-header">
+            <h4>📅 Prochaines actions</h4>
+            <a href="{% url 'vegetables_fruits:mes_semis' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+        <br>
+        {% if prochaines_actions %}
+            <div>
+                {% for action in prochaines_actions %}
+                <div class="action-item">
+                    <div>
+                        <span class="action-date">{{ action.date|date:"d/m/Y" }}</span>
+                        <span class="action-titre">{{ action.titre }}</span>
+                        <span class="action-parcelle">📍 {{ action.parcelle }}</span>
+                    </div>
+                    <span style="font-size: 1.2rem;">
+                        {% if action.type == 'semis' %}🌱
+                        {% elif action.type == 'recolte' %}🍅
+                        {% else %}📌{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Aucune action prévue. Profitez-en pour planifier vos cultures !</p>
+        {% endif %}
+    </div>
+</div>
+<br>
+
+<!-- Compteur cultures -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="section-header">
+            <h4>📊 Mes cultures</h4>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+
+        <!-- Compteur visuel -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+            <span style="background: #e9ecef; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;">
+                📋 {{ stats_mes_cultures.total }} cultures
+            </span>
+            <span style="background: #d4edda; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;">
+                🟢 {{ stats_mes_cultures.en_cours }} en cours
+            </span>
+            <span style="background: #fff3cd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;">
+                🟠 {{ stats_mes_cultures.a_planifier }} à planifier
+            </span>
+            {% if stats_mes_cultures.recoltees > 0 %}
+            <span style="background: #e2e3e5; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;">
+                🧺 {{ stats_mes_cultures.recoltees }} récoltées
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="row g-3">
+            {% if mes_cultures %}
+                {% for culture in mes_cultures %}
+                <div class="col-md-3 col-sm-6">
+                    <div class="culture-card">
+                        <a href="{% url 'vegetables_fruits:figure_detail' culture.figure_id %}" style="text-decoration: none; color: inherit;">
+                            <div class="emoji">{{ culture.emoji }}</div>
+                            <div class="nom">{{ culture.nom }}</div>
+                            <div class="parcelle">{{ culture.parcelle }}</div>
+
+                            <!-- Badge statut -->
+                            <span class="statut-badge
+                                {% if culture.etat == 'recoltee' %}bg-secondary text-white
+                                {% elif culture.etat == 'non_planifiee' %}bg-warning text-dark
+                                {% elif culture.statut == 'Prêt à récolter' or culture.statut == 'Fructification' %}bg-success text-white
+                                {% elif culture.statut == 'Floraison' %}bg-warning text-dark
+                                {% elif culture.statut == 'Croissance' or culture.statut == 'Levée' %}bg-info text-white
+                                {% elif culture.statut == 'Semé' %}bg-secondary text-white
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ culture.statut }}
+                            </span>
+
+                            {% if culture.etat != 'non_planifiee' %}
+                                <!-- Barre de progression (uniquement si planifiée) -->
+                                <div class="progress-bar-culture">
+                                    <div class="fill"
+                                        style="width: {{ culture.progression }}%;
+                                               background-color:
+                                               {% if culture.progression >= 100 %}#6c757d
+                                               {% elif culture.progression >= 85 %}#28a745
+                                               {% elif culture.progression >= 60 %}#17a2b8
+                                               {% elif culture.progression >= 30 %}#ffc107
+                                               {% else %}#6c757d{% endif %};">
+                                    </div>
+                                </div>
+                                <small style="color: #6c757d;">{{ culture.progression }}%</small>
+                                {% if culture.date_recolte %}
+                                    <div style="font-size: 0.7rem; color: #6c757d; margin-top: 4px;">
+                                        📅 {{ culture.date_recolte|date:"d/m/Y" }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </a>
+
+                        {% if culture.etat == 'non_planifiee' %}
+                            <!-- CTA Planifier (hors du <a> pour éviter conflit de clic) -->
+                            <button type="button"
+                                    class="btn btn-sm btn-warning"
+                                    style="margin-top: 8px; width: 100%; font-size: 0.8rem;"
+                                    onclick="ouvrirModalePlanifier({{ culture.figure_id }}, '{{ culture.nom|escapejs }}')">
+                                📅 Planifier le semis
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">Aucune culture pour le moment. Commencez à planter !</p>
+                    <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success btn-sm">
+                        ➕ Créer ma première parcelle
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        <br><br>
+    </div>
+</div>
+
+
+<!-- Modération -->
+{% if is_moderateur %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="section-header">
+            <h4>🛡️ Modération du forum</h4>
+            <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalements' %}" class="btn btn-sm btn-outline-warning">
+                👉 Gérer les signalements
+            </a>
+        </div>
+        <div style="margin-top: 15px;">
+            <div class="action-item" style="border-left-color: #ffc107;">
+                <div>
+                    <span class="action-titre">
+                        🚨 Signalements en attente
+                        {% if signalements_en_attente > 0 %}
+                            <span class="moderation-badge">{{ signalements_en_attente }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="action-parcelle">Forum adulte</span>
+                </div>
+                <div>
+                    {% if signalements_en_attente > 0 %}
+                        <span class="badge bg-danger">{{ signalements_en_attente }} en attente</span>
+                    {% else %}
+                        <span class="badge bg-success">✅ Aucun signalement</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="action-item" style="border-left-color: #17a2b8;">
+                <div>
+                    <span class="action-titre">
+                        🔔 Notifications
+                        {% if notifications_non_lues > 0 %}
+                            <span class="moderation-badge">{{ notifications_non_lues }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="action-parcelle">Messages non lus</span>
+                </div>
+                <div>
+                    <a href="{% url 'vegetables_fruits:forum_adulte_notifications' %}" class="btn btn-sm btn-outline-primary">
+                        📖 Voir les notifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Alertes récentes -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="section-header">
+            <h4>🔔 Alertes récentes</h4>
+            <a href="{% url 'vegetables_fruits:alertes_traitements' %}" class="btn btn-sm btn-outline-success">
+                👉 Voir toutes
+            </a>
+        </div>
+        {% if alertes_recentes or alertes_meteo %}
+            <div style="margin-top: 15px;">
+                {% for alerte in alertes_recentes %}
+                <div class="action-item" style="border-left-color: #dc3545;">
+                    <div>
+                        <span class="action-titre">⚠️ {{ alerte.message|truncatechars:50 }}</span>
+                        <span class="action-parcelle">📍 {{ alerte.figure.name }}</span>
+                    </div>
+                    <span style="font-size: 0.8rem; color: #6c757d;">{{ alerte.date_creation|date:"d/m/Y" }}</span>
+                </div>
+                {% endfor %}
+                {% for alerte in alertes_meteo %}
+                <div class="action-item" style="border-left-color: #ffc107;">
+                    <div>
+                        <span class="action-titre">🌤️ {{ alerte.message|truncatechars:50 }}</span>
+                    </div>
+                    <span style="font-size: 0.8rem; color: #6c757d;">{{ alerte.date_declenchement|date:"d/m/Y" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Aucune alerte récente. Tout va bien !</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="quick-actions">
+            <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success">
+                ➕ Nouvelle parcelle
+            </a>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-success">
+                🌾 Voir mes parcelles
+            </a>
+            <a href="{% url 'vegetables_fruits:statistiques_avancees' %}" class="btn btn-outline-info">
+                📊 Statistiques
+            </a>
+            <a href="{% url 'vegetables_fruits:alertes_traitements' %}" class="btn btn-outline-warning">
+                ⚠️ Alertes
+            </a>
+            <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn btn-outline-secondary">
+                📓 Journal
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

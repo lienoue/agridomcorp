@@ -1,0 +1,82 @@
+<div class="autosuffisance-container">
+    <h5 class="mb-4">
+        <i class="bi bi-house-heart text-success"></i> Autosuffisance
+    </h5>
+
+    <!-- Résumé -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Produit (12 mois)</h6>
+                    <h3 class="text-success">{{ total_kg }} kg</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Besoin annuel</h6>
+                    <h3>{{ besoin }} kg</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Autosuffisance</h6>
+                    <h3 class="{% if pourcentage >= 75 %}text-success{% elif pourcentage >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ pourcentage }}%
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Niveau -->
+    <div class="card mb-4">
+        <div class="card-body text-center">
+            <div style="font-size: 3rem;">{{ niveau }}</div>
+            <p class="mt-2">{{ message }}</p>
+            <div class="alert alert-info">
+                <i class="bi bi-lightbulb"></i> {{ conseil }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Détail des récoltes -->
+    {% if details_recoltes %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Dernières récoltes
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Culture</th>
+                                <th>Poids estimé</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in details_recoltes %}
+                                <tr>
+                                    <td>{{ item.emoji }} {{ item.culture }}</td>
+                                    <td>{{ item.poids_estime }} kg</td>
+                                    <td>{{ item.date|date:"d/m/Y" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <small class="text-muted">Total : {{ total_recoltes }} récolte(s) sur 12 mois</small>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune récolte enregistrée sur les 12 derniers mois.
+        </div>
+    {% endif %}
+</div>

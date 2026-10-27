@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une fleur pollinisatrice{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .detail-header {
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    #map {
+        height: 400px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    /* ============================================================ */
+    /* SUGGESTIONS */
+    /* ============================================================ */
+    .suggestion-btn {
+        border-radius: 20px !important;
+        padding: 4px 16px !important;
+        transition: 0.3s;
+        border: 2px solid #28a745;
+        background: transparent;
+        color: #28a745;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .suggestion-btn:hover {
+        background: #28a745;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    .suggestion-btn.active {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    .suggestion-card {
+        border-left: 4px solid #28a745;
+        background: #f8fff9;
+    }
+    .suggestion-card .card-title {
+        color: #2d6a4f;
+        font-weight: 600;
+    }
+    .suggestion-card .badge-climat {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="detail-card">
+        <div class="detail-header">
+            <h2>🌼 Ajouter une fleur pollinisatrice</h2>
+            <a href="{% url 'vegetables_fruits:figure_detail' figure.id %}" class="btn btn-secondary">
+                ← Retour
+            </a>
+        </div>
+        <div class="detail-body">
+
+            {# ============================================================ #}
+            {# 💡 SECTION AIDE - SUGGESTIONS PERSONNALISÉES #}
+            {# ============================================================ #}
+            {% if fleurs_suggerees %}
+            <div class="card suggestion-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <h5 class="card-title mb-2">
+                                💡 Fleurs recommandées pour votre parcelle
+                            </h5>
+                            <p class="text-muted small mb-2">
+                                {% if cultures_existantes %}
+                                    🌱 Basé sur vos cultures :
+                                    <strong>{{ cultures_existantes|join:", " }}</strong>
+                                {% else %}
+                                    🌍 Adapté à votre climat :
+                                    <span class="badge-climat">🌤️ {{ climat|capfirst }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <span class="badge-climat" style="font-size:0.8rem;">
+                            🌍 {{ region|capfirst }}
+                        </span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        {% for fleur in fleurs_suggerees %}
+                            <button type="button" class="suggestion-btn" data-fleur="{{ fleur }}">
+                                🌼 {{ fleur }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">
+                        💡 Cliquez sur une suggestion pour la sélectionner automatiquement
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>📋 Informations</h4>
+                    <form method="post" id="ajouterFleurForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="fleur-select" class="form-label">🌸 Choisir une fleur</label>
+                            <select id="fleur-select" name="fleur_nom" class="form-control" required>
+                                <option value="">-- Sélectionnez une fleur --</option>
+
+                                <optgroup label="🌼 Fleurs sauvages">
+                                    <option value="Achillée millefeuille">🌼 Achillée millefeuille</option>
+                                    <option value="Centaurée bleuet">🌸 Centaurée bleuet</option>
+                                    <option value="Coquelicot">🌺 Coquelicot</option>
+                                    <option value="Marguerite">🌼 Marguerite</option>
+                                    <option value="Pissenlit">🌼 Pissenlit</option>
+                                    <option value="Trèfle blanc">🍀 Trèfle blanc</option>
+                                    <option value="Trèfle rouge">🍀 Trèfle rouge</option>
+                                    <option value="Luzerne">🌿 Luzerne</option>
+                                    <option value="Sainfoin">🌸 Sainfoin</option>
+                                    <option value="Vesce">🌿 Vesce</option>
+                                    <option value="Mélilot">🌼 Mélilot</option>
+                                    <option value="Bourrache">💙 Bourrache</option>
+                                    <option value="Consoude">💜 Consoude</option>
+                                    <option value="Échinacée">🌸 Échinacée</option>
+                                    <option value="Rudbeckie">🌼 Rudbeckie</option>
+                                    <option value="Zinnia">🌸 Zinnia</option>
+                                    <option value="Cosmos">🌸 Cosmos</option>
+                                    <option value="Gaillarde">🌼 Gaillarde</option>
+                                    <option value="Verveine">💜 Verveine</option>
+                                    <option value="Phacélie">💜 Phacélie</option>
+                                </optgroup>
+
+                                <optgroup label="🌿 Aromatiques">
+                                    <option value="Lavande">💜 Lavande</option>
+                                    <option value="Romarin">🌿 Romarin</option>
+                                    <option value="Thym">🌿 Thym</option>
+                                    <option value="Sauge">🌿 Sauge</option>
+                                    <option value="Origan">🌿 Origan</option>
+                                    <option value="Marjolaine">🌿 Marjolaine</option>
+                                    <option value="Menthe">🌿 Menthe</option>
+                                    <option value="Mélisse">🌿 Mélisse</option>
+                                    <option value="Angélique">🌿 Angélique</option>
+                                    <option value="Fenouil">🌿 Fenouil</option>
+                                    <option value="Aneth">🌿 Aneth</option>
+                                    <option value="Coriandre">🌿 Coriandre</option>
+                                </optgroup>
+
+                                <optgroup label="🌺 Fleurs ornementales">
+                                    <option value="Rose">🌹 Rose</option>
+                                    <option value="Tulipe">🌷 Tulipe</option>
+                                    <option value="Jonquille">💛 Jonquille</option>
+                                    <option value="Iris">🌸 Iris</option>
+                                    <option value="Pivoine">🌺 Pivoine</option>
+                                    <option value="Hortensia">💐 Hortensia</option>
+                                    <option value="Jasmin">🌸 Jasmin</option>
+                                    <option value="Chèvrefeuille">🌸 Chèvrefeuille</option>
+                                    <option value="Buddleia">💜 Buddleia</option>
+                                    <option value="Lilas">💜 Lilas</option>
+                                    <option value="Clématite">💜 Clématite</option>
+                                    <option value="Glycine">💜 Glycine</option>
+                                    <option value="Chardon">🌼 Chardon</option>
+                                </optgroup>
+
+                                <optgroup label="🌸 Fleurs méditerranéennes">
+                                    <option value="Ciste">🌸 Ciste</option>
+                                    <option value="Lavande papillon">💜 Lavande papillon</option>
+                                </optgroup>
+
+                                <optgroup label="🌺 Fleurs tropicales">
+                                    <option value="Hibiscus">🌺 Hibiscus</option>
+                                    <option value="Bougainvillier">🌸 Bougainvillier</option>
+                                    <option value="Plumeria">🌸 Plumeria</option>
+                                    <option value="Lantana">🌸 Lantana</option>
+                                    <option value="Passiflore">🌸 Passiflore</option>
+                                    <option value="Frangipanier">🌸 Frangipanier</option>
+                                    <option value="Allamanda">🌸 Allamanda</option>
+                                    <option value="Ixora">🌸 Ixora</option>
+                                    <option value="Heliconia">🌺 Heliconia</option>
+                                    <option value="Gingembre ornemental">🌸 Gingembre ornemental</option>
+                                    <option value="Strelitzia">🌺 Strelitzia</option>
+                                    <option value="Protea">🌺 Protea</option>
+                                </optgroup>
+
+                                <optgroup label="🌼 Fleurs à semis facile">
+                                    <option value="Œillet d'Inde">🌸 Œillet d'Inde</option>
+                                    <option value="Capucine">🌸 Capucine</option>
+                                    <option value="Souci">🌼 Souci</option>
+                                    <option value="Nigelle de Damas">💙 Nigelle de Damas</option>
+                                    <option value="Pois de senteur">🌸 Pois de senteur</option>
+                                    <option value="Belle-de-jour">🌸 Belle-de-jour</option>
+                                    <option value="Pavot de Californie">🌼 Pavot de Californie</option>
+                                </optgroup>
+
+                                <optgroup label="🌻 Fleurs de jardin potager">
+                                    <option value="Tournesol">🌻 Tournesol</option>
+                                    <option value="Courge">🌼 Courge</option>
+                                    <option value="Cucurbitacées">🌼 Cucurbitacées</option>
+                                    <option value="Haricot">🌸 Haricot</option>
+                                    <option value="Pois">🌸 Pois</option>
+                                    <option value="Fève">🌸 Fève</option>
+                                    <option value="Aubergine">🌸 Aubergine</option>
+                                    <option value="Tomate">🌸 Tomate</option>
+                                </optgroup>
+                            </select>
+                            <small class="text-muted">Sélectionnez une fleur, puis cliquez sur la carte</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">📍 Position sur la carte</label>
+                            <div id="map"></div>
+                            <input type="hidden" name="lat" id="lat" required>
+                            <input type="hidden" name="lng" id="lng" required>
+                            <input type="hidden" name="fleur_emoji" id="fleur-emoji" value="🌼">
+                            <small class="text-muted">Cliquez sur la carte pour placer la fleur</small>
+                            <div id="position-info" class="mt-2 text-muted small" style="display: none;">
+                                ✅ Position : <span id="coords-display"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn btn-success w-100" disabled>
+                            🌼 Planter cette fleur
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h4>💡 Pourquoi planter des fleurs ?</h4>
+                    <ul style="padding-left: 30px;">
+                        <li>🐝 Attire les pollinisateurs</li>
+                        <li>🌿 Améliore la biodiversité</li>
+                        <li>🍅 Augmente les rendements</li>
+                        <li>🌸 Embellit votre parcelle</li>
+                    </ul>
+                    <div class="alert alert-success" style="padding-left: 10px;">
+                        <strong>🌟 Bonus :</strong> +8 points en mode Junior !
+                    </div>
+                    <br>
+
+                    {# ============================================================ #}
+                    {# 📋 CULTURES EXISTANTES #}
+                    {# ============================================================ #}
+                    {% if cultures_existantes %}
+                    <div class="card mt-3" style="background: #f8f9fa;">
+                        <div class="card-body">
+                            <h6 class="card-title mb-2">🌱 Cultures présentes</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for culture in cultures_existantes %}
+                                    <span class="badge bg-secondary" style="font-size:0.8rem; padding:4px 12px;">
+                                        {{ culture }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ============================================================ #}
+                    {# 🌍 CLIMAT #}
+                    {# ============================================================ #}
+                    {% if climat %}
+                    <div class="card mt-2" style="background: #f8f9fa;">
+                        <div class="card-body">
+                            <h6 class="card-title mb-1">🌤️ Climat détecté</h6>
+                            <span class="badge-climat" style="font-size:0.9rem;">
+                                {% if climat == 'mediterraneen' %}🌞 Méditerranéen
+                                {% elif climat == 'tropical' %}🌴 Tropical
+                                {% elif climat == 'desertique' %}🏜️ Désertique
+                                {% elif climat == 'continental' %}❄️ Continental
+                                {% elif climat == 'oceanique' %}🌊 Océanique
+                                {% elif climat == 'montagnard' %}🏔️ Montagnard
+                                {% elif climat == 'subtropical' %}🌺 Subtropical
+                                {% elif climat == 'arctique' %}❄️ Arctique
+                                {% else %}🌿 Tempéré
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet pour la carte (version 1.7.1) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================================
+        // ✅ INITIALISATION DE LA CARTE
+        // ============================================================
+        const map = L.map('map').setView([46.603354, 1.888334], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap France'
+        }).addTo(map);
+
+        // ============================================================
+        // ✅ AJOUT DU POLYGONE DE LA PARCELLE AVEC ZOOM AUTOMATIQUE
+        // ============================================================
+        {% if figure.geojson_data %}
+        try {
+            const geojson = {{ figure.geojson_data|safe }};
+            const layer = L.geoJSON(geojson, {
+                style: {
+                    color: '#28a745',
+                    weight: 3,
+                    opacity: 0.8,
+                    fillOpacity: 0.2,
+                    fillColor: '#28a745'
+                }
+            }).addTo(map);
+
+            // ✅ CENTRER ET ZOOMER SUR LA PARCELLE
+            map.fitBounds(layer.getBounds(), { padding: [50, 50] });
+
+            console.log("✅ Polygone ajouté, zoom adapté");
+        } catch(e) {
+            console.error("❌ Erreur GeoJSON:", e);
+        }
+        {% endif %}
+
+        // ============================================================
+        // ✅ GESTION DE LA FLEUR
+        // ============================================================
+        let marker = null;
+        let selectedFlower = '';
+        let selectedEmoji = '🌼';
+
+        // Sélection de la fleur
+        document.getElementById('fleur-select').addEventListener('change', function() {
+            const selected = this.value;
+            if (selected) {
+                selectedFlower = selected;
+                const opt = this.selectedOptions[0];
+                const text = opt.textContent;
+                const emojiMatch = text.match(/[\u{1F300}-\u{1FAFF}]/u);
+                if (emojiMatch) {
+                    selectedEmoji = emojiMatch[0];
+                    document.getElementById('fleur-emoji').value = selectedEmoji;
+                }
+                console.log("🌼 Fleur sélectionnée:", selectedFlower);
+            } else {
+                selectedFlower = '';
+                selectedEmoji = '🌼';
+            }
+        });
+
+        // ============================================================
+        // ✅ SUGGESTIONS - CLIC SUR UNE SUGGESTION
+        // ============================================================
+        document.querySelectorAll('.suggestion-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const fleurNom = this.dataset.fleur;
+                const select = document.getElementById('fleur-select');
+
+                // Trouver l'option correspondante
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === fleurNom) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+
+                // Déclencher l'événement change
+                const event = new Event('change');
+                select.dispatchEvent(event);
+
+                // Mettre en évidence la suggestion
+                document.querySelectorAll('.suggestion-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Faire défiler vers le sélecteur
+                select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+
+        // ============================================================
+        // ✅ CLIC SUR LA CARTE
+        // ============================================================
+        map.on('click', function(e) {
+            if (!selectedFlower) {
+                alert('🌼 Sélectionnez d\'abord une fleur !');
+                return;
+            }
+
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            marker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: `<div style="background:white; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; border:3px solid #28a745; box-shadow:0 2px 10px rgba(0,0,0,0.2);">${selectedEmoji}</div>`,
+                    iconSize: [40, 40]
+                })
+            }).addTo(map);
+
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            document.getElementById('coords-display').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            document.getElementById('position-info').style.display = 'block';
+            document.getElementById('submit-btn').disabled = false;
+            console.log("✅ Position enregistrée:", lat, lng);
+        });
+
+        // ============================================================
+        // ✅ SOUMISSION DU FORMULAIRE
+        // ============================================================
+        document.getElementById('ajouterFleurForm').addEventListener('submit', function(e) {
+            if (!document.getElementById('lat').value || !document.getElementById('lng').value) {
+                e.preventDefault();
+                alert('📍 Veuillez cliquer sur la carte pour placer la fleur.');
+                return;
+            }
+            if (!document.getElementById('fleur-select').value) {
+                e.preventDefault();
+                alert('🌼 Veuillez sélectionner une fleur.');
+                return;
+            }
+        });
+
+        // ============================================================
+        // ✅ FORCER LE REDIMENSIONNEMENT DE LA CARTE
+        // ============================================================
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 500);
+
+        // Redimensionnement au redimensionnement de la fenêtre
+        window.addEventListener('resize', function() {
+            map.invalidateSize();
+        });
+    });
+</script>
+{% endblock %}

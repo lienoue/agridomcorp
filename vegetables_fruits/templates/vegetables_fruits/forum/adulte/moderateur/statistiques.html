@@ -1,0 +1,65 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}📊 Statistiques modération - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Statistiques du forum 📊{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalements' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 20px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.75rem; color: #999;">Total signalements</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--brun-terre);">{{ stats.total|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 20px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.75rem; color: #999;">En attente</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #E65100;">{{ stats.en_attente|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 20px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.75rem; color: #999;">Traités ce mois</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--vert-jardin);">{{ stats.traites_mois|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 20px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.75rem; color: #999;">Temps moyen</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--soleil);">{{ stats.temps_moyen|default:"12h" }}</div>
+    </div>
+</div>
+
+{# SANCTIONS RÉCENTES #}
+<div style="background: #fff; border-radius: var(--radius); padding: 20px 24px; border: 1px solid rgba(109,76,42,0.06);">
+    <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; margin-bottom: 16px;">
+        ⚖️ Sanctions récentes
+    </h4>
+    
+    {% for sanction in sanctions %}
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 0; border-bottom: 1px solid #f0ece8;">
+        <div>
+            <strong>{{ sanction.utilisateur.username }}</strong>
+            <span style="
+                {% if sanction.type_sanction == 'avertissement' %}color: #E65100;
+                {% elif sanction.type_sanction == 'suspension' %}color: #0D47A1;
+                {% else %}color: #B71C1C;{% endif %}
+                font-weight: 600; margin-left: 8px;">
+                {{ sanction.get_type_sanction_display }}
+            </span>
+        </div>
+        <div style="font-size: 0.85rem; color: #999;">
+            par {{ sanction.moderateur.username }} • {{ sanction.date_debut|date:"d/m/Y" }}
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; color: #999; padding: 20px;">
+        Aucune sanction récente
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

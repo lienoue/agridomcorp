@@ -1,0 +1,1274 @@
+{% load static %}
+{% load user_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}Agriculture 2.0 - Cultivez votre passion{% endblock %}</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="{% static 'vegetables_fruits/manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'vegetables_fruits/images/AgridomCorp.png' %}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Agri2.0">
+    <meta name="theme-color" content="#28a745">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'vegetables_fruits/css/dark-mode.css' %}">
+
+    <style>
+        [data-tooltip] {
+            position: relative;
+            cursor: pointer;
+        }
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* ===== BARRE DE RECHERCHE ===== */
+        .search-bar {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-bar input {
+            border-radius: 50px;
+            padding: 6px 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: 0.3s;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            width: 100%;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-bar input:focus {
+            border-color: white;
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+            outline: none;
+            color: white;
+        }
+
+        #search-results {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin-top: 5px;
+            padding: 8px 0;
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 999;
+            border: 1px solid #e9ecef;
+            display: none;
+        }
+
+        #search-results a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            transition: 0.2s;
+        }
+
+        #search-results a:hover {
+            background: #f0f7f0;
+            border-left: 3px solid #28a745;
+        }
+
+        #search-results a:last-child {
+            border-bottom: none;
+        }
+
+        #search-results .no-result {
+            padding: 10px 15px;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        /* ===== VARIABLES & BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            transition: 0.3s;
+        }
+        :root {
+            --primary: #28a745; --primary-dark: #218838; --primary-light: #34ce57;
+            --junior-primary: #ff6b35; --junior-secondary: #ffb347; --junior-bg: #fff8e7;
+            --danger: #dc3545; --warning: #ffc107; --info: #17a2b8; --dark: #343a40; --light: #f8f9fa;
+        }
+
+        a { text-decoration: none; color: var(--primary); transition: 0.2s; }
+        a:hover { color: var(--primary-dark); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .row { display: flex; flex-wrap: wrap; margin: -10px; }
+        .col { flex: 1; padding: 10px; }
+
+        /* ===== CARTES & FORMULAIRES ===== */
+        .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .card-header { padding: 15px 20px; background: var(--light); border-bottom: 1px solid #e9ecef; font-weight: 600; }
+        .card-body { padding: 20px; }
+
+        .form-control, .form-select { width: 100%; padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 8px; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(40,167,69,0.2); }
+
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: 0.2s; cursor: pointer; border: none; }
+        .btn-success { background: var(--primary); color: white; }
+        .btn-success:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline-success { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline-success:hover { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+
+        /* ===== NAVBAR ===== */
+        .navbar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 0.8rem 0; position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { color: white; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .navbar-brand img { height: 35px; border-radius: 8px; }
+        .navbar-nav { display: flex; list-style: none; gap: 5px; align-items: center; flex-wrap: wrap; }
+        .nav-link { color: white; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem; transition: 0.2s; }
+        .nav-link:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+        /* ===== MENUS DÉROULANTS ===== */
+        .dropdown-custom { position: relative; display: inline-block; }
+        .dropdown-toggle-custom { cursor: pointer; }
+        .dropdown-menu-custom {
+            display: none; position: absolute; background: white; min-width: 220px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-radius: 10px; padding: 8px 0;
+            z-index: 1000; top: 100%; left: 0; border: 1px solid #eee;
+        }
+        .dropdown-menu-custom li { list-style: none; }
+        .dropdown-menu-custom a {
+            color: #333; padding: 8px 20px; display: block; font-size: 0.9rem;
+            transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
+        }
+        .dropdown-menu-custom a:hover { background: #f0f7f0; color: var(--primary); padding-left: 25px; }
+
+        /* ✅ CLASSES POUR LES ABONNEMENTS */
+        .feature-locked { color: #999 !important; cursor: not-allowed; }
+        .feature-locked:hover { background: #f8d7da !important; color: #721c24 !important; padding-left: 20px !important; }
+        .feature-locked small { font-size: 0.7rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 10px; }
+
+        .dropdown-menu-custom.show { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== JUNIOR ===== */
+        .form-switch { display: flex; align-items: center; gap: 8px; }
+        .form-check-input { width: 44px; height: 22px; background-color: #ccc; border-radius: 25px; appearance: none; cursor: pointer; position: relative; transition: 0.3s; }
+        .form-check-input:checked { background-color: var(--junior-primary); }
+        .form-check-input::before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 2px; left: 3px; transition: 0.3s; }
+        .form-check-input:checked::before { transform: translateX(20px); }
+        body.mode-junior { background-color: var(--junior-bg); font-size: 1.1rem; }
+        body.mode-junior .card { border: 3px solid var(--junior-primary); border-radius: 20px; }
+        body.mode-junior .btn-success { background: var(--junior-primary); border-radius: 50px; }
+
+        /* ===== MASCOTTE ===== */
+        .mascotte {
+            position: fixed; bottom: 20px; right: 20px; background: white;
+            border-radius: 50px; padding: 10px 18px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; transition: 0.3s;
+            border: 2px solid var(--junior-primary); z-index: 1000;
+        }
+        .mascotte:hover { transform: scale(1.05); }
+        .mascotte-avatar { font-size: 1.8rem; }
+        body.mode-junior .mascotte { border-color: #ff6b35; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* ===== BREADCRUMB ===== */
+        .breadcrumb { list-style: none; display: flex; padding: 8px 0; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
+        .breadcrumb-item { display: flex; align-items: center; }
+        .breadcrumb-item + .breadcrumb-item::before { content: "›"; padding: 0 8px; color: #6c757d; }
+        .breadcrumb-item.active { color: #6c757d; pointer-events: none; }
+
+        @media (max-width: 992px) {
+            .navbar-toggler { display: block; background: none; border: none; color: white; font-size: 1.5rem; }
+            .navbar-collapse { display: none !important; flex-direction: column; padding-top: 15px; }
+            .navbar-collapse.show { display: flex !important; }
+            .navbar-nav { flex-direction: column; align-items: stretch; }
+            .dropdown-menu-custom { position: static; box-shadow: none; background: rgba(255,255,255,0.1); padding: 5px 0 5px 15px; border: none; width: 100%; }
+            .dropdown-menu-custom a { color: white; }
+            .dropdown-menu-custom a:hover { background: rgba(255,255,255,0.2); color: white; }
+            .search-bar { max-width: 100%; margin: 10px 0; }
+        }
+
+        /* ===== MENU LATÉRAL (SIDEBAR) ===== */
+        .sidebar-container {
+            position: relative;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 80px;
+            left: 15px;
+            z-index: 999;
+            background: #2d6a4f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: 0.3s;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: #1b4332;
+            transform: scale(1.05);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .sidebar-header h4 {
+            color: #2d6a4f;
+            margin: 0;
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .sidebar-close:hover {
+            color: #dc3545;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0;
+        }
+
+        .sidebar-nav li {
+            padding: 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: #f0f7f0;
+            border-left-color: #2d6a4f;
+            padding-left: 25px;
+        }
+
+        .sidebar-divider {
+            margin: 10px 20px;
+            border-color: #e9ecef;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .sidebar-toggle {
+                display: none;
+            }
+        }
+
+        /* ===== PAGINATION ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 20px 0 0;
+            list-style: none;
+        }
+        .pagination .page-item {
+            display: inline-block;
+        }
+        .pagination .page-link {
+            display: block;
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            color: #2d6a4f;
+            text-decoration: none;
+            transition: 0.2s;
+            background: white;
+            font-size: 0.9rem;
+        }
+        .pagination .page-link:hover {
+            background: #f0f7f0;
+            border-color: #28a745;
+            text-decoration: none;
+        }
+        .pagination .page-item.active .page-link {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background: #f8f9fa;
+        }
+        .pagination .page-item .page-link .prev,
+        .pagination .page-item .page-link .next {
+            font-size: 1.2rem;
+        }
+
+        /* ===== MODALE HORS SAISON ===== */
+        .modal-hors-saison {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-hors-saison-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px; width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-hors-saison-header {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+            padding: 16px 20px;
+        }
+        .modal-hors-saison-header h3 { margin: 0; font-size: 1.2rem; }
+        .modal-hors-saison-body { padding: 20px; }
+        .modal-hors-saison-body ul {
+            list-style: none; padding: 0; margin: 12px 0;
+            max-height: 200px; overflow-y: auto;
+        }
+        .modal-hors-saison-body li {
+            padding: 10px 12px;
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.92rem;
+        }
+        .modal-hors-saison-hint {
+            font-size: 0.85rem; color: #6c757d;
+            font-style: italic; margin-top: 10px;
+        }
+        .modal-hors-saison-footer {
+            display: flex; gap: 10px;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .modal-hors-saison-footer button {
+            flex: 1; padding: 10px;
+            border: none; border-radius: 6px;
+            cursor: pointer; font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .btn-hors-saison-cancel {
+            background: #6c757d; color: white;
+        }
+        .btn-hors-saison-cancel:hover { background: #5a6268; }
+        .btn-hors-saison-confirm {
+            background: #28a745; color: white;
+        }
+        .btn-hors-saison-confirm:hover { background: #218838; }
+
+        /* Dark mode */
+        body.dark-mode .modal-hors-saison-content { background: #2a2a2a; color: #e0e0e0; }
+        body.dark-mode .modal-hors-saison-footer { background: #1f1f1f; border-top-color: #444; }
+        body.dark-mode .modal-hors-saison-body li { background: #3a3a1a; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body {% if user.is_authenticated and user|mineur %}class="mode-junior"{% endif %}>
+
+    {# ============================================================ #}
+    {# DÉTERMINER SI L'UTILISATEUR EST UN ÉLÈVE EN CLASSE #}
+    {# ============================================================ #}
+    {% with est_eleve=user.profil_eleve|default_if_none:False %}
+        {% if est_eleve and est_eleve.classe %}
+            {% with est_eleve_en_classe=True %}{% endwith %}
+        {% else %}
+            {% with est_eleve_en_classe=False %}{% endwith %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- ===== JUNIOR BANNER ===== -->
+    {% if user.is_authenticated and user|mineur %}
+    <div class="junior-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>🧑‍🌾 Niveau {{ progression.niveau|default:1 }}</span>
+                <div class="progress" style="height: 6px; background: rgba(255,255,255,0.3); border-radius: 10px; flex-grow: 1; margin: 0 15px;">
+                    <div class="progress-bar" style="width: {{ progression.pourcentage|default:0 }}%; background: #ffdd00; border-radius: 10px;"></div>
+                </div>
+                <span>{{ progression.points|default:0 }} pts</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'vegetables_fruits:index' %}">
+                <img src="{% static 'vegetables_fruits/images/AgridomCorp.png' %}" alt="AgriDomCorp"> Agri 2.0
+            </a>
+
+            <!-- ✅ BARRE DE RECHERCHE -->
+            <div class="search-bar" style="flex:1; max-width:350px; margin:0 15px;">
+                <input type="text" id="search-nav" class="form-control" placeholder="🔍 Rechercher..." onkeyup="filterMenu()" style="border-radius:50px; padding:6px 18px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; width:100%;">
+                <div id="search-results" style="display:none;"></div>
+            </div>
+
+
+            <button class="navbar-toggler" onclick="toggleMenu()">☰</button>
+
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Basculer mode sombre/clair">
+                <span id="theme-icon">🌙</span>
+            </button>
+            <div class="navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+
+                    <!-- ✅ Mes parcelles -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'vegetables_fruits:view_figure' %}">
+                            🌾 Mes parcelles
+                        </a>
+                    </li>
+
+                    <!-- ===== MON ESPACE ===== -->
+                    <li class="nav-item dropdown-custom">
+                        <a class="nav-link dropdown-toggle-custom" href="#" onclick="toggleDropdown(event, 'espaceDropdown')">👤 Mon espace ▼</a>
+                        <ul class="dropdown-menu-custom" id="espaceDropdown">
+                            <li><a href="{% url 'vegetables_fruits:dashboard_particulier' %}">👩‍🏫 Tableau de bord</a></li>
+                            <li><a href="{% url 'vegetables_fruits:profile' %}">👤 Mon profil</a></li>
+                            <li><a href="{% url 'vegetables_fruits:tarification' %}">💎 Mon abonnement</a></li>
+                            {% if user.profil_eleve %}
+                            <li><a href="{% url 'vegetables_fruits:arbre_competences' %}">🌳 Mes compétences</a></li>
+                            <li><a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}">🎯 Missions</a></li>
+                            {% endif %}
+                            {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' %}
+                                <li><a href="{% url 'vegetables_fruits:statistiques_avancees' %}">📊 Statistiques avancées</a></li>
+                            {% else %}
+                                <li><a href="{% url 'vegetables_fruits:tarification' %}" class="feature-locked">📊 Statistiques avancées <small>🔒 Premium</small></a></li>
+                            {% endif %}
+                            <li><a href="{% url 'vegetables_fruits:mes_rappels' %}">📧 Mes rappels</a></li>
+                            <li class="dropdown-header">Déconnexion</li>
+                            <li><a href="{% url 'vegetables_fruits:logout' %}">🚪 Se déconnecter</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- ===== CULTURES ===== -->
+                    <li class="nav-item dropdown-custom">
+                        <a class="nav-link dropdown-toggle-custom" href="#" onclick="toggleDropdown(event, 'culturesDropdown')">🌱 Cultures ▼</a>
+                        <ul class="dropdown-menu-custom" id="culturesDropdown">
+                            <li><a href="{% url 'vegetables_fruits:calendrier_semis' %}">📅 Mon calendrier (vue mensuelle)</a></li>
+                            <li><a href="{% url 'vegetables_fruits:cultures' %}">📅 Mon calendrier (vues journaliere)</a></li>
+                            <li><a href="{% url 'vegetables_fruits:guide_cultures' %}">📖 Guide des cultures</a></li>
+                            <li><a href="{% url 'vegetables_fruits:suggestions_personnalisees' %}">💡 Suggestions</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- ===== ÉCOLOGIE & CLIMAT ===== -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a>
+                    </li>
+
+                    <!-- ===== COMMUNAUTÉ ===== -->
+                    <li class="nav-item dropdown-custom">
+                        <a class="nav-link dropdown-toggle-custom" href="#" onclick="toggleDropdown(event, 'communauteDropdown')">👥 Communauté ▼</a>
+                        <ul class="dropdown-menu-custom" id="communauteDropdown">
+                            {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'BASIQUE' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'vegetables_fruits:forum_adulte_index' %}">
+                                    <i class="fas fa-comments"></i> Forum
+                                    {% if notifications_non_lues %}
+                                        <span class="badge badge-danger">{{ notifications_non_lues }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><a href="{% url 'vegetables_fruits:galerie_index' %}">📸 Galerie photos</a></li>
+                            {% if user.profil_eleve and user.profil_eleve.classe or user.is_enseignant %}
+                            <li><a href="{% url 'vegetables_fruits:forum_index' %}">💬 Forum</a></li>
+                            <li><a href="{% url 'vegetables_fruits:defis_liste' %}">🎯 Défis de classe</a></li>
+                            {% endif %}
+
+                            <!-- CLASSEMENTS -->
+                            <li class="dropdown-header">Classements</li>
+                            {% if user.profil_eleve %}
+                            <li><a href="{% url 'vegetables_fruits:classement_eleve' %}">🏆 Ma classe</a></li>
+                            <li><a href="{% url 'vegetables_fruits:classement_national_eleves' %}">🌍 National (élèves)</a></li>
+                            {% endif %}
+                            {% if user.profil_eleve or user.is_enseignant %}
+                            <li><a href="{% url 'vegetables_fruits:classement_national_classes' %}">🏫 National (écoles)</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    <!-- ===== OUTILS ===== -->
+                    <li class="nav-item dropdown-custom">
+                        <a class="nav-link dropdown-toggle-custom" href="#" onclick="toggleDropdown(event, 'outilsDropdown')">🛠️ Outils ▼</a>
+                        <ul class="dropdown-menu-custom" id="outilsDropdown">
+
+                            <!-- ✅ JOURNAL DE BORD (conservé) -->
+                            {% if user.is_enseignant or user.abonnement.plan.nom in 'BASIQUE,PREMIUM' or est_eleve_en_classe %}
+                                <li><a href="{% url 'vegetables_fruits:journal_liste' %}">📓 Journal de bord</a></li>
+                            {% else %}
+                                <li><a href="{% url 'vegetables_fruits:tarification' %}" class="feature-locked">📓 Journal de bord <small>🔒 Basique+</small></a></li>
+                            {% endif %}
+
+                            <li><a href="{% url 'vegetables_fruits:alertes' %}">⚠️ Alertes</a></li>
+                            <li><a href="{% url 'vegetables_fruits:quiz' %}">📋 Quiz jardinage</a></li>
+
+                            {% if user.is_enseignant %}
+                                <li><a href="{% url 'vegetables_fruits:creer_defi' %}">🎯 Créer un défi</a></li>
+                            {% endif %}
+
+                            {% if user.is_enseignant %}
+                                <li><a href="{% url 'vegetables_fruits:dashboard_enseignant' %}">👩‍🏫 Tableau de bord Classe(s)</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    <!-- ===== JUNIOR SWITCH ===== -->
+                    {% if user.is_authenticated and user|mineur %}
+                    <li class="nav-item">
+                        <div class="form-switch">
+                            <input class="form-check-input" type="checkbox" id="modeJuniorSwitch">
+                            <label class="form-check-label" for="modeJuniorSwitch">🧒 Junior</label>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    <!-- ===== NOTIFICATIONS ===== -->
+                    {% if user.is_authenticated and user.is_enseignant %}
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="{% url 'vegetables_fruits:notifications' %}" id="notif-icon">🔔 <span id="notif-badge" class="badge bg-danger position-absolute" style="display: none; font-size: 0.6rem; top: 0; right: 0;">0</span></a>
+                    </li>
+                    {% endif %}
+
+                    <!-- ===== NON CONNECTÉ ===== -->
+                    {% if not user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'vegetables_fruits:login' %}">🔑 Connexion</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'vegetables_fruits:signup' %}">📝 Inscription</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== MENU LATÉRAL (SIDEBAR) ===== -->
+    <div class="sidebar-container">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <span>☰</span>
+        </button>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h4>🌱 Menu</h4>
+                <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'vegetables_fruits:dashboard_particulier' %}">📊 Dashboard</a></li>
+                <li><a href="{% url 'vegetables_fruits:view_figure' %}">🌾 Mes parcelles</a></li>
+                <li><a href="{% url 'vegetables_fruits:cultures' %}">📅 Mon calendrier</a></li>
+                <li><a href="{% url 'vegetables_fruits:guide_cultures' %}">📖 Guide des cultures</a></li>
+                <li><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
+
+                <!-- ✅ JOURNAL DE BORD (sidebar - conservé) -->
+                {% if user.is_enseignant or user.abonnement.plan.nom in 'BASIQUE,PREMIUM' or est_eleve_en_classe %}
+                    <li><a href="{% url 'vegetables_fruits:journal_liste' %}">📓 Journal</a></li>
+                {% else %}
+                    <li><a href="{% url 'vegetables_fruits:tarification' %}" class="feature-locked">📓 Journal <small>🔒 Basique+</small></a></li>
+                {% endif %}
+
+                <li><a href="{% url 'vegetables_fruits:tarification' %}">💰 Tarification</a></li>
+                <li><a href="{% url 'vegetables_fruits:profile' %}">⚙️ Profil</a></li>
+                {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'BASIQUE' %}
+                <li>
+                    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}">
+                        <i class="fas fa-comments"></i>
+                        <span>Forum</span>
+                        {% if notifications_non_lues %}
+                            <span class="badge badge-danger">{{ notifications_non_lues }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
+                {% if user.is_authenticated and user.is_enseignant %}
+                <li><a href="{% url 'vegetables_fruits:dashboard_enseignant' %}">🏫 Dashboard enseignant</a></li>
+                <li><a href="{% url 'vegetables_fruits:forum_index' %}">💬 Forum</a></li>
+                <li><a href="{% url 'vegetables_fruits:galerie_index' %}">📸 Galerie</a></li>
+                <li><a href="{% url 'vegetables_fruits:classement_eleve' %}">🏆 Classement</a></li>
+                {% endif %}
+                <li><hr class="sidebar-divider"></li>
+                <li><a href="{% url 'vegetables_fruits:quiz' %}">🧠 Quiz</a></li>
+                <li><a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}">🎯 Missions</a></li>
+                <li><a href="{% url 'vegetables_fruits:alertes' %}">⚠️ Alertes</a></li>
+                <li><hr class="sidebar-divider"></li>
+                <li><a href="{% url 'vegetables_fruits:cgu' %}">📜 CGU</a></li>
+                <li><a href="{% url 'vegetables_fruits:confidentialite' %}">🔒 Confidentialité</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'vegetables_fruits:logout' %}">🚪 Se déconnecter</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    </div>
+    <!-- ========================================================= -->
+
+    <!-- ===== BREADCRUMB ===== -->
+    <div class="container">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:index' %}">Accueil</a></li>
+            {% block breadcrumb %}{% endblock %}
+        </ol>
+    </div>
+
+    <!-- ===== MESSAGES FLASH ===== -->
+    {% if messages %}
+    <div class="container" style="margin-top: 1rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="padding: 10px 20px; border-radius: 8px; margin-bottom: 1rem;">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Dans base.html, pour savoir si l'utilisateur a déjà fait le tuto -->
+    {% if not user.tutoriel_termine %}
+        <div class="alert alert-info" style="position: sticky; top: 70px; z-index: 100;">
+            🎓 <a href="{% url 'vegetables_fruits:tutoriel' %}">Découvrez le tutoriel</a> pour bien démarrer !
+        </div>
+    {% endif %}
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="container" style="margin: 1.5rem auto;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer" style="background: #f8f9fa; padding: 3rem 0 1.5rem; margin-top: 4rem; border-top: 1px solid #e9ecef;">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 style="font-size: 1.3rem; font-weight: 700; color: #2d6a4f; margin-bottom: 15px;">
+                        🌱 Agriculture 2.0
+                    </h5>
+                    <p style="color: #6c757d; font-size: 0.95rem; line-height: 1.6; max-width: 280px;">
+                        Cultivez votre passion, développez vos compétences, partagez votre expérience.
+                    </p>
+                    <div style="margin-top: 15px; display: flex; gap: 12px;">
+                        <a href="#" style="color: #2d6a4f; font-size: 1.4rem; transition: 0.3s;">🐦</a>
+                        <a href="#" style="color: #2d6a4f; font-size: 1.4rem; transition: 0.3s;">📘</a>
+                        <a href="#" style="color: #2d6a4f; font-size: 1.4rem; transition: 0.3s;">📷</a>
+                        <a href="#" style="color: #2d6a4f; font-size: 1.4rem; transition: 0.3s;">🎥</a>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h6 style="font-size: 1.1rem; font-weight: 600; color: #343a40; margin-bottom: 18px; letter-spacing: 0.5px;">
+                        📄 Liens utiles
+                    </h6>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li><a href="{% url 'vegetables_fruits:cgu' %}" style="color: #6c757d; font-size: 0.9rem;">📜 CGU</a></li>
+                        <li><a href="{% url 'vegetables_fruits:confidentialite' %}" style="color: #6c757d; font-size: 0.9rem;">🔒 Confidentialité</a></li>
+                        <li><a href="{% url 'vegetables_fruits:tarification' %}" style="color: #6c757d; font-size: 0.9rem;">💰 Tarifs</a></li>
+                        <li><a href="{% url 'vegetables_fruits:mentions_legales' %}">📜 Mentions légales</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'vegetables_fruits:documentation' %}">
+                                📚 Documentation
+                            </a>
+                        </li>
+
+                        <li><a href="#" style="color: #6c757d; font-size: 0.9rem;">❓ FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h6 style="font-size: 1.1rem; font-weight: 600; color: #343a40; margin-bottom: 18px; letter-spacing: 0.5px;">
+                        📧 Contact
+                    </h6>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="color: #6c757d; font-size: 0.9rem;">📩 contact@agriculture2.0</li>
+                        <li style="color: #6c757d; font-size: 0.9rem;">📱 +33 1 23 45 67 89</li>
+                        <li style="color: #6c757d; font-size: 0.9rem;">📍 Paris, France</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr style="margin: 30px 0 20px; border-color: #dee2e6;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <p style="margin: 0; color: #6c757d; font-size: 0.85rem;">
+                    &copy; 2026 Agriculture 2.0 – Tous droits réservés
+                </p>
+                <div style="display: flex; gap: 20px;">
+                    <a href="{% url 'vegetables_fruits:cgu' %}" style="color: #6c757d; font-size: 0.85rem; text-decoration: none; transition: 0.2s;">📜 CGU</a>
+                    <a href="{% url 'vegetables_fruits:confidentialite' %}" style="color: #6c757d; font-size: 0.85rem; text-decoration: none; transition: 0.2s;">🔒 Confidentialité</a>
+                    <a href="#" style="color: #6c757d; font-size: 0.85rem; text-decoration: none; transition: 0.2s;">🍪 Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== MASCOTTE ===== -->
+    <div id="mascotte" class="mascotte">
+        <div class="mascotte-avatar">
+            {% if user.is_authenticated and user|mineur %}🧑‍🌾
+            {% elif user.is_authenticated and user.is_enseignant %}👩‍🏫
+            {% elif user.is_authenticated and user.abonnement.plan.nom == 'PREMIUM' %}👨‍🌾
+            {% else %}🌱{% endif %}
+        </div>
+        <div class="mascotte-text">
+            <strong>
+                {% if user.is_authenticated and user|mineur %}Titou le jardinier
+                {% elif user.is_authenticated and user.is_enseignant %}Professeur des jardins
+                {% elif user.is_authenticated and user.abonnement.plan.nom == 'PREMIUM' %}Jardinier expert
+                {% else %}Apprenti jardinier{% endif %}
+            </strong>
+            <p>Le saviez-vous ? Le basilic planté près des tomates améliore leur goût.</p>
+        </div>
+    </div>
+
+    {# ===== BANDEAU COOKIES ===== #}
+    {% if not request.COOKIES.cookies_accepted %}
+    <div id="cookies-banner" style="position: fixed; bottom: 0; left: 0; right: 0; background: #2d3e2f; color: white; padding: 20px; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,0.2);">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                    <h5 style="margin-bottom: 8px; color: #c9a96e;">🍪 Nous utilisons des cookies</h5>
+                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
+                        Nous utilisons des cookies techniques nécessaires au fonctionnement du site (session, sécurité).
+                        Aucun cookie publicitaire n'est utilisé sans votre consentement.
+                        <a href="{% url 'vegetables_fruits:confidentialite' %}" style="color: #c9a96e; text-decoration: underline;">
+                            En savoir plus
+                        </a>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button onclick="refuserCookies()" style="background: transparent; color: white; border: 2px solid #c9a96e; padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-right: 8px; cursor: pointer;">
+                        ❌ Refuser
+                    </button>
+                    <button onclick="accepterCookies()" style="background: #c9a96e; color: #2d3e2f; border: 2px solid #c9a96e; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer;">
+                        ✅ Accepter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function accepterCookies() {
+            document.cookie = "cookies_accepted=true; path=/; max-age=" + (60 * 60 * 24 * 180) + "; SameSite=Lax";
+            document.getElementById('cookies-banner').style.display = 'none';
+            console.log('✅ Cookies acceptés');
+        }
+
+        function refuserCookies() {
+            document.cookie = "cookies_accepted=false; path=/; max-age=" + (60 * 60 * 24 * 180) + "; SameSite=Lax";
+            document.getElementById('cookies-banner').style.display = 'none';
+            console.log('❌ Cookies refusés');
+        }
+    </script>
+    {% endif %}
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        function toggleMenu() { document.getElementById('navbarNav').classList.toggle('show'); }
+        function toggleDropdown(e, id) { e.preventDefault(); e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        document.addEventListener('click', function() { document.querySelectorAll('.dropdown-menu-custom.show').forEach(el => el.classList.remove('show')); });
+        document.querySelectorAll('.dropdown-menu-custom').forEach(el => { el.addEventListener('click', function(e) { e.stopPropagation(); }); });
+
+        // Mode Junior
+        document.addEventListener('DOMContentLoaded', function() {
+            const modeSwitch = document.getElementById('modeJuniorSwitch');
+            const estMineur = {% if user.is_authenticated and user|mineur %}true{% else %}false{% endif %};
+            if (estMineur) {
+                const savedMode = localStorage.getItem('modeJunior');
+                if (savedMode === 'true') { if (modeSwitch) modeSwitch.checked = true; document.body.classList.add('mode-junior'); }
+                if (modeSwitch) {
+                    modeSwitch.addEventListener('change', function() {
+                        document.body.classList.toggle('mode-junior');
+                        localStorage.setItem('modeJunior', this.checked ? 'true' : 'false');
+                        fetch('/toggle-mode-junior/', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'actif=' + this.checked });
+                    });
+                }
+            }
+        });
+
+        // Conseils Mascotte
+        const conseils = [
+            "Le saviez-vous ? Le basilic planté près des tomates améliore leur goût.",
+            "Le saviez-vous ? Les fleurs attirent les pollinisateurs, ce qui augmente vos récoltes.",
+            "Le saviez-vous ? La rotation des cultures évite l'épuisement du sol.",
+            "Le saviez-vous ? Un arrosage le matin limite l'évaporation.",
+            "Le saviez-vous ? Le purin d'ortie est un excellent engrais naturel.",
+            "Le saviez-vous ? La tomate est un fruit, pas un légume !"
+        ];
+        function afficherConseil() {
+            document.querySelector('.mascotte-text p').textContent = conseils[Math.floor(Math.random() * conseils.length)];
+        }
+
+        // ===== MENU LATÉRAL =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (!sidebar) {
+                console.log("❌ sidebar non trouvé");
+                return;
+            }
+
+            const isOpen = sidebar.classList.contains('open');
+            if (isOpen) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                if (overlay) overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        document.querySelector('.sidebar-toggle')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+        });
+
+        document.getElementById('sidebar-overlay')?.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
+        });
+
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 991) {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        toggleSidebar();
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            afficherConseil();
+            setInterval(afficherConseil, 45000);
+        });
+
+        // ===== BARRE DE RECHERCHE GLOBALE =====
+        const features = [
+            { name: 'Dashboard', url: '/dashboard/', keywords: ['accueil', 'vue générale'] },
+            { name: 'Mes parcelles', url: '/view/', keywords: ['parcelles', 'jardin'] },
+            { name: 'Créer une parcelle', url: '/draw/', keywords: ['dessin', 'carte'] },
+            { name: 'Mon calendrier', url: '/cultures/', keywords: ['calendrier', 'semis', 'cultures', 'planification'] },
+            { name: 'Guide des cultures', url: '/guide-cultures/', keywords: ['guide', 'légumes', 'fruits'] },
+            { name: 'Journal de bord', url: '/journal/', keywords: ['notes', 'observations'] },
+            { name: 'Écologie & Climat', url: '/ecologie/', keywords: ['écologie', 'climat', 'carbone'] },
+            { name: 'Alertes', url: '/alertes/', keywords: ['météo', 'alerte', 'traitement'] },
+            { name: 'Quiz jardinage', url: '/quiz/', keywords: ['quiz', 'test'] },
+            { name: 'Missions hebdomadaires', url: '/missions-hebdomadaires/', keywords: ['missions', 'défis'] },
+            { name: 'Arbre de compétences', url: '/arbre-competences/', keywords: ['compétences', 'progression'] },
+            { name: 'Classement', url: '/classement/', keywords: ['classement', 'rang'] },
+            { name: 'Forum', url: '/forum/', keywords: ['forum', 'discussion'] },
+            { name: 'Galerie', url: '/galerie/', keywords: ['galerie', 'photos'] },
+            { name: 'Tarification', url: '/tarification/', keywords: ['tarifs', 'abonnement'] },
+            { name: 'Mon compte', url: '/profile/', keywords: ['profil', 'compte'] },
+        ];
+
+        function filterMenu() {
+            const input = document.getElementById('search-nav');
+            const resultsDiv = document.getElementById('search-results');
+            const query = input.value.toLowerCase().trim();
+
+            if (query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            const results = features.filter(f =>
+                f.name.toLowerCase().includes(query) ||
+                f.keywords.some(k => k.includes(query))
+            );
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-result">Aucun résultat trouvé</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            let html = '';
+            results.forEach(f => {
+                html += `<a href="${f.url}"><strong>${f.name}</strong> <span style="color:#6c757d;font-size:0.8rem;">${f.keywords.slice(0,2).join(', ')}</span></a>`;
+            });
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            const searchContainer = document.querySelector('.search-bar');
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                document.getElementById('search-results').style.display = 'none';
+            }
+        });
+
+        let selectedIndex = -1;
+        document.addEventListener('keydown', function(e) {
+            const results = document.querySelectorAll('#search-results a');
+            if (results.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, results.length - 1);
+                highlightResult(results);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                highlightResult(results);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                results[selectedIndex].click();
+            }
+        });
+
+        function highlightResult(results) {
+            results.forEach((el, i) => {
+                el.style.background = i === selectedIndex ? '#f0f7f0' : '';
+                el.style.borderLeft = i === selectedIndex ? '3px solid #28a745' : '';
+            });
+        }
+        // ✅ Générer un device_id unique pour chaque appareil
+        (function() {
+            let deviceId = localStorage.getItem('device_id');
+
+            if (!deviceId) {
+                // Générer un ID unique
+                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('device_id', deviceId);
+            }
+
+            // ✅ Enregistrer dans un cookie pour que le serveur puisse le lire
+            document.cookie = `device_id=${deviceId}; path=/; max-age=31536000; SameSite=Lax`;
+        })();
+
+        // ============================================================
+        // DARK MODE — Bascule + persistance
+        // ============================================================
+        (function() {
+            // Au chargement : appliquer le thème sauvegardé
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+            applyTheme(initialTheme);
+        })();
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- ==================== MODALE GLOBALE : HORS SAISON ==================== -->
+    <div id="modal-hors-saison" class="modal-hors-saison" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-hors-saison-titre">
+        <div class="modal-hors-saison-content">
+            <div class="modal-hors-saison-header">
+                <h3 id="modal-hors-saison-titre">⚠️ Cultures hors saison</h3>
+            </div>
+            <div class="modal-hors-saison-body">
+                <p>Certaines cultures que tu as placées ne sont pas dans leur période recommandée pour ta région :</p>
+                <ul id="modal-hors-saison-list"></ul>
+                <p class="modal-hors-saison-hint">
+                    💡 Tu peux quand même les planter, mais elles risquent de moins bien pousser.
+                </p>
+            </div>
+            <div class="modal-hors-saison-footer">
+                <button type="button" class="btn-hors-saison-cancel" onclick="fermerModaleHorsSaison()">
+                    Annuler
+                </button>
+                <button type="button" class="btn-hors-saison-confirm" onclick="confirmerPlantationHorsSaison()">
+                    Planter quand même
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // État global pour la modale
+        window._formEnAttente = null;
+
+        function afficherModaleHorsSaison(horsSaison, form) {
+            const list = document.getElementById('modal-hors-saison-list');
+            list.innerHTML = horsSaison.map(item => {
+                const emoji = item.emoji || '🌱';
+                return `<li><strong>${emoji} ${item.name}</strong><br>
+                        <small>Période : ${item.fenetre} — actuellement : ${item.mois_actuel}</small></li>`;
+            }).join('');
+            window._formEnAttente = form;
+            document.getElementById('modal-hors-saison').style.display = 'flex';
+        }
+
+        function fermerModaleHorsSaison() {
+            document.getElementById('modal-hors-saison').style.display = 'none';
+            window._formEnAttente = null;
+        }
+
+        function confirmerPlantationHorsSaison() {
+            const form = window._formEnAttente;
+            document.getElementById('modal-hors-saison').style.display = 'none';
+            window._formEnAttente = null;
+            if (form) {
+                // Marquer comme confirmé pour que le hook submit laisse passer
+                form.dataset.confirmed = 'true';
+                // Bypass le listener pour éviter une boucle
+                HTMLFormElement.prototype.submit.call(form);
+            }
+        }
+
+        // ✅ Exposition explicite sur window (sécurité)
+        window.afficherModaleHorsSaison = afficherModaleHorsSaison;
+        window.fermerModaleHorsSaison = fermerModaleHorsSaison;
+        window.confirmerPlantationHorsSaison = confirmerPlantationHorsSaison;
+    </script>
+    <!-- ==================== FIN MODALE HORS SAISON ==================== -->
+    <!-- ==================== MODALE PLANIFIER ==================== -->
+    <div id="modal-planifier" class="modal-hors-saison" style="display:none;" role="dialog" aria-modal="true">
+        <div class="modal-hors-saison-content">
+            <form method="post" id="form-planifier" action="">
+                {% csrf_token %}
+                <input type="hidden" name="crop_name" id="planifier-crop-name">
+
+                <div class="modal-hors-saison-header" style="background: linear-gradient(135deg, #28a745, #1b4332);">
+                    <h3>📅 Planifier le semis</h3>
+                </div>
+
+                <div class="modal-hors-saison-body">
+                    <p>Quand as-tu semé <strong id="planifier-crop-label"></strong> ?</p>
+                    <input type="date"
+                           name="date_semis"
+                           id="planifier-date-semis"
+                           required
+                           class="form-control"
+                           style="padding: 10px; font-size: 1rem;">
+                    <p style="font-size: 0.8rem; color: #6c757d; margin-top: 10px;">
+                        💡 La date de récolte sera calculée automatiquement.
+                    </p>
+                </div>
+
+                <div class="modal-hors-saison-footer">
+                    <button type="button" class="btn-hors-saison-cancel" onclick="fermerModalePlanifier()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-hors-saison-confirm">
+                        🌱 Planifier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function ouvrirModalePlanifier(figureId, cropName) {
+            document.getElementById('planifier-crop-name').value = cropName;
+            document.getElementById('planifier-crop-label').textContent = cropName;
+            document.getElementById('form-planifier').action = '/planifier-culture/' + figureId + '/';
+
+            // Date du jour par défaut
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('planifier-date-semis').value = today;
+
+            document.getElementById('modal-planifier').style.display = 'flex';
+        }
+
+        function fermerModalePlanifier() {
+            document.getElementById('modal-planifier').style.display = 'none';
+        }
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modale = document.getElementById('modal-planifier');
+                if (modale && modale.style.display === 'flex') {
+                    fermerModalePlanifier();
+                }
+            }
+        });
+
+        window.ouvrirModalePlanifier = ouvrirModalePlanifier;
+        window.fermerModalePlanifier = fermerModalePlanifier;
+    </script>
+    <!-- ==================== FIN MODALE PLANIFIER ==================== -->
+
+    <!-- ==================== BOUTON INSTALLER PWA ==================== -->
+    <div id="pwa-install-container" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
+        <button id="pwa-install-btn" class="btn btn-success" style="border-radius: 50px; padding: 12px 24px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.2rem;">📲</span> Installer l'appli
+        </button>
+    </div>
+
+    <script>
+        // Gestion du bouton d'installation PWA
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêche Chrome d'afficher sa propre bannière par défaut
+            e.preventDefault();
+            // Garde l'événement en mémoire pour le déclencher au clic
+            deferredPrompt = e;
+            // Affiche notre bouton personnalisé
+            const container = document.getElementById('pwa-install-container');
+            if (container) container.style.display = 'block';
+        });
+
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                // Affiche la bannière d'installation native
+                deferredPrompt.prompt();
+                // Attend le choix de l'utilisateur
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Choix de l'utilisateur : ${outcome}`);
+                // On cache le bouton une fois utilisé
+                deferredPrompt = null;
+                document.getElementById('pwa-install-container').style.display = 'none';
+            });
+        }
+
+        // Si l'app est déjà installée, on cache le bouton
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('pwa-install-container').style.display = 'none';
+            deferredPrompt = null;
+            console.log('✅ Application installée !');
+        });
+    </script>
+    <!-- ==================== FIN BOUTON INSTALLER PWA ==================== -->
+
+    <!-- Enregistrement du Service Worker pour la PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/vegetables_fruits/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker enregistré avec succès:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('❌ Erreur lors de l\'enregistrement du Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+
+</body>
+</html>

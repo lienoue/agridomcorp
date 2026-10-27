@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🏆 Créer un défi{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">🏆 Créer un défi</h1>
+        <a href="{% url 'vegetables_fruits:defis_liste' %}" style="background: #6c757d; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px;">
+            ← Retour
+        </a>
+    </div>
+
+    <div style="background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Titre du défi</label>
+                <input type="text" name="titre" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Description</label>
+                <textarea name="description" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Classe</label>
+                <select name="classe_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                    <option value="">-- Sélectionnez une classe --</option>
+                    {% for classe in classes %}
+                    <option value="{{ classe.id }}">{{ classe.nom }} ({{ classe.eleves.count }} élèves)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Type d'action</label>
+                    <select name="type_action" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="planter">🌱 Planter des cultures</option>
+                        <option value="recolter">🍅 Récolter des cultures</option>
+                        <option value="quiz">🧠 Faire des quiz</option>
+                        <option value="journal">📓 Écrire dans le journal</option>
+                        <option value="fleur">🌸 Planter des fleurs</option>
+                        <option value="points">⭐ Gagner des points</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Objectif</label>
+                    <input type="number" name="objectif" value="10" min="1" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Points récompense</label>
+                    <input type="number" name="points_recompense" value="50" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Nom du badge</label>
+                    <input type="text" name="badge_nom" placeholder="Ex: Planteur" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Emoji du badge</label>
+                <input type="text" name="badge_emoji" value="🏆" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date de début</label>
+                    <input type="date" name="date_debut" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date de fin</label>
+                    <input type="date" name="date_fin" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    🏆 Créer le défi
+                </button>
+                <a href="{% url 'vegetables_fruits:defis_liste' %}" style="background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

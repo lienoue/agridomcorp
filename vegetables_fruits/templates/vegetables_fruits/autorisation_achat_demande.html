@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Demande d'autorisation - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4">🔒 Demande d'autorisation parentale</h2>
+
+            <div class="alert alert-info">
+                <p class="mb-2">
+                    Tu souhaites souscrire à l'abonnement
+                    <strong>{{ plan.get_nom_display }}</strong>
+                    ({{ frequence|lower }}).
+                </p>
+                <p class="mb-0">
+                    Pour continuer, tu dois demander l'autorisation à un
+                    <strong>parent ou représentant légal</strong>.
+                    Un email lui sera envoyé pour validation.
+                </p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ plan.nom }}">
+                <input type="hidden" name="frequence" value="{{ frequence }}">
+
+                <h5 class="mb-3">Informations du parent</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">Prénom du parent *</label>
+                    <input type="text" name="parent_prenom" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nom du parent *</label>
+                    <input type="text" name="parent_nom" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email du parent *</label>
+                    <input type="email" name="parent_email" class="form-control" required
+                           placeholder="parent@email.com">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Téléphone (optionnel)</label>
+                    <input type="tel" name="parent_telephone" class="form-control">
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="cgu" class="form-check-input" id="cgu" required>
+                    <label class="form-check-label" for="cgu">
+                        J'ai compris que mon parent va recevoir un email
+                        pour valider ou refuser ma demande.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    ✉️ Envoyer la demande à mon parent
+                </button>
+            </form>
+
+            <a href="{% url 'vegetables_fruits:tarification' %}"
+               class="btn btn-link w-100 mt-2">
+                ← Retour aux offres
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

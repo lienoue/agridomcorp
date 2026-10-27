@@ -1,0 +1,722 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriDomCorp - Cultivez votre passion</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f0eb;
+            color: #2d3e2f;
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header-main {
+            background: #2d3e2f;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 4px solid #c9a96e;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-box img {
+            border-radius: 50%;
+            border: 2px solid #c9a96e;
+        }
+
+        .logo-box h1 {
+            color: #f5f0eb;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .logo-box h1 span {
+            color: #c9a96e;
+            font-weight: 300;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #f5f0eb;
+            border: 2px solid #c9a96e;
+        }
+        .btn-login:hover {
+            background: #c9a96e;
+            color: #2d3e2f;
+            transform: translateY(-2px);
+        }
+
+        .btn-signup {
+            background: #c9a96e;
+            color: #2d3e2f;
+            border: 2px solid #c9a96e;
+        }
+        .btn-signup:hover {
+            background: #b8975a;
+            border-color: #b8975a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 169, 110, 0.35);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 50px;
+            background: linear-gradient(180deg, #f5f0eb, #e8e0d5);
+            border-bottom: 2px solid #d5cdc0;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            color: #2d3e2f;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .hero h2 span {
+            color: #c9a96e;
+            display: block;
+            font-size: 2rem;
+            font-weight: 400;
+            margin-top: 8px;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: #5a554a;
+            max-width: 700px;
+            margin: 20px auto 30px;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(45, 62, 47, 0.08);
+            border: 1px solid #ddd6cb;
+            min-width: 100px;
+            transition: transform 0.25s;
+        }
+        .stat-item:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2d3e2f;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #8a7f70;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+        .stat-emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== TERRES ===== */
+        .terres-section {
+            background: linear-gradient(180deg, #e8e0d5, #f5f0eb);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .terres-section h2 {
+            font-size: 2rem;
+            color: #2d3e2f;
+            margin-bottom: 30px;
+        }
+        .terres-section h2 span {
+            color: #c9a96e;
+        }
+
+        .terres-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .terre-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px 20px 20px;
+            border: 1px solid #ddd6cb;
+            transition: 0.3s;
+            text-align: left;
+        }
+        .terre-card:hover {
+            transform: translateY(-5px);
+            border-color: #c9a96e;
+            box-shadow: 0 8px 25px rgba(45, 62, 47, 0.08);
+        }
+
+        .terre-card .icone {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .terre-card h3 {
+            font-size: 1.2rem;
+            color: #2d3e2f;
+            margin-bottom: 6px;
+        }
+        .terre-card p {
+            font-size: 0.9rem;
+            color: #6a6358;
+            line-height: 1.5;
+        }
+        .terre-card .tag {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tag-gratuit { background: #e8e0d5; color: #2d3e2f; }
+        .tag-premium { background: #c9a96e; color: #2d3e2f; }
+
+        /* ===== ÉCOLOGIE & CLIMAT ===== */
+        .ecologie-section {
+            background: #2d3e2f;
+            color: #f5f0eb;
+            padding: 50px 20px;
+            text-align: center;
+            border-top: 4px solid #c9a96e;
+            border-bottom: 4px solid #c9a96e;
+        }
+        .ecologie-section h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .ecologie-section h2 span {
+            color: #c9a96e;
+        }
+        .ecologie-section .sous-titre {
+            color: #b5aea0;
+            font-size: 1.05rem;
+            margin-bottom: 30px;
+        }
+
+        .ecologie-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .eco-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 20px 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: 0.25s;
+            text-align: center;
+        }
+        .eco-card:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: #c9a96e;
+        }
+        .eco-card .icone {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .eco-card h4 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .eco-card p {
+            font-size: 0.8rem;
+            color: #b5aea0;
+            line-height: 1.4;
+        }
+
+        /* ===== COMMENT ÇA MARCHE ===== */
+        .how-it-works {
+            background: #f5f0eb;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        .how-it-works h2 {
+            font-size: 2rem;
+            color: #2d3e2f;
+            margin-bottom: 30px;
+        }
+        .how-it-works h2 span {
+            color: #c9a96e;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 150px;
+            max-width: 220px;
+            background: white;
+            border-radius: 14px;
+            padding: 22px 16px;
+            border: 1px solid #ddd6cb;
+            transition: 0.25s;
+        }
+        .step:hover {
+            transform: translateY(-4px);
+            border-color: #c9a96e;
+            box-shadow: 0 6px 20px rgba(45, 62, 47, 0.06);
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #c9a96e;
+            color: #2d3e2f;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+        }
+        .step h4 {
+            font-size: 1.05rem;
+            color: #2d3e2f;
+            margin-bottom: 6px;
+        }
+        .step p {
+            color: #6a6358;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* ===== PAROLES ===== */
+        .paroles {
+            padding: 50px 20px;
+            text-align: center;
+            background: white;
+        }
+        .paroles h2 {
+            font-size: 1.8rem;
+            color: #2d3e2f;
+            margin-bottom: 30px;
+        }
+
+        .paroles-grid {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .parole-card {
+            background: #f5f0eb;
+            border-radius: 14px;
+            padding: 22px 20px;
+            max-width: 280px;
+            text-align: center;
+            border: 1px solid #ddd6cb;
+            transition: 0.25s;
+        }
+        .parole-card:hover {
+            transform: translateY(-4px);
+            border-color: #c9a96e;
+        }
+
+        .parole-avatar {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+        .parole-text {
+            font-style: italic;
+            color: #4a453c;
+            margin-bottom: 10px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        .parole-name {
+            font-weight: 600;
+            color: #2d3e2f;
+        }
+        .parole-role {
+            font-size: 0.8rem;
+            color: #8a7f70;
+        }
+
+        /* ===== CTA ===== */
+        .cta-section {
+            text-align: center;
+            padding: 50px 20px 45px;
+            background: #e8e0d5;
+            border-top: 4px solid #c9a96e;
+            border-bottom: 4px solid #c9a96e;
+        }
+        .cta-section h2 {
+            font-size: 2rem;
+            color: #2d3e2f;
+        }
+        .cta-section p {
+            color: #5a554a;
+            margin: 12px 0 25px;
+            font-size: 1.05rem;
+        }
+
+        .btn-cta {
+            display: inline-block;
+            padding: 14px 40px;
+            background: #c9a96e;
+            color: #2d3e2f;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.25s;
+            border: 2px solid #c9a96e;
+        }
+        .btn-cta:hover {
+            background: #b8975a;
+            border-color: #b8975a;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(201, 169, 110, 0.35);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #2d3e2f;
+            color: #b5aea0;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        footer p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #c9a96e;
+            text-decoration: none;
+            margin: 0 8px;
+            transition: 0.2s;
+        }
+        footer a:hover {
+            color: #f5f0eb;
+            text-decoration: underline;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .terres-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .ecologie-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-main {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 20px;
+                text-align: center;
+            }
+            .logo-box { flex-direction: column; }
+
+            .hero h2 { font-size: 2rem; }
+            .hero h2 span { font-size: 1.5rem; }
+            .hero p { font-size: 1rem; }
+
+            .hero-stats { gap: 12px; }
+            .stat-item { padding: 12px 16px; min-width: 80px; }
+
+            .terres-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .ecologie-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .step { min-width: 140px; }
+            .paroles-grid { flex-direction: column; align-items: center; }
+
+            .cta-section h2 { font-size: 1.5rem; }
+            .btn-cta { padding: 12px 30px; font-size: 0.95rem; }
+        }
+
+        @media (max-width: 480px) {
+            .btn { padding: 8px 14px; font-size: 0.8rem; }
+            .hero h2 { font-size: 1.5rem; }
+            .stat-number { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    {% block content %}
+
+    <!-- HEADER -->
+    <header class="header-main">
+        <div class="logo-box">
+            <img width="60" height="60" src="{% static 'vegetables_fruits/images/AgriDomCorp.png' %}" alt="AgriDomCorp">
+            <h1>Agri<span>Dom</span>Corp</h1>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'vegetables_fruits:login' %}" class="btn btn-login">🔑 Connexion</a>
+            <a href="{% url 'vegetables_fruits:signup' %}" class="btn btn-signup">🌱 Créer un compte</a>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h2>
+            Cultivez votre jardin<br>
+            <span>en toute simplicité 🌿</span>
+        </h2>
+        <p>
+            Agriculture 2.0 vous aide à planifier, suivre et optimiser votre potager.<br>
+            Que vous soyez débutant, jardinier passionné ou enseignant, trouvez les outils qu'il vous faut.
+        </p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-emoji">🌿</span>
+                <div class="stat-number">200+</div>
+                <div class="stat-label">Cultures</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-emoji">📋</span>
+                <div class="stat-number">4</div>
+                <div class="stat-label">Plans</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-emoji">🧒</span>
+                <div class="stat-number">●</div>
+                <div class="stat-label">Mode Écolier</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-emoji">📊</span>
+                <div class="stat-number">●</div>
+                <div class="stat-label">Stats avancées</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TERRES (Fonctionnalités principales) -->
+    <section class="terres-section">
+        <h2>🌱 <span>Ce que vous offre Agriculture 2.0</span></h2>
+        <div class="terres-grid">
+
+            <div class="terre-card">
+                <div class="icone">📅</div>
+                <h3>Calendrier & Cultures</h3>
+                <p>Planifiez vos semis, suivez vos récoltes et gérez toutes vos cultures depuis un seul endroit.</p>
+                <span class="tag tag-gratuit">Gratuit</span>
+            </div>
+
+            <div class="terre-card">
+                <div class="icone">💧</div>
+                <h3>Plan d'irrigation</h3>
+                <p>Calculez vos besoins en eau, recevez des rappels d'arrosage et optimisez votre consommation.</p>
+                <span class="tag tag-premium">Premium</span>
+            </div>
+
+            <div class="terre-card">
+                <div class="icone">🧒</div>
+                <h3>Mode Écolier</h3>
+                <p>Mascotte, badges, niveaux et missions pour apprendre le jardinage en s'amusant.</p>
+                <span class="tag tag-gratuit">Gratuit</span>
+            </div>
+
+            <div class="terre-card">
+                <div class="icone">🌱</div>
+                <h3>Conseils personnalisés</h3>
+                <p>Des suggestions de cultures adaptées à votre région, votre saison et votre type de sol.</p>
+                <span class="tag tag-gratuit">Gratuit</span>
+            </div>
+
+            <div class="terre-card">
+                <div class="icone">🦠</div>
+                <h3>Gestion des maladies</h3>
+                <p>Détectez les maladies par symptômes et recevez des conseils de traitement adaptés.</p>
+                <span class="tag tag-premium">Premium</span>
+            </div>
+
+            <div class="terre-card">
+                <div class="icone">🌿</div>
+                <h3>Compagnonnage & Rotation</h3>
+                <p>Optimisez vos associations de cultures et planifiez vos rotations sur 4 ans.</p>
+                <span class="tag tag-premium">Premium</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ÉCOLOGIE & CLIMAT (Pilier central) -->
+    <section class="ecologie-section">
+        <h2>🌍 <span>Écologie & Climat</span></h2>
+        <p class="sous-titre">
+            Comprenez l'impact de votre jardin et agissez pour la planète
+        </p>
+        <div class="ecologie-grid">
+
+            <div class="eco-card">
+                <div class="icone">🌳</div>
+                <h4>Bilan carbone</h4>
+                <p>Mesurez l'empreinte écologique de votre jardin.</p>
+            </div>
+
+            <div class="eco-card">
+                <div class="icone">🏠</div>
+                <h4>Autosuffisance</h4>
+                <p>Calculez votre autonomie alimentaire.</p>
+            </div>
+
+            <div class="eco-card">
+                <div class="icone">🌤️</div>
+                <h4>Dashboard climat</h4>
+                <p>Visualisez votre impact en un coup d'œil.</p>
+            </div>
+
+            <div class="eco-card">
+                <div class="icone">🌡️</div>
+                <h4>Prévisions météo</h4>
+                <p>Anticipez les 7 prochains jours.</p>
+            </div>
+
+        </div>
+        <div style="margin-top: 25px;">
+            <a href="{% url 'vegetables_fruits:ecologie' %}" style="color: #c9a96e; font-weight: 600; text-decoration: none; border-bottom: 2px solid #c9a96e; padding-bottom: 3px;">
+                👉 Découvrir l'Écologie & Climat
+            </a>
+        </div>
+    </section>
+
+    <!-- COMMENT ÇA MARCHE -->
+    <section class="how-it-works">
+        <h2>🌿 <span>En quelques étapes</span></h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h4>Créez votre compte</h4>
+                <p>Inscription rapide, 100 % gratuite.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h4>Dessinez vos parcelles</h4>
+                <p>Utilisez la carte pour délimiter votre jardin.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h4>Plantez et cultivez</h4>
+                <p>Ajoutez des cultures et suivez les conseils.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h4>Récoltez et progressez</h4>
+                <p>Gagnez des points et débloquez des badges.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAROLES -->
+    <section class="paroles">
+        <h2>🌟 Ils nous font confiance</h2>
+        <div class="paroles-grid">
+            <div class="parole-card">
+                <div class="parole-avatar">👩‍🏫</div>
+                <div class="parole-text">"Le mode écolier est génial en classe. Les enfants apprennent en s'amusant."</div>
+                <div class="parole-name">Marie</div>
+                <div class="parole-role">Enseignante</div>
+            </div>
+            <div class="parole-card">
+                <div class="parole-avatar">👨‍🌾</div>
+                <div class="parole-text">"J'ai économisé 30 % d'eau grâce au plan d'irrigation. Très pratique."</div>
+                <div class="parole-name">Pierre</div>
+                <div class="parole-role">Jardinier amateur</div>
+            </div>
+            <div class="parole-card">
+                <div class="parole-avatar">🧒</div>
+                <div class="parole-text">"C'est trop cool de gagner des badges quand je plante des fleurs !"</div>
+                <div class="parole-name">Lucas</div>
+                <div class="parole-role">Écolier, 11 ans</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Prêt à cultiver votre jardin ?</h2>
+        <p>Rejoignez Agriculture 2.0, c'est gratuit et sans engagement.</p>
+        <a href="{% url 'vegetables_fruits:signup' %}" class="btn-cta">🌱 Commencer maintenant</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 AgriDomCorp — Cultivez votre passion</p>
+        <p>
+            <a href="{% url 'vegetables_fruits:cgu' %}">CGU</a> •
+            <a href="{% url 'vegetables_fruits:confidentialite' %}">Confidentialité</a> •
+            <a href="{% url 'vegetables_fruits:tarification' %}">Tarifs</a> •
+            <a href="#">Contact</a>
+        </p>
+    </footer>
+
+    {% endblock %}
+</body>
+</html>

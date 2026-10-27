@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Plan de test - Junior Particulier - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:test_junior_particulier' %}">🧒 Test Junior</a></li>
+<li class="breadcrumb-item active" aria-current="page">Scénarios</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .junior-box { background: #fff3e0; border-left: 4px solid #ff6b35; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .box { min-width: 20px; font-size: 1.2rem; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>🧒 Plan de test - Junior Particulier</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 1.0 – Septembre 2026</p>
+
+        <div class="info-box">
+            <strong>🎯 Objectif :</strong> Vérifier le parcours d'un <strong>mineur sans classe</strong>
+            (junior particulier). Il jardine seul, sans accès Premium, avec un dashboard adapté.
+        </div>
+
+        <h2>📋 Informations de test</h2>
+        <table>
+            <thead>
+                <tr><th>Champ</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Profil testé</td><td>Mineur sans classe</td></tr>
+                <tr><td>Username</td><td>minjok</td></tr>
+                <tr><td>Email</td><td>min@gmail.com</td></tr>
+                <tr><td>Mot de passe</td><td>Test1234!</td></tr>
+                <tr><td>Date de naissance</td><td>01/01/2016 (10 ans)</td></tr>
+                <tr><td>Classe</td><td>❌ Aucune</td></tr>
+                <tr><td>Abonnement</td><td>❌ Gratuit</td></tr>
+                <tr><td>Mode Junior</td><td>✅ Activé automatiquement</td></tr>
+            </tbody>
+        </table>
+
+        <div class="junior-box">
+            <strong>🧒 Rappel :</strong> Un mineur <strong>sans classe</strong> :
+            <ul style="margin: 10px 0 0 0;">
+                <li>✅ A automatiquement <code>mode_junior=True</code></li>
+                <li>✅ Voit le thème orange et la mascotte Titou</li>
+                <li>✅ Est redirigé vers <code>dashboard_junior</code></li>
+                <li>❌ N'a <strong>pas</strong> de profil <code>Eleve</code></li>
+                <li>❌ N'a <strong>pas</strong> accès au Premium (sauf autorisation parentale)</li>
+                <li>❌ N'a <strong>pas</strong> de forum école, ni classement, ni missions de classe</li>
+            </ul>
+        </div>
+
+        <h2>🧪 Scénarios de test</h2>
+
+        <h3>📝 Scénario 1 — Inscription (mineur seul)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/signup/</code></li>
+            <li><span class="box">☐</span> Remplir : username, email, mot de passe, date de naissance (mineur)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <code>mode_junior=True</code> activé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <strong>pas de profil Eleve créé</strong></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : consentement parental demandé (-15 ans)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers page d'attente parentale</li>
+        </ul>
+
+        <h3>👨‍👩‍👧 Scénario 2 — Validation parentale</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Renseigner l'email du parent</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : email envoyé au parent</li>
+            <li><span class="box">☐</span> Parent clique sur le lien de validation</li>
+            <li><span class="box">☐</span> Parent remplit ses infos + valide</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : compte activé, mineur peut se connecter</li>
+        </ul>
+
+        <h3>🎨 Scénario 3 — Connexion et redirection</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Se connecter comme <code>minjok</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>dashboard_junior</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : thème orange + mascotte Titou</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas de mention "ma classe"</li>
+        </ul>
+
+        <h3>🏠 Scénario 4 — Dashboard Junior</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> <strong>Attendu</strong> : stats (parcelles, cultures, alertes)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : météo (si parcelle créée)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : mes cultures avec progression</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : prochaines actions</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <strong>pas de section "classe", ni "défis", ni "missions de classe"</strong></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : pas de lien vers Premium</li>
+        </ul>
+
+        <h3>🌾 Scénario 5 — Créer une parcelle (gratuit)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Dessiner une parcelle</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : parcelle créée</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : quota 3 parcelles (gratuit)</li>
+            <li><span class="box">☐</span> Créer 3 parcelles</li>
+            <li><span class="box">☐</span> Tenter la 4ème</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>limite_parcelles</code></li>
+        </ul>
+
+        <h3>🌱 Scénario 6 — Ajouter des cultures</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Ouvrir une parcelle</li>
+            <li><span class="box">☐</span> Ajouter 3 cultures (légume, fruit, fleur)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : cultures ajoutées</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : chronologies créées</li>
+        </ul>
+
+        <h3>🌸 Scénario 7 — Ajouter une fleur</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Utiliser "Ajouter une fleur"</li>
+            <li><span class="box">☐</span> Choisir une fleur pollinisatrice</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : fleur ajoutée à la parcelle</li>
+        </ul>
+
+        <h3>📋 Scénario 8 — Quiz (quota gratuit)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/quiz/</code></li>
+            <li><span class="box">☐</span> Faire un premier quiz</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : quiz complété</li>
+            <li><span class="box">☐</span> Faire 3 quiz dans la même journée</li>
+            <li><span class="box">☐</span> Tenter un 4ème</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "📝 Limite de 3 quiz/jour atteinte"</li>
+        </ul>
+
+        <h3>📓 Scénario 9 — Journal de bord (bloqué)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/journal/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Journal disponible avec Basique ou Premium"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>tarification</code></li>
+        </ul>
+
+        <h3>🔒 Scénario 10 — Premium bloqué</h3>
+        <p>Le mineur sans classe <strong>ne doit PAS</strong> avoir accès à :</p>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Onglet "Rotation des cultures"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Onglet "Conseiller Sol"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Onglet "Bilan carbone"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Onglet "Compagnonnage"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "🔒 Fonctionnalité réservée"</li>
+            <li><span class="box">☐</span> Dashboard climat</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>tarification</code></li>
+            <li><span class="box">☐</span> Prévisions météo 7 jours</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers <code>tarification</code></li>
+        </ul>
+
+        <h3>💬 Scénario 11 — Forum adulte bloqué</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/forum-adulte/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "Forum disponible avec Basique et Premium"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection</li>
+        </ul>
+
+        <h3>💬 Scénario 12 — Forum école bloqué</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/forum/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : message "Forum réservé aux écoles"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection</li>
+        </ul>
+
+        <h3>📸 Scénario 13 — Galerie publique (autorisée)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/galerie/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : galerie accessible</li>
+            <li><span class="box">☐</span> Uploader une photo</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : photo envoyée, en attente de validation</li>
+            <li><span class="box">☐</span> Liker une photo validée</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : like enregistré</li>
+            <li><span class="box">☐</span> Commenter une photo</li>
+        </ul>
+
+        <h3>💳 Scénario 14 — Souscription bloquée (mineur)</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Aller sur <code>/tarification/</code></li>
+            <li><span class="box">☐</span> Cliquer sur "S'abonner" Basique</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers demande d'autorisation parentale</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : <strong>pas d'accès direct à Stripe</strong></li>
+        </ul>
+
+        <h3>✉️ Scénario 15 — Demande d'autorisation parentale</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Le mineur remplit le formulaire parent (nom, prénom, email)</li>
+            <li><span class="box">☐</span> Valider</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : email envoyé au parent avec lien unique</li>
+            <li><span class="box">☐</span> Retour sur <code>/profile/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : bandeau "⏳ Autorisation en attente"</li>
+        </ul>
+
+        <h3>✅ Scénario 16 — Parent valide</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Parent clique sur le lien reçu par email</li>
+            <li><span class="box">☐</span> Parent remplit infos + coche CGU + valide</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : page de confirmation</li>
+            <li><span class="box">☐</span> Mineur reçoit une notification</li>
+            <li><span class="box">☐</span> Retour sur <code>/profile/</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : bandeau "✅ Autorisation accordée"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : bouton "💳 Finaliser mon abonnement"</li>
+        </ul>
+
+        <h3>💳 Scénario 17 — Paiement après autorisation</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Cliquer sur "Finaliser mon abonnement"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : redirection vers Stripe Checkout</li>
+            <li><span class="box">☐</span> Utiliser carte test <code>4242 4242 4242 4242</code></li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : abonnement activé</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès Premium autorisé</li>
+        </ul>
+
+        <h3>❌ Scénario 18 — Parent refuse</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Le parent clique sur "Je refuse"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : page de refus</li>
+            <li><span class="box">☐</span> Mineur consulte son profil</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : bandeau "❌ Demande refusée"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : accès Premium toujours bloqué</li>
+        </ul>
+
+        <h3>⌛ Scénario 19 — Lien expiré</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Attendre 7 jours (ou simuler l'expiration en base)</li>
+            <li><span class="box">☐</span> Cliquer sur le lien parent</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : page "⏳ Lien expiré"</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : mineur peut refaire une demande</li>
+        </ul>
+
+        <h3>🎯 Scénario 20 — Toggle mode Junior</h3>
+        <ul class="checklist">
+            <li><span class="box">☐</span> Le toggle "Junior" dans le header est visible</li>
+            <li><span class="box">☐</span> Le toggle est <strong>désactivé</strong> (réservé aux adultes)</li>
+            <li><span class="box">☐</span> <strong>Attendu</strong> : le mineur ne peut pas désactiver le mode Junior</li>
+        </ul>
+
+        <h2>✅ Résultat attendu final</h2>
+        <div class="success-box">
+            <ul style="margin: 0;">
+                <li>✅ Inscription mineur → mode_junior automatique</li>
+                <li>✅ <strong>Pas de profil Eleve</strong> créé automatiquement</li>
+                <li>✅ Redirection vers <code>dashboard_junior</code></li>
+                <li>✅ Thème orange + mascotte</li>
+                <li>✅ Accès <strong>gratuit uniquement</strong></li>
+                <li>✅ Premium bloqué</li>
+                <li>✅ Forum adulte + école bloqués</li>
+                <li>✅ Galerie publique accessible</li>
+                <li>✅ Demande d'autorisation parentale fonctionne</li>
+                <li>✅ Blocage Stripe direct</li>
+                <li>✅ Workflow complet validation/refus/expiration parent</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Anomalies à signaler</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Scénario</th><th>Description</th><th>Gravité</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>2</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>3</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

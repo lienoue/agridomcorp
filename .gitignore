@@ -1,0 +1,84 @@
+# ==================== Python ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==================== Django ====================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+db.sqlite3-*
+*.sqlite3
+*.sqlite3-*
+db.sqlite3_*
+db - Copie.sqlite3
+dbCopie.sqlite3
+agricorp.db
+
+# ==================== Environnement ====================
+.env
+.env.local
+.env.*.local
+venv/
+.venv/
+ENV/
+env/
+.env.prod
+
+# ==================== IDE ====================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==================== Static / Media ====================
+staticfiles/
+media/
+*.log
+
+# ==================== Backups de dev ====================
+*_backup_*.py
+*.backup_*
+*_bck.py
+views_backup*
+models_backup*
+admin_backup*
+forms_backup*
+urls_bck.py
+urls_old.py
+
+# ==================== Wheels Windows ====================
+*.whl
+
+# ==================== Dumps & CSV ====================
+*.sql
+*.sqbpro
+export_vegetables_fruits_*.csv
+
+# ==================== Docs perso ====================
+MAJFRU.txt
+*.zip

@@ -1,0 +1,101 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}🛡️ Modération - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Gestion des signalements 🛡️{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{# STATISTIQUES #}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.7rem; color: #999;">En attente</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: #E65100;">{{ stats.en_attente|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.7rem; color: #999;">En cours</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: #0D47A1;">{{ stats.en_cours|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.7rem; color: #999;">Traités</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: #1B5E20;">{{ stats.traites|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.7rem; color: #999;">Refusés</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: #B71C1C;">{{ stats.refuses|default:0 }}</div>
+    </div>
+    <div style="background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; text-align: center; border: 1px solid rgba(109,76,42,0.06);">
+        <div style="font-size: 0.7rem; color: #999;">Total</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: var(--brun-terre);">{{ stats.total|default:0 }}</div>
+    </div>
+</div>
+
+{# FILTRES #}
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+    <a href="?statut=en_attente" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'en_attente' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        ⏳ En attente
+    </a>
+    <a href="?statut=en_cours" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'en_cours' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        🔍 En cours
+    </a>
+    <a href="?statut=traite" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'traite' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        ✅ Traités
+    </a>
+    <a href="?statut=refuse" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'refuse' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        ❌ Refusés
+    </a>
+    <a href="?statut=tous" class="btn-outline-forum" style="padding: 6px 16px; font-size: 0.85rem; {% if statut_actuel == 'tous' %}background: var(--vert-jardin); color: #fff; border-color: var(--vert-jardin);{% endif %}">
+        📦 Tout
+    </a>
+</div>
+
+{# LISTE DES SIGNALEMENTS #}
+{% for signalement in signalements %}
+<div class="signalement-card">
+    <div class="signalement-header">
+        <div>
+            <strong>🚨 Signalement #{{ signalement.id }}</strong>
+            <span style="font-size: 0.8rem; color: #999; margin-left: 12px;">
+                par {{ signalement.signaleur.username }}
+            </span>
+        </div>
+        <span class="badge-statut {{ signalement.statut }}">
+            {{ signalement.get_statut_display }}
+        </span>
+    </div>
+    <div style="font-size: 0.9rem; margin-bottom: 6px;">
+        <strong>Raison :</strong> {{ signalement.raison }}
+    </div>
+    <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">
+        {{ signalement.date_signalement|timesince }}
+        {% if signalement.sujet %}
+            • Sujet : <a href="{{ signalement.sujet.get_absolute_url }}" target="_blank">{{ signalement.sujet.titre|truncatechars:40 }}</a>
+        {% elif signalement.message %}
+            • Message dans : <a href="{{ signalement.message.sujet.get_absolute_url }}" target="_blank">{{ signalement.message.sujet.titre|truncatechars:40 }}</a>
+        {% endif %}
+    </div>
+    <div>
+        <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalement_detail' signalement.id %}" class="btn-primary-forum" style="padding: 6px 16px; font-size: 0.85rem;">
+            <span>📖</span> Traiter
+        </a>
+    </div>
+</div>
+{% empty %}
+<div class="empty-state">
+    <div class="empty-icon">🛡️</div>
+    <div class="empty-title">Aucun signalement</div>
+    <p>Le forum est calme !</p>
+</div>
+{% endfor %}
+
+{% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=signalements %}
+
+{% endblock %}

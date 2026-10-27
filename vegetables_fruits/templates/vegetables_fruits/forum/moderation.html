@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}⚖️ Modération du forum{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:forum_index' %}">Forum</a></li>
+<li class="breadcrumb-item active">⚖️ Modération</li>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">⚖️ Modération du forum</h1>
+            <p class="text-muted small">Gérez les signalements des utilisateurs</p>
+        </div>
+        <a href="{% url 'vegetables_fruits:forum_index' %}" class="btn btn-secondary btn-sm">
+            ← Retour au forum
+        </a>
+    </div>
+
+    <!-- Signalements -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span>📋 Signalements en attente</span>
+            <span class="badge bg-danger" id="compteur-signalements">{{ signalements.count }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if signalements %}
+                {% for signalement in signalements %}
+                <div class="signalement-item border-bottom p-3" data-id="{{ signalement.id }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <strong>📝 {{ signalement.message.sujet.titre }}</strong>
+                            <div class="small text-muted">
+                                Signalé par {{ signalement.signaleur.username }}
+                                <span class="mx-1">•</span>
+                                {{ signalement.date_signalement|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small">
+                                <span class="text-muted">Message :</span>
+                                {{ signalement.message.contenu|truncatechars:50 }}
+                            </div>
+                            <div class="small text-danger">
+                                <span class="text-muted">Raison :</span>
+                                {{ signalement.raison|truncatechars:50 }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-success btn-sm traiter-signalement" data-id="{{ signalement.id }}">
+                                    ✅ Traiter
+                                </button>
+                                <a href="{% url 'vegetables_fruits:forum_signalement_detail' signalement.id %}" class="btn btn-outline-secondary btn-sm">
+                                    🔍 Détail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="p-5 text-center text-muted">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">🎉</div>
+                    <h5>Aucun signalement en attente</h5>
+                    <p class="mb-0">Tous les signalements ont été traités.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Traiter un signalement via AJAX
+    document.querySelectorAll('.traiter-signalement').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const item = document.querySelector(`.signalement-item[data-id="${id}"]`);
+
+            if (!confirm('Traiter ce signalement ?')) return;
+
+            fetch(`/forum/signalement-traiter/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ Supprimer l'élément du DOM
+                    if (item) item.remove();
+
+                    // ✅ Mettre à jour le compteur
+                    const count = document.querySelectorAll('.signalement-item').length;
+                    const compteur = document.getElementById('compteur-signalements');
+                    if (compteur) compteur.textContent = count;
+
+                    // ✅ Afficher un message flash
+                    const msg = document.createElement('div');
+                    msg.className = 'alert alert-success alert-dismissible fade show';
+                    msg.innerHTML = `✅ Signalement traité avec succès.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                    document.querySelector('.container').prepend(msg);
+
+                    // Si plus de signalements, afficher message
+                    if (count === 0) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+    });
+});
+</script>
+
+<style>
+    .signalement-item {
+        transition: background-color 0.2s;
+    }
+    .signalement-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

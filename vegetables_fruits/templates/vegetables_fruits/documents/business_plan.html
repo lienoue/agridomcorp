@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Business Plan - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Business Plan</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: center; }
+    .doc-card table td { padding: 10px; text-align: center; border-bottom: 1px solid #e9ecef; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .highlight-box { background: #d4edda; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin: 15px 0; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>📈 Business Plan</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>📌 Synthèse</h2>
+        <p>Agriculture 2.0 est une application web de jardinage pédagogique.</p>
+        <div class="highlight-box">
+            <ul>
+                <li><strong>Objectif :</strong> Devenir la référence éducative du jardinage numérique en Europe</li>
+                <li><strong>Modèle :</strong> Freemium (gratuit + abonnements)</li>
+                <li><strong>Marché :</strong> Particuliers, écoles, enseignants</li>
+                <li><strong>Break-even :</strong> ~12 abonnés payants</li>
+                <li><strong>Marge brute :</strong> ~95% (après frais Stripe)</li>
+            </ul>
+        </div>
+
+        <h2>🎯 Vision & Mission</h2>
+        <p><strong>Vision :</strong> Permettre à chaque personne, enfant ou adulte, d'apprendre l'agriculture et de cultiver son propre jardin, où qu'elle soit dans le monde.</p>
+        <p><strong>Mission :</strong> Fournir des outils pédagogiques, techniques et communautaires pour apprendre, expérimenter et partager la passion du jardinage.</p>
+
+        <h2>🌍 Marché cible</h2>
+        <table>
+            <thead>
+                <tr><th>Segment</th><th>Description</th><th>Taille estimée</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🌱 Particuliers</td><td>Jardiniers amateurs</td><td>15M (France)</td></tr>
+                <tr><td>🏫 Écoles</td><td>Primaire, collège, lycée</td><td>60 000</td></tr>
+                <tr><td>👨‍🏫 Enseignants</td><td>Professeurs de SVT, sciences</td><td>500 000</td></tr>
+                <tr><td>🌎 International</td><td>Pays francophones et européens</td><td>En croissance</td></tr>
+            </tbody>
+        </table>
+
+        <h2>💰 Modèle économique</h2>
+
+        <h3>Prix officiels</h3>
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Mensuel</th><th>Annuel</th><th>Économie</th><th>Parcelles</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🌱 Gratuit</td><td>0€</td><td>0€</td><td>—</td><td>3</td></tr>
+                <tr><td>🌿 Basique</td><td>7,49€</td><td>74,90€</td><td>-17%</td><td>15</td></tr>
+                <tr><td>🌳 Premium</td><td>15,99€</td><td>159,90€</td><td>-17%</td><td>50</td></tr>
+                <tr><td>🏫 Enseignant</td><td>9,99€</td><td>99,90€</td><td>-17%</td><td>Illimité</td></tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>🏫 Stratégie Enseignant :</strong> Le plan Enseignant inclut <strong>toutes les
+            fonctionnalités Premium</strong> à tarif réduit (-37%), avec un filtre obligatoire
+            par email académique pour éviter les abus.
+        </div>
+
+        <h3>ARPU pondéré</h3>
+        <p>En supposant un mix :</p>
+        <ul>
+            <li>55% Basique → 7,49€</li>
+            <li>35% Premium → 15,99€</li>
+            <li>10% Enseignant → 9,99€</li>
+        </ul>
+        <p><strong>→ ARPU moyen ≈ 10,72€/mois par abonné</strong></p>
+
+        <h2>📈 Projections financières (3 ans)</h2>
+
+        <div class="info-box">
+            <strong>Hypothèses :</strong>
+            <ul style="margin: 10px 0 0 0;">
+                <li>Conversion : 3% → 5% → 7%</li>
+                <li>ARPU moyen : 10,72€/mois</li>
+                <li>Frais Stripe : 1,4% + 0,25€</li>
+                <li>Charges fixes : ~1 500€/an (hébergement, domaines, emails, juridique)</li>
+                <li>Charges variables : 0,07€/utilisateur/mois</li>
+            </ul>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Indicateur</th>
+                    <th>Année 1</th>
+                    <th>Année 2</th>
+                    <th>Année 3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Utilisateurs actifs</td>
+                    <td>5 000</td>
+                    <td>25 000</td>
+                    <td>75 000</td>
+                </tr>
+                <tr>
+                    <td>Taux de conversion</td>
+                    <td>3%</td>
+                    <td>5%</td>
+                    <td>7%</td>
+                </tr>
+                <tr>
+                    <td>Abonnés payants</td>
+                    <td>150</td>
+                    <td>1 250</td>
+                    <td>5 250</td>
+                </tr>
+                <tr>
+                    <td>CA mensuel</td>
+                    <td>1 608€</td>
+                    <td>13 400€</td>
+                    <td>56 280€</td>
+                </tr>
+                <tr>
+                    <td><strong>CA annuel</strong></td>
+                    <td><strong>19 296€</strong></td>
+                    <td><strong>160 800€</strong></td>
+                    <td><strong>675 360€</strong></td>
+                </tr>
+                <tr>
+                    <td>Charges annuelles</td>
+                    <td>3 500€</td>
+                    <td>15 000€</td>
+                    <td>45 000€</td>
+                </tr>
+                <tr>
+                    <td><strong>Résultat net</strong></td>
+                    <td><strong>15 796€</strong></td>
+                    <td><strong>145 800€</strong></td>
+                    <td><strong>630 360€</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🎯 Break-even</h2>
+        <div class="highlight-box">
+            <p><strong>Charges fixes mensuelles</strong> : 121€</p>
+            <p><strong>ARPU net par abonné</strong> : ~10,40€ (après Stripe)</p>
+            <p><strong>Break-even</strong> : 121 / 10,40 ≈ <strong>12 abonnés payants</strong></p>
+        </div>
+
+        <h2>🧩 Avantages concurrentiels</h2>
+        <table>
+            <thead>
+                <tr><th>Feature</th><th>Agri 2.0</th><th>Concurrent A</th><th>Concurrent B</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Météo par parcelle</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Cultures rares (200+)</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Communauté intégrée</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                <tr><td>Gamification complète</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                <tr><td>Pédagogie scolaire</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                <tr><td>Mode Junior automatique</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Conformité RGPD</td><td>✅</td><td>⚠️</td><td>⚠️</td></tr>
+                <tr><td>Prix abordable</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>PWA (mobile + desktop)</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            </tbody>
+        </table>
+
+        <h2>👥 Équipe</h2>
+        <ul>
+            <li><strong>Direction</strong> : Vision, stratégie, pédagogie</li>
+            <li><strong>Développement</strong> : Django, Python, JavaScript, GIS</li>
+            <li><strong>Marketing</strong> : Acquisition, communication, écoles</li>
+            <li><strong>Support client</strong> : Relation utilisateurs, assistance</li>
+        </ul>
+
+        <h2>🚀 Prochaines étapes</h2>
+        <ul style="list-style: none; padding-left: 0;">
+            <li>✅ Application développée (v2.0)</li>
+            <li>✅ Mode Junior automatique</li>
+            <li>✅ Autorisation parentale pour mineurs</li>
+            <li>✅ Documentation complète</li>
+            <li>⬜ Finaliser la configuration Stripe (prix réels)</li>
+            <li>⬜ Optimisation PWA (service worker, manifest)</li>
+            <li>⬜ Campagne de lancement écoles</li>
+            <li>⬜ Communication réseaux sociaux</li>
+            <li>⬜ Recrutement de bêta-testeurs</li>
+            <li>⬜ Lancement officiel</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

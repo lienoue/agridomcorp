@@ -1,0 +1,166 @@
+{% extends 'vegetables_fruits/index.html' %}
+{% load static %}
+
+{% block title %}Création du Compte{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto; padding: 0 20px;">
+    <div class="card" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div class="card-header" style="background: linear-gradient(135deg, #2d6a4f, #40916c); color: white; border-radius: 20px 20px 0 0; padding: 25px; text-align: center;">
+            <h2 style="margin: 0; font-size: 1.8rem;">🌱 Création du compte</h2>
+            <p style="margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem;">Rejoignez Agriculture 2.0</p>
+        </div>
+
+        <div class="card-body" style="padding: 30px;">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    {# ✅ Sauter le champ 'code_classe' qui sera affiché après 'est_dans_classe' #}
+                    {% if field.name != 'code_classe' %}
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="form-label" style="font-weight: 600; color: #1b4332; display: block; margin-bottom: 5px;">
+                                {{ field.label }}
+                            </label>
+
+                            {# ✅ Cas spécial : la checkbox "est_dans_classe" #}
+                            {% if field.name == 'est_dans_classe' %}
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e9ecef;">
+                                    {{ field }}
+                                    <label for="{{ field.id_for_label }}" style="margin: 0; cursor: pointer; color: #495057; font-size: 0.95rem;">
+                                        {{ field.help_text }}
+                                    </label>
+                                </div>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+
+                            {% if field.help_text and field.name != 'est_dans_classe' %}
+                                <small class="text-muted" style="display: block; margin-top: 3px; font-size: 0.8rem; color: #6c757d;">
+                                    {{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                                <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 5px; margin-top: 5px; font-size: 0.85rem;">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                            {# ✅ Juste APRÈS le champ 'est_dans_classe', afficher le champ 'code_classe' #}
+                            {% if field.name == 'est_dans_classe' %}
+                                <div id="bloc-code-classe" style="display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #2d6a4f;">
+                                    <label for="id_code_classe" style="font-weight: 600; color: #1b4332; display: block; margin-bottom: 8px;">
+                                        🎫 Code de classe
+                                    </label>
+                                    {{ form.code_classe }}
+                                    <small class="text-muted" style="display: block; margin-top: 5px; font-size: 0.8rem;">
+                                        Renseigne le code fourni par ton professeur (ex: A1B2C3D4).
+                                    </small>
+                                    {% for error in form.code_classe.errors %}
+                                        <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 5px; margin-top: 8px; font-size: 0.85rem;">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <button type="submit" class="btn btn-signup" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(135deg, #ff6b35, #ffb347); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+                    🚀 S'inscrire
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                <p style="margin: 0; color: #6c757d;">
+                    Déjà un compte ?
+                    <a href="{% url 'vegetables_fruits:login' %}" style="color: #2d6a4f; font-weight: 600; text-decoration: none;">
+                        Connectez-vous
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styles spécifiques au formulaire */
+    .form-group input:not([type="checkbox"]),
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: #f8f9fa;
+        box-sizing: border-box;
+    }
+    .form-group input:not([type="checkbox"]):focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #40916c;
+        box-shadow: 0 0 0 3px rgba(64,145,108,0.2);
+        outline: none;
+        background: white;
+    }
+
+    /* ✅ Style pour la checkbox */
+    .form-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #2d6a4f;
+        flex-shrink: 0;
+    }
+
+    /* ✅ Style pour le champ code_classe dans son bloc */
+    #bloc-code-classe input {
+        width: 100% !important;
+        padding: 12px 15px !important;
+        border: 2px solid #a5d6a7 !important;
+        border-radius: 10px !important;
+        font-size: 1rem !important;
+        background: white !important;
+        box-sizing: border-box !important;
+    }
+    #bloc-code-classe input:focus {
+        border-color: #2d6a4f !important;
+        box-shadow: 0 0 0 3px rgba(45,106,79,0.2) !important;
+        outline: none !important;
+    }
+
+    .btn-signup:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,107,53,0.4);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('id_est_dans_classe');
+        const blocCode = document.getElementById('bloc-code-classe');
+
+        if (checkbox && blocCode) {
+            // ✅ Afficher/cacher selon l'état initial
+            blocCode.style.display = checkbox.checked ? 'block' : 'none';
+
+            // ✅ Écouter les changements
+            checkbox.addEventListener('change', function() {
+                blocCode.style.display = this.checked ? 'block' : 'none';
+
+                // ✅ Focus sur le champ si activé
+                if (this.checked) {
+                    const champCode = document.getElementById('id_code_classe');
+                    if (champCode) {
+                        setTimeout(() => champCode.focus(), 100);
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

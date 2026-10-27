@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}📄 {{ note.titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .note-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .note-header {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 30px;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .note-body {
+        background: white;
+        padding: 30px;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .note-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+    
+    .note-content {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin: 20px 0;
+        white-space: pre-wrap;
+    }
+    
+    .tag {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin: 2px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="note-container">
+        <div class="note-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="mb-2">{{ note.titre }}</h1>
+                    <div class="d-flex flex-wrap gap-3 mt-2">
+                        {% if note.culture %}
+                        <span>🌱 {{ note.get_culture_display }}</span>
+                        {% endif %}
+                        {% if note.figure %}
+                        <span>📍 {{ note.figure.name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'vegetables_fruits:journal_modifier' note.id %}" class="btn btn-light btn-sm">
+                        ✏️ Modifier
+                    </a>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note-body">
+            <div class="note-meta">
+                <div class="meta-item">📅 {{ note.date_note|date:"l d F Y" }}</div>
+                {% if note.meteo %}
+                <div class="meta-item">🌡️ {{ note.temperature|default:'' }}°C · {{ note.meteo }}</div>
+                {% endif %}
+                <div class="meta-item">🕐 {{ note.date_creation|date:"H:i" }}</div>
+            </div>
+            
+            {% if note.image %}
+            <div class="text-center mb-4">
+                <img src="{{ note.image.url }}" alt="{{ note.titre }}" style="max-width: 100%; max-height: 400px; border-radius: 15px;">
+            </div>
+            {% endif %}
+            
+            <div class="note-content">
+                {{ note.note|linebreaks }}
+            </div>
+            
+            {% if note.tags %}
+            <div class="mt-3">
+                <strong>🏷️ Tags :</strong>
+                {% for tag in note.tags.split %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn btn-outline-secondary">
+                    ← Retour au journal
+                </a>
+                {% if note.figure %}
+                <a href="{% url 'vegetables_fruits:figure_detail' note.figure.id %}" class="btn btn-outline-primary">
+                    🗺️ Voir la parcelle
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Supprimer la note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Voulez-vous vraiment supprimer "{{ note.titre }}" ?
+                <br>
+                <small class="text-danger">Cette action est irréversible.</small>
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'vegetables_fruits:journal_supprimer' note.id %}">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

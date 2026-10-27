@@ -1,0 +1,150 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}🛡️ Détail du signalement - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Traitement du signalement #{{ signalement.id }}{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalements' %}" class="btn-outline-forum">
+        <span>←</span> Retour aux signalements
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    {# COLONNE GAUCHE - DÉTAILS #}
+    <div style="background: #fff; border-radius: var(--radius); padding: 24px; border: 1px solid rgba(109,76,42,0.06);">
+        <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; margin-bottom: 16px;">
+            📋 Détails du signalement
+        </h4>
+        
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Signalé par</div>
+            <div style="font-weight: 600;">{{ signalement.signaleur.username }}</div>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Date</div>
+            <div>{{ signalement.date_signalement|date:"d/m/Y à H:i" }}</div>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Statut</div>
+            <span class="badge-statut {{ signalement.statut }}" style="display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; 
+                {% if signalement.statut == 'en_attente' %}background: #FFF3E0; color: #E65100;
+                {% elif signalement.statut == 'en_cours' %}background: #E3F2FD; color: #0D47A1;
+                {% elif signalement.statut == 'traite' %}background: var(--vert-pale); color: #1B5E20;
+                {% else %}background: var(--tomate-pale); color: #B71C1C;{% endif %}">
+                {{ signalement.get_statut_display }}
+            </span>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Raison</div>
+            <div style="background: var(--beige-terre); padding: 8px 12px; border-radius: var(--radius-sm);">
+                {{ signalement.raison }}
+            </div>
+        </div>
+        
+        {% if signalement.details %}
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Détails</div>
+            <div style="background: var(--beige-terre); padding: 8px 12px; border-radius: var(--radius-sm);">
+                {{ signalement.details }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if signalement.sujet %}
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Contenu signalé</div>
+            <div style="background: var(--beige-terre); padding: 12px; border-radius: var(--radius-sm); max-height: 200px; overflow-y: auto;">
+                <strong>Sujet :</strong> {{ signalement.sujet.titre }}<br>
+                <div style="font-size: 0.9rem; margin-top: 4px;">
+                    {{ signalement.sujet.contenu|truncatechars:200|linebreaks }}
+                </div>
+                <a href="{% url 'vegetables_fruits:forum_adulte_sujet' signalement.sujet.id %}" target="_blank" style="font-size: 0.85rem;">
+                    Voir le sujet →
+                </a>
+            </div>
+        </div>
+        {% elif signalement.message %}
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #999;">Contenu signalé</div>
+            <div style="background: var(--beige-terre); padding: 12px; border-radius: var(--radius-sm); max-height: 200px; overflow-y: auto;">
+                <strong>Message de {{ signalement.message.auteur.username }} :</strong><br>
+                <div style="font-size: 0.9rem; margin-top: 4px;">
+                    {{ signalement.message.contenu|truncatechars:200|linebreaks }}
+                </div>
+                <a href="{% url 'vegetables_fruits:forum_adulte_sujet' signalement.message.sujet.id %}#message-{{ signalement.message.id }}" target="_blank" style="font-size: 0.85rem;">
+                    Voir le message →
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {# COLONNE DROITE - TRAITEMENT #}
+    <div style="background: #fff; border-radius: var(--radius); padding: 24px; border: 1px solid rgba(109,76,42,0.06);">
+        <h4 style="font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; margin-bottom: 16px;">
+            ⚖️ Traitement
+        </h4>
+        
+        <form method="POST" class="forum-form">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 16px;">
+                <label for="action" class="form-label">Action <span style="color: var(--tomate);">*</span></label>
+                <select id="action" name="action" required style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); background:#fff;">
+                    <option value="">-- Sélectionnez une action --</option>
+                    <option value="accepter">✅ Accepter - Supprimer le contenu</option>
+                    <option value="refuser">❌ Refuser - Signaler comme non fondé</option>
+                    <option value="sanctionner">⚖️ Sanctionner l'utilisateur</option>
+                </select>
+            </div>
+            
+            <div id="sanction-section" style="display: none; margin-bottom: 16px;">
+                <label for="sanction_type" class="form-label">Type de sanction</label>
+                <select id="sanction_type" name="sanction_type" style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); background:#fff;">
+                    <option value="avertissement">⚠️ Avertissement</option>
+                    <option value="suspension">⏸️ Suspension (7 jours)</option>
+                    <option value="bannissement">🚫 Bannissement définitif</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="commentaire" class="form-label">Commentaire de modération</label>
+                <textarea id="commentaire" name="commentaire" placeholder="Expliquez votre décision..." style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); min-height:80px; resize:vertical;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn-primary-forum">
+                    <span>✅</span> Valider
+                </button>
+                <a href="{% url 'vegetables_fruits:forum_adulte_moderation_signalements' %}" class="btn-outline-forum">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const actionSelect = document.getElementById('action');
+    const sanctionSection = document.getElementById('sanction-section');
+    
+    actionSelect.addEventListener('change', function() {
+        if (this.value === 'sanctionner') {
+            sanctionSection.style.display = 'block';
+        } else {
+            sanctionSection.style.display = 'none';
+        }
+    });
+});
+</script>
+
+{% endblock %}

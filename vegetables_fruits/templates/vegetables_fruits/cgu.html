@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conditions Générales d'Utilisation - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">📜 CGU</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cgu-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .cgu-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 30px 40px;
+        margin-bottom: 30px;
+    }
+    .cgu-card h2 {
+        color: #2d6a4f;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .cgu-card h3 {
+        color: #2d6a4f;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+    .cgu-card h4 {
+        color: #343a40;
+        margin-top: 20px;
+        margin-bottom: 8px;
+    }
+    .cgu-card p {
+        color: #495057;
+        line-height: 1.7;
+        margin-bottom: 12px;
+    }
+    .cgu-card ul {
+        padding-left: 20px;
+        color: #495057;
+        line-height: 1.7;
+    }
+    .cgu-card ul li {
+        margin-bottom: 6px;
+    }
+    .cgu-card .highlight {
+        background: #fff8e7;
+        padding: 15px 20px;
+        border-left: 4px solid #c9a96e;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    .cgu-card .highlight-green {
+        background: #e8f5e9;
+        padding: 15px 20px;
+        border-left: 4px solid #2d6a4f;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    .cgu-card .badge-cgu {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    .badge-important { background: #dc3545; color: white; }
+    .badge-info { background: #17a2b8; color: white; }
+    .badge-success { background: #28a745; color: white; }
+    .badge-warning { background: #ffc107; color: #333; }
+
+    .last-update {
+        text-align: right;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    @media (max-width: 768px) {
+        .cgu-card {
+            padding: 20px;
+        }
+        .cgu-card h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="cgu-container">
+
+    <div class="cgu-card">
+        <h2>📜 Conditions Générales d'Utilisation</h2>
+        <p style="color: #6c757d; font-size: 0.95rem;">
+            Dernière mise à jour : <strong>Septembre 2026</strong>
+        </p>
+
+        <p>
+            Bienvenue sur <strong>Agriculture 2.0</strong>, une plateforme de jardinage pédagogique développée par AgriDomCorp.
+            En utilisant notre application, vous acceptez pleinement les présentes Conditions Générales d'Utilisation.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 1 : ACCÈS À LA PLATEFORME -->
+        <!-- ============================================================ -->
+        <h3>1. Accès à la plateforme</h3>
+
+        <h4>1.1 Création de compte</h4>
+        <p>
+            Pour utiliser Agriculture 2.0, vous devez créer un compte utilisateur. Vous vous engagez à fournir des informations exactes et à jour.
+            Vous êtes responsable de la confidentialité de vos identifiants de connexion.
+        </p>
+
+        <h4>1.2 Profils utilisateurs</h4>
+        <ul>
+            <li><strong>👤 Particulier</strong> : utilisateur adulte utilisant l'application à titre personnel</li>
+            <li><strong>🧒 Mode Junior</strong> : utilisateur mineur (moins de 18 ans) avec une interface adaptée</li>
+            <li><strong>👨‍🏫 Enseignant</strong> : utilisateur inscrit avec un email académique, habilité à créer des classes</li>
+            <li><strong>🧑‍🎓 Élève</strong> : utilisateur mineur inscrit dans une classe sous la responsabilité d'un enseignant</li>
+        </ul>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 2 : FONCTIONNALITÉS ET ABONNEMENTS -->
+        <!-- ============================================================ -->
+        <h3>2. Fonctionnalités et abonnements</h3>
+
+        <h4>2.1 Plans d'abonnement</h4>
+        <ul>
+            <li><strong>🌱 Gratuit</strong> : accès limité aux fonctionnalités de base</li>
+            <li><strong>🌿 Basique</strong> : accès au journal de bord et au forum adulte (6,99€/mois)</li>
+            <li><strong>🌳 Premium</strong> : accès à toutes les fonctionnalités (14,99€/mois)</li>
+            <li><strong>👨‍🏫 Enseignant</strong> : accès complet + gestion de classe (15,99€/mois)</li>
+        </ul>
+
+        <div class="highlight-green">
+            <strong>🎓 Accès Éducation Nationale :</strong>
+            Les élèves inscrits dans une classe bénéficient d'un accès complet à toutes les fonctionnalités,
+            y compris celles réservées aux abonnés Premium, dans le cadre de leur parcours éducatif.
+            <br><br>
+            Cet accès est conditionné à l'appartenance à une classe active sous la responsabilité d'un enseignant.
+        </div>
+
+        <h4>2.2 Paiement et résiliation</h4>
+        <p>
+            Les abonnements payants sont facturés mensuellement ou annuellement selon la formule choisie.
+            Vous pouvez résilier à tout moment depuis votre espace personnel. Aucun remboursement n'est effectué pour les périodes non utilisées.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 3 : RESPONSABILITÉS -->
+        <!-- ============================================================ -->
+        <h3>3. Responsabilités</h3>
+
+        <h4>3.1 Utilisation des comptes enfants</h4>
+        <div class="highlight">
+            <strong>⚠️ Comptes en mode Junior :</strong>
+            Les comptes créés en mode Junior sont destinés à un usage exclusif par l'enfant.
+            Les parents sont responsables de l'utilisation du compte par leur enfant et doivent
+            s'assurer que celui-ci respecte les présentes conditions d'utilisation.
+            <br><br>
+            <strong>Les parents sont invités à superviser l'utilisation de l'application par leur enfant.</strong>
+        </div>
+
+        <h4>3.2 Utilisation scolaire</h4>
+        <p>
+            L'application peut être utilisée dans un cadre éducatif sous la supervision d'un enseignant.
+            L'enseignant est responsable de la gestion de sa classe et des données de ses élèves.
+        </p>
+
+        <h4>3.3 Contenu généré par l'utilisateur</h4>
+        <ul>
+            <li>Vous êtes seul responsable des contenus que vous publiez (photos, commentaires, messages).</li>
+            <li>Vous vous engagez à ne pas publier de contenus illégaux, offensants ou inappropriés.</li>
+            <li>Nous nous réservons le droit de modérer ou supprimer tout contenu jugé inapproprié.</li>
+        </ul>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 4 : PROTECTION DES DONNÉES -->
+        <!-- ============================================================ -->
+        <h3>4. Protection des données personnelles</h3>
+
+        <div class="highlight-green">
+            <strong>🔒 Données des mineurs :</strong>
+            Agriculture 2.0 est conforme au RGPD. Les données des utilisateurs mineurs sont collectées
+            avec le consentement parental et ne sont utilisées que dans le cadre pédagogique.
+        </div>
+
+        <h4>4.1 Données collectées</h4>
+        <ul>
+            <li><strong>Données d'identification</strong> : nom, prénom, email, date de naissance</li>
+            <li><strong>Données d'utilisation</strong> : parcelles, cultures, progression, points, badges</li>
+            <li><strong>Données de connexion</strong> : adresse IP, historique de connexion</li>
+        </ul>
+
+        <h4>4.2 Droits des utilisateurs</h4>
+        <ul>
+            <li>Droit d'accès à vos données</li>
+            <li>Droit de rectification</li>
+            <li>Droit à l'effacement</li>
+            <li>Droit à la limitation du traitement</li>
+            <li>Droit à la portabilité</li>
+        </ul>
+        <p>Pour exercer vos droits, contactez-nous à : <strong>contact@agriculture2.0</strong></p>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 5 : PROPRIÉTÉ INTELLECTUELLE -->
+        <!-- ============================================================ -->
+        <h3>5. Propriété intellectuelle</h3>
+        <p>
+            L'ensemble des contenus de l'application (textes, images, logos, code) est la propriété exclusive d'AgriDomCorp.
+            Toute reproduction, distribution ou utilisation sans autorisation est interdite.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 6 : MODIFICATIONS DES CGU -->
+        <!-- ============================================================ -->
+        <h3>6. Modifications des CGU</h3>
+        <p>
+            AgriDomCorp se réserve le droit de modifier les présentes CGU à tout moment.
+            Les modifications seront notifiées par email aux utilisateurs concernés.
+            L'utilisation continue de l'application après modification vaut acceptation des nouvelles conditions.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- ARTICLE 7 : LOI APPLICABLE -->
+        <!-- ============================================================ -->
+        <h3>7. Loi applicable et juridiction</h3>
+        <p>
+            Les présentes CGU sont régies par le droit français.
+            En cas de litige, les tribunaux de Paris sont seuls compétents.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- CONTACT -->
+        <!-- ============================================================ -->
+        <h3>📧 Contact</h3>
+        <p>
+            Pour toute question relative aux présentes CGU, vous pouvez nous contacter :
+        </p>
+        <ul>
+            <li>📩 Email : <strong>contact@agriculture2.0</strong></li>
+            <li>📍 Adresse : AgriDomCorp, Paris, France</li>
+        </ul>
+
+        <div class="last-update">
+            📅 Dernière mise à jour : Septembre 2026
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

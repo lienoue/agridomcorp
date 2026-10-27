@@ -1,0 +1,773 @@
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Vue Figure</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Variables */
+    :root {
+        --primary: #28a745;
+        --primary-dark: #218838;
+        --secondary: #6c757d;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #17a2b8;
+        --light: #f8f9fa;
+        --dark: #343a40;
+    }
+
+    /* En-tête */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 50px 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .page-header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Conteneur principal */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Barre d'actions */
+    .actions-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-outline {
+        background: white;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* Filtres */
+    .filters {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .filter-select {
+        padding: 10px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        min-width: 200px;
+    }
+
+    /* ===== ÉTAT VIDE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin: 40px 0;
+    }
+
+    .empty-icon {
+        font-size: 6rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 2rem;
+        color: var(--dark);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .empty-text {
+        font-size: 1.2rem;
+        color: var(--secondary);
+        margin-bottom: 30px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .empty-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* ===== GRILLE DES FIGURES ===== */
+    .figures-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .figure-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        border: 1px solid #e9ecef;
+        position: relative;
+    }
+
+    .figure-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+    }
+
+    .figure-preview {
+        height: 150px;
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+
+    .figure-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(255,255,255,0.9);
+        color: var(--dark);
+    }
+
+    .badge-agricole { background: var(--primary); }
+    .badge-batiment { background: var(--danger); }
+    .badge-eau { background: var(--info); }
+    .badge-foret { background: #28a745; }
+    .badge-chemin { background: var(--secondary); }
+
+    .figure-content {
+        padding: 20px;
+    }
+
+    .figure-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .figure-id {
+        font-size: 0.8rem;
+        color: var(--secondary);
+    }
+
+    .figure-meta {
+        display: flex;
+        gap: 15px;
+        margin: 10px 0;
+        color: var(--secondary);
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .figure-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .figure-description {
+        color: var(--secondary);
+        font-size: 0.95rem;
+        margin: 10px 0;
+        line-height: 1.5;
+        max-height: 60px;
+        overflow: hidden;
+    }
+
+    /* Adresse */
+    .figure-address {
+        background: #e3f2fd;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-size: 0.9rem;
+        border-left: 3px solid var(--info);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .figure-address span {
+        color: var(--info);
+    }
+
+    /* Météo */
+    .weather-container {
+        margin-top: 10px;
+    }
+
+    .weather-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #e3f2fd;
+        border-radius: 8px;
+        flex-wrap: wrap;
+    }
+
+    .weather-emoji {
+        font-size: 1.3rem;
+    }
+
+    .weather-temp {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .weather-conditions {
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+
+    .weather-humidity {
+        color: var(--secondary);
+        font-size: 0.8rem;
+        margin-left: auto;
+    }
+
+    .weather-wind {
+        color: var(--secondary);
+        font-size: 0.8rem;
+    }
+
+    .weather-loading {
+        padding: 8px 12px;
+        background: var(--light);
+        border-radius: 8px;
+        color: var(--secondary);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .weather-unavailable {
+        padding: 8px 12px;
+        background: var(--light);
+        border-radius: 8px;
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Actions */
+    .figure-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+        border-top: 1px solid #e9ecef;
+        padding-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        flex: 1;
+        min-width: 60px;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+
+    .action-btn.view {
+        background: var(--primary);
+        color: white;
+    }
+
+    .action-btn.edit {
+        background: var(--warning);
+        color: var(--dark);
+    }
+
+    .action-btn.delete {
+        background: var(--danger);
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 40px 0;
+        list-style: none;
+    }
+
+    .page-item {
+        padding: 8px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .page-item.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .page-item:hover:not(.active) {
+        background: var(--light);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+        }
+
+        .figures-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .weather-display {
+            flex-wrap: wrap;
+        }
+
+        .weather-humidity {
+            margin-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container text-center">
+        <h1>🌾 Mes figures dessinées</h1>
+        <p>Retrouvez toutes vos parcelles et infrastructures avec la météo en temps réel</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Barre d'actions -->
+    <div class="actions-bar">
+        <h2 style="color: var(--dark); margin: 0;">📋 Liste des figures</h2>
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-primary">
+            <span>✏️</span> Nouvelle figure
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters">
+        <select class="filter-select" id="type-filter">
+            <option value="">Tous les types</option>
+            <option value="parcelle_agricole">🌾 Parcelles agricoles</option>
+            <option value="batiment">🏠 Bâtiments</option>
+            <option value="point_eau">💧 Points d'eau</option>
+            <option value="foret">🌲 Forêts</option>
+        </select>
+
+        <select class="filter-select" id="sort-filter">
+            <option value="recent">Plus récentes</option>
+            <option value="ancien">Plus anciennes</option>
+            <option value="nom">Nom (A-Z)</option>
+        </select>
+    </div>
+
+    <!-- Vérification s'il y a des figures -->
+    {% if figures %}
+        <!-- GRILLE DES FIGURES -->
+        <div class="figures-grid">
+            {% for figure in figures %}
+            <div class="figure-card" data-parcelle-id="{{ figure.id }}">
+                <!-- Coordonnées cachées pour la météo -->
+                <div style="display: none;" class="parcelle-coords"
+                     data-lat="{{ figure.adresse_lat|default:'' }}"
+                     data-lng="{{ figure.adresse_lng|default:'' }}"
+                     data-nom="{{ figure.name|default:'Parcelle' }}">
+                </div>
+
+                <!-- Aperçu de la figure -->
+                <div class="figure-preview">
+                    <span>
+                        {% if figure.figure_type == 'parcelle_agricole' %}🌾
+                        {% elif figure.figure_type == 'batiment' %}🏠
+                        {% elif figure.figure_type == 'point_eau' %}💧
+                        {% elif figure.figure_type == 'foret' %}🌲
+                        {% elif figure.figure_type == 'chemin' %}🛤️
+                        {% else %}📌
+                        {% endif %}
+                    </span>
+
+                    <!-- Badge de type -->
+                    <span class="figure-badge {% if figure.figure_type == 'parcelle_agricole' %}badge-agricole{% elif figure.figure_type == 'batiment' %}badge-batiment{% elif figure.figure_type == 'point_eau' %}badge-eau{% else %}badge-chemin{% endif %}">
+                        {{ figure.get_figure_type_display|default:figure.figure_type }}
+                    </span>
+                </div>
+
+                <!-- Contenu de la carte -->
+                <div class="figure-content">
+                    <div class="figure-title">
+                        <span>{{ figure.name|default:"Sans nom" }}</span>
+                        <span class="figure-id">#{{ figure.id }}</span>
+                    </div>
+
+                    <!-- Métadonnées -->
+                    <div class="figure-meta">
+                        <span>📅 {{ figure.created_at|date:"d/m/Y" }}</span>
+                        {% if figure.nb_points %}
+                            <span>📍 {{ figure.nb_points }} points</span>
+                        {% endif %}
+                        {% if figure.surface_hectares %}
+                            <span>📐 {{ figure.surface_hectares }} ha</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Adresse -->
+                    {% if figure.adresse_formatted %}
+                    <div class="figure-address">
+                        <span>📍</span> {{ figure.adresse_formatted }}
+                    </div>
+                    {% elif figure.adresse %}
+                    <div class="figure-address">
+                        <span>📍</span> {{ figure.adresse }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Description -->
+                    {% if figure.description %}
+                        <div class="figure-description">
+                            {{ figure.description|truncatechars:100 }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Cultures -->
+                    {% if figure.crops %}
+                        <div style="background: #e8f5e9; padding: 5px 10px; border-radius: 5px; font-size: 0.9rem; margin-top: 10px;">
+                            🌱 {{ figure.crops|length }} culture{{ figure.crops|length|pluralize }}
+                        </div>
+                    {% endif %}
+
+                    <!-- 🌤️ MÉTÉO (remplie par JavaScript) -->
+                    <div class="weather-container">
+                        <div class="weather-loading">
+                            <span>⏳</span> Chargement de la météo...
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="figure-actions">
+                        <button class="action-btn view" onclick="viewFigure({{ figure.id }})">
+                            👁️ Voir
+                        </button>
+                        <button class="action-btn edit" onclick="editFigure({{ figure.id }})">
+                            ✏️ Modifier
+                        </button>
+                        <button class="action-btn delete" onclick="deleteFigure({{ figure.id }})">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
+                </div>
+                <form id="delete-form-{{ figure.id }}" method="post" action="{% url 'vegetables_fruits:delete_figure' figure.id %}" style="display: none;">
+                    {% csrf_token %}
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if figures.has_other_pages %}
+        <ul class="pagination">
+            {% if figures.has_previous %}
+                <li class="page-item"><a href="?page=1">«</a></li>
+                <li class="page-item"><a href="?page={{ figures.previous_page_number }}">‹</a></li>
+            {% endif %}
+
+            {% for i in figures.paginator.page_range %}
+                {% if figures.number == i %}
+                    <li class="page-item active">{{ i }}</li>
+                {% else %}
+                    <li class="page-item"><a href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if figures.has_next %}
+                <li class="page-item"><a href="?page={{ figures.next_page_number }}">›</a></li>
+                <li class="page-item"><a href="?page={{ figures.paginator.num_pages }}">»</a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+
+    {% else %}
+        <!-- ÉTAT VIDE -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                🗺️
+            </div>
+            <h2 class="empty-title">Aucune figure pour le moment</h2>
+            <p class="empty-text">
+                Vous n'avez pas encore créé de figure.
+                Commencez dès maintenant à dessiner vos parcelles agricoles,
+                bâtiments ou autres infrastructures.
+            </p>
+            <div class="empty-actions">
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn-primary">
+                    <span>✏️</span> Créer ma première figure
+                </a>
+                <a href="{% url 'vegetables_fruits:index' %}" class="btn-outline">
+                    <span>🏠</span> Retour à l'accueil
+                </a>
+            </div>
+
+            <!-- Suggestions -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px dashed #e9ecef;">
+                <h3 style="color: var(--secondary); margin-bottom: 20px;">💡 Idées de figures</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="background: var(--light); padding: 15px; border-radius: 10px;">
+                        <span style="font-size: 2rem;">🌾</span>
+                        <h4>Parcelle agricole</h4>
+                        <p style="font-size: 0.9rem; color: var(--secondary);">Délimitez vos champs et cultures</p>
+                    </div>
+                    <div style="background: var(--light); padding: 15px; border-radius: 10px;">
+                        <span style="font-size: 2rem;">🏠</span>
+                        <h4>Bâtiment</h4>
+                        <p style="font-size: 0.9rem; color: var(--secondary);">Hangars, serres, habitations</p>
+                    </div>
+                    <div style="background: var(--light); padding: 15px; border-radius: 10px;">
+                        <span style="font-size: 2rem;">💧</span>
+                        <h4>Point d'eau</h4>
+                        <p style="font-size: 0.9rem; color: var(--secondary);">Bassins, mares, irrigation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// ==================== FONCTIONS POUR LES ACTIONS ====================
+function viewFigure(id) {
+    window.location.href = "{% url 'vegetables_fruits:figure_detail' 0 %}".replace('0', id);
+}
+
+function editFigure(id) {
+    if (confirm('Voulez-vous modifier cette figure ?')) {
+        window.location.href = "{% url 'vegetables_fruits:edit_figure' 0 %}".replace('0', id);
+    }
+}
+
+function deleteFigure(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette figure ? Cette action est irréversible.')) {
+        document.getElementById('delete-form-' + id).submit();
+    }
+}
+
+// ==================== FONCTIONS MÉTÉO ====================
+
+// Récupérer la météo depuis l'API Django
+async function fetchWeatherForParcelle(lat, lng) {
+    try {
+        const response = await fetch(`/meteo/?lat=${lat}&lon=${lng}`);
+        if (!response.ok) {
+            throw new Error('Erreur météo');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('❌ Erreur chargement météo:', error);
+        return null;
+    }
+}
+
+// Obtenir l'émoji météo à partir des conditions
+function getWeatherEmoji(conditions) {
+    const conditionsLower = conditions ? conditions.toLowerCase() : '';
+    if (conditionsLower.includes('soleil') || conditionsLower.includes('ensoleillé') || conditionsLower.includes('clear')) return '☀️';
+    if (conditionsLower.includes('nuageux') || conditionsLower.includes('clouds')) return '☁️';
+    if (conditionsLower.includes('pluie') || conditionsLower.includes('rain')) return '🌧️';
+    if (conditionsLower.includes('orage') || conditionsLower.includes('thunder')) return '⛈️';
+    if (conditionsLower.includes('neige') || conditionsLower.includes('snow')) return '❄️';
+    if (conditionsLower.includes('brouillard') || conditionsLower.includes('fog')) return '🌫️';
+    return '🌤️';
+}
+
+// Mettre à jour la météo dans une carte
+async function updateWeatherForCard(card) {
+    const coordsElement = card.querySelector('.parcelle-coords');
+    if (!coordsElement) return;
+
+    const lat = parseFloat(coordsElement.dataset.lat);
+    const lng = parseFloat(coordsElement.dataset.lng);
+
+    const container = card.querySelector('.weather-container');
+    if (!container) return;
+
+    // Si pas de coordonnées valides
+    if (!lat || !lng || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+        container.innerHTML = `
+            <div class="weather-unavailable">
+                📍 Pas de coordonnées
+            </div>
+        `;
+        return;
+    }
+
+    try {
+        const weatherData = await fetchWeatherForParcelle(lat, lng);
+
+        if (weatherData && weatherData.properties) {
+            const props = weatherData.properties;
+            const emoji = getWeatherEmoji(props.conditions || '');
+            const temp = props.temp !== undefined && props.temp !== null ? Math.round(props.temp) : '--';
+
+            container.innerHTML = `
+                <div class="weather-display">
+                    <span class="weather-emoji">${emoji}</span>
+                    <span class="weather-temp">${temp}°C</span>
+                    <span class="weather-conditions">${props.conditions || ''}</span>
+                    ${props.humidity ? `<span class="weather-humidity">💧 ${props.humidity}%</span>` : ''}
+                    ${props.wind_speed ? `<span class="weather-wind">💨 ${Math.round(props.wind_speed)} km/h</span>` : ''}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="weather-unavailable">
+                    🌤️ Météo non disponible
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('❌ Erreur météo:', error);
+        container.innerHTML = `
+            <div class="weather-unavailable">
+                🌤️ Météo non disponible
+            </div>
+        `;
+    }
+}
+
+// Initialiser la météo pour toutes les cartes
+function initWeather() {
+    document.querySelectorAll('.figure-card').forEach(card => {
+        updateWeatherForCard(card);
+    });
+}
+
+// ==================== FILTRES ====================
+document.getElementById('type-filter')?.addEventListener('change', function() {
+    console.log('Filtre par type:', this.value);
+});
+
+document.getElementById('sort-filter')?.addEventListener('change', function() {
+    console.log('Tri par:', this.value);
+});
+
+// ==================== INITIALISATION ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser la météo
+    initWeather();
+
+    // Gestion de la culture à planter
+    const culture = localStorage.getItem('culture_a_planter');
+    if (culture) {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success';
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.left = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.padding = '15px 20px';
+        notification.style.borderRadius = '10px';
+        notification.style.background = '#28a745';
+        notification.style.color = 'white';
+        notification.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        notification.innerHTML = `🌱 Pour planter des ${culture}, allez dans "Modifier les cultures" sur votre parcelle.`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+        localStorage.removeItem('culture_a_planter');
+    }
+});
+</script>
+{% endblock %}

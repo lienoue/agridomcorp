@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Consentement parental requis - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">🔒 Consentement parental</li>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body text-center p-5">
+                    
+                    <div style="font-size: 5rem;">🔒</div>
+                    
+                    <h2 class="mt-3" style="color: #2d6a4f;">
+                        Consentement parental requis
+                    </h2>
+                    
+                    <p class="lead mt-3">
+                        Pour les utilisateurs de <strong>moins de 15 ans</strong>, la loi française 
+                        et le RGPD exigent le consentement d'un parent ou tuteur légal.
+                    </p>
+                    
+                    {% if consentement.representant_legal_email %}
+                        <!-- ✅ Email déjà renseigné -->
+                        <div class="alert alert-success mt-4 text-start">
+                            <h6>📧 Email envoyé à vos parents</h6>
+                            <p class="mb-0">
+                                Un email a été envoyé à <strong>{{ consentement.representant_legal_email }}</strong>.
+                                Demandez à vos parents de valider votre inscription.
+                            </p>
+                        </div>
+                    {% else %}
+                        <!-- ❌ Email pas encore renseigné -->
+                        <div class="alert alert-warning mt-4 text-start">
+                            <h6>📧 Saisissez l'email de vos parents</h6>
+                            <p class="mb-0">
+                                Pour continuer, nous avons besoin de l'email d'un parent
+                                ou tuteur légal. Un email de validation lui sera envoyé.
+                            </p>
+                        </div>
+
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label for="parent_email" class="form-label">
+                                    📧 Email du parent / tuteur légal
+                                </label>
+                                <input type="email"
+                                       name="parent_email"
+                                       id="parent_email"
+                                       class="form-control form-control-lg"
+                                       placeholder="exemple@email.com"
+                                       required>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-lg">
+                                📤 Envoyer la demande de consentement
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <div class="alert alert-info mt-4 text-start">
+                        <h6>⏳ Que se passe-t-il maintenant ?</h6>
+                        <ul class="mb-0">
+                            <li>Votre compte est <strong>en attente de validation</strong></li>
+                            <li>Dès que vos parents valident, vous pourrez vous connecter</li>
+                            <li>Vous recevrez un email de confirmation</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'vegetables_fruits:index' %}" class="btn btn-outline-secondary">
+                            🏠 Retour à l'accueil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

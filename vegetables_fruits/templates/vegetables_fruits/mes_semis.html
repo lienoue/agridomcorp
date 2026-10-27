@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Mes semis personnels</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌱 Mes semis personnels
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Toutes les dates de semis et plantations que vous avez enregistrées.</p>
+
+                <div class="mb-3">
+                    <a href="{% url 'vegetables_fruits:calendrier_semis' %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-calendar-alt"></i> Voir le calendrier général
+                    </a>
+                </div>
+
+                {% if semis %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-start" style="width: 25%;">Culture</th>
+                                    <th class="text-center" style="width: 15%;">Type</th>
+                                    <th class="text-center" style="width: 20%;">Date</th>
+                                    <th class="text-start" style="width: 25%;">Parcelle</th>
+                                    <th class="text-center" style="width: 15%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for semis_item in semis %}
+                                <tr>
+                                    <td class="text-start"><strong>{{ semis_item.culture }}</strong></td>
+                                    <td class="text-center">
+                                        {% if semis_item.date_semis %}
+                                            <span class="badge bg-success">🌱 Semis</span>
+                                        {% elif semis_item.date_plantation %}
+                                            <span class="badge bg-info">🌿 Plantation</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if semis_item.date_semis %}
+                                            {{ semis_item.date_semis|date:"d/m/Y" }}
+                                        {% elif semis_item.date_plantation %}
+                                            {{ semis_item.date_plantation|date:"d/m/Y" }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-start">
+                                        {% if semis_item.figure %}
+                                            {{ semis_item.figure.name }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="supprimerSemis({{ semis_item.id }})">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Vous n'avez pas encore enregistré de semis.
+                        <br>
+                        <small>Ajoutez vos semis via le calendrier général.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function supprimerSemis(id) {
+        if (confirm('Voulez-vous vraiment supprimer ce semis ?')) {
+            fetch(`/api/supprimer-semis/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la suppression.');
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

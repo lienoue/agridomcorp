@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🌱 Guide des associations{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-assoc {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 3px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        transition: transform 0.2s;
+    }
+    .badge-assoc:hover {
+        transform: scale(1.02);
+    }
+    .badge-bonne {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .badge-mauvaise {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .fleur-suggestion {
+        display: inline-block;
+        padding: 8px 12px;
+        margin: 5px;
+        background: #fff3cd;
+        color: #856404;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        border: 1px solid #ffeeba;
+    }
+    .region-badge {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 30px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>🌱 Guide des associations</h1>
+            <p class="text-muted">Découvrez quelles cultures associer dans votre jardin</p>
+        </div>
+        <div class="region-badge">
+            📍 {{ pays|title }} - {{ continent|title }}
+        </div>
+    </div>
+
+    <!-- Sélecteur de parcelle -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">📌 Choisir une parcelle</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3" id="parcelleForm">
+                <div class="col-md-8">
+                    <select name="figure_id" class="form-select" id="figureSelect">
+                        <option value="">-- Sélectionnez une parcelle --</option>
+                        {% for f in figures %}
+                        <option value="{{ f.id }}" {% if figure.id == f.id %}selected{% endif %}>
+                            {{ f.name }} ({{ f.crops|length }} cultures)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-secondary w-100">
+                        ← Retour aux parcelles
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if figure %}
+        {% if associations %}
+            {% for item in associations %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">🌿 {{ item.culture }}</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Bonnes associations -->
+                    {% if item.bonnes %}
+                    <div class="mb-3">
+                        <h5 class="text-success">✅ Bonnes associations</h5>
+                        <div>
+                            {% for assoc in item.bonnes %}
+                            <span class="badge-assoc badge-bonne">
+                                {% if assoc.culture1 == item.culture %}
+                                    {{ assoc.culture2 }}
+                                {% else %}
+                                    {{ assoc.culture1 }}
+                                {% endif %}
+                                {% if assoc.benefice %}
+                                <small class="d-block text-muted">{{ assoc.benefice|truncatewords:8 }}</small>
+                                {% endif %}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Mauvaises associations -->
+                    {% if item.mauvaises %}
+                    <div>
+                        <h5 class="text-danger">❌ Mauvaises associations</h5>
+                        <div>
+                            {% for assoc in item.mauvaises %}
+                            <span class="badge-assoc badge-mauvaise">
+                                {% if assoc.culture1 == item.culture %}
+                                    {{ assoc.culture2 }}
+                                {% else %}
+                                    {{ assoc.culture1 }}
+                                {% endif %}
+                                {% if assoc.benefice %}
+                                <small class="d-block text-muted">{{ assoc.benefice|truncatewords:8 }}</small>
+                                {% endif %}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Suggestions de fleurs -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">🌸 Suggestions de fleurs pour votre parcelle</h5>
+                </div>
+                <div class="card-body">
+                    <div>
+                        {% for fleur in suggestions_fleurs %}
+                        <span class="fleur-suggestion">{{ fleur }}</span>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted mt-3 small">
+                        💡 <strong>Astuce :</strong> Les fleurs attirent les pollinisateurs et repoussent les nuisibles.
+                        Plantez-en autour de votre potager pour de meilleures récoltes !
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <p>Aucune culture sur cette parcelle.</p>
+                <a href="{% url 'vegetables_fruits:edit_figure' figure.id %}" class="btn btn-primary">
+                    🌱 Ajouter des cultures
+                </a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>Sélectionnez une parcelle pour voir les recommandations d'associations.</p>
+            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-primary">
+                📍 Voir mes parcelles
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('figureSelect').addEventListener('change', function() {
+    var figureId = this.value;
+    if (figureId) {
+        window.location.href = "{% url 'vegetables_fruits:companion_planting_figure' 0 %}".replace('0', figureId);
+    } else {
+        window.location.href = "{% url 'vegetables_fruits:companion_planting' %}";
+    }
+});
+</script>
+{% endblock %}

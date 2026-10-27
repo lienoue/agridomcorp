@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Guide administrateur - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:documentation' %}">📚 Documentation</a></li>
+<li class="breadcrumb-item active" aria-current="page">Guide administrateur</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .doc-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 50px; }
+    .doc-card h1 { font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; }
+    .doc-card h2 { font-size: 1.3rem; color: #2d6a4f; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    .doc-card h3 { font-size: 1.1rem; color: #2d6a4f; margin-top: 20px; margin-bottom: 10px; }
+    .doc-card p { line-height: 1.8; color: #495057; margin-bottom: 12px; }
+    .doc-card ul { padding-left: 25px; margin-bottom: 15px; }
+    .doc-card ul li { padding: 5px 0; line-height: 1.6; color: #495057; }
+    .doc-card table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .doc-card table th { background: #2d6a4f; color: white; padding: 10px; text-align: left; }
+    .doc-card table td { padding: 10px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+    .doc-card table tr:hover { background: #f8f9fa; }
+    .doc-card .step { background: #f8f9fa; padding: 15px 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2d6a4f; }
+    .doc-card .step p { margin-bottom: 8px; }
+    .doc-meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-print { background: #2d6a4f; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-print:hover { background: #1b4332; transform: translateY(-2px); }
+    .code-block { background: #1e1e1e; color: #d4d4d4; padding: 15px 20px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; margin: 10px 0; white-space: pre; }
+    .info-box { background: #e8f4fd; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    .danger-box { background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+    @media print { .btn-print { display: none; } .navbar { display: none; } .footer { display: none; } .breadcrumb { display: none; } .doc-card { box-shadow: none; padding: 20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="doc-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1>👨‍💻 Guide administrateur</h1>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimer / PDF</button>
+        </div>
+        <p class="doc-meta"><strong>Agriculture 2.0</strong> – Version 2.0 – Septembre 2026</p>
+
+        <h2>📌 Introduction</h2>
+        <p>Ce guide est destiné aux <strong>administrateurs</strong> du site Agriculture 2.0. Il couvre la gestion des utilisateurs, des données et la maintenance du site.</p>
+
+        <h2>🔑 1. Accès admin</h2>
+        <p><strong>URL :</strong> <code>/admin/</code></p>
+        <p><strong>Identifiants :</strong> Créés lors de la première migration ou via la commande <code>createsuperuser</code>.</p>
+
+        <h3>Créer un administrateur</h3>
+        <div class="code-block">
+python manage.py createsuperuser
+        </div>
+
+        <h2>👤 2. Gestion des utilisateurs</h2>
+
+        <h3>Types de profils</h3>
+        <table>
+            <thead>
+                <tr><th>Profil</th><th>Attributs clés</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🌱 Particulier</td><td><code>is_enseignant=False</code>, <code>mode_junior=False</code></td></tr>
+                <tr><td>🏫 Enseignant</td><td><code>is_enseignant=True</code></td></tr>
+                <tr><td>🎓 Élève</td><td><code>mode_junior=True</code> + <code>profil_eleve.classe</code> défini</td></tr>
+                <tr><td>🧒 Junior</td><td><code>mode_junior=True</code> sans classe</td></tr>
+                <tr><td>⚙️ Admin</td><td><code>is_staff=True</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Voir tous les utilisateurs</h3>
+        <ul>
+            <li>Admin → <code>CustomUser</code></li>
+            <li>Rechercher par username, email</li>
+            <li>Modifier : <code>mode_junior</code>, <code>is_enseignant</code>, <code>is_active</code></li>
+            <li>Désactiver : décocher <code>is_active</code></li>
+        </ul>
+
+        <h2>🧒 3. Gestion des utilisateurs mineurs</h2>
+
+        <h3>Règle automatique</h3>
+        <div class="success-box">
+            <strong>Règle :</strong> Tout utilisateur de <strong>moins de 18 ans</strong>
+            a automatiquement <code>mode_junior=True</code>, grâce à un signal
+            <code>post_save</code> qui s'exécute à chaque sauvegarde.
+        </div>
+
+        <h3>Le signal post_save</h3>
+        <p>Le signal suivant s'assure que tous les mineurs ont <code>mode_junior=True</code>,
+        quel que soit le chemin de création (formulaire, admin, script) :</p>
+        <div class="code-block">
+@receiver(post_save, sender=User)
+def activer_mode_junior_pour_mineurs(sender, instance, created, **kwargs):
+    if not instance.birth_date:
+        return
+    today = date.today()
+    age = today.year - instance.birth_date.year - (
+        (today.month, today.day) < (instance.birth_date.month, instance.birth_date.day)
+    )
+    if age < 18:
+        if not instance.mode_junior:
+            User.objects.filter(pk=instance.pk).update(mode_junior=True)
+            instance.mode_junior = True
+        </div>
+
+        <div class="info-box">
+            <strong>💡 À savoir :</strong> Le signal <strong>ne crée PAS</strong> de profil
+            <code>Eleve</code>. Un mineur n'est pas forcément un élève. Le profil
+            <code>Eleve</code> est créé uniquement via <code>inscription_eleve</code>.
+        </div>
+
+        <h3>Corriger les mineurs manuellement</h3>
+        <p>Si un mineur a été créé avant la mise en place du signal :</p>
+        <div class="code-block">
+# Dans le shell Django
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+u = User.objects.get(username='minjok')
+User.objects.filter(pk=u.pk).update(mode_junior=True)
+print(f"✅ mode_junior activé pour {u.username}")
+        </div>
+
+        <h3>Corriger TOUS les mineurs</h3>
+        <div class="code-block">
+from datetime import date
+
+today = date.today()
+corriges = 0
+for u in User.objects.filter(birth_date__isnull=False, mode_junior=False):
+    age = today.year - u.birth_date.year - (
+        (today.month, today.day) < (u.birth_date.month, u.birth_date.day)
+    )
+    if age < 18:
+        User.objects.filter(pk=u.pk).update(mode_junior=True)
+        print(f"✅ {u.username} ({age} ans)")
+        corriges += 1
+
+print(f"\n🎉 {corriges} utilisateur(s) corrigé(s)")
+        </div>
+
+        <h2>💳 4. Gestion des autorisations parentales</h2>
+        <p>Modèle <code>AutorisationAchatMineur</code> : autorisation parentale pour
+        permettre à un mineur de souscrire un abonnement payant.</p>
+
+        <h3>États possibles</h3>
+        <table>
+            <thead>
+                <tr><th>Statut</th><th>Signification</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>⏳ <code>en_attente</code></td><td>Email envoyé au parent, en attente de validation</td></tr>
+                <tr><td>✅ <code>validee</code></td><td>Le parent a donné son accord</td></tr>
+                <tr><td>❌ <code>refusee</code></td><td>Le parent a refusé</td></tr>
+                <tr><td>⌛ <code>expiree</code></td><td>7 jours écoulés sans réponse</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Voir les autorisations</h3>
+        <ul>
+            <li>Admin → <code>Autorisations d'achat (mineurs)</code></li>
+            <li>Filtrer par statut : <code>en_attente</code>, <code>validee</code>, etc.</li>
+            <li>Voir les preuves légales (IP, user-agent, date)</li>
+        </ul>
+
+        <h3>Renvoyer un email de validation</h3>
+        <div class="code-block">
+from vegetables_fruits.models import AutorisationAchatMineur
+
+aut = AutorisationAchatMineur.objects.get(id=123)
+# Réinitialiser le token et la date
+aut.token_validation = ''
+aut.date_expiration = None
+aut.save()
+# Puis cliquer sur "Renvoyer" dans l'admin
+        </div>
+
+        <h2>👨‍🏫 5. Gestion des classes</h2>
+        <ul>
+            <li>Admin → <code>Classe</code></li>
+            <li>Voir les classes par enseignant</li>
+            <li>Voir le code d'invitation de chaque classe</li>
+            <li>Voir le nombre d'élèves par classe</li>
+        </ul>
+
+        <h2>🌱 6. Gestion des cultures</h2>
+
+        <h3>Ajouter une culture (unités)</h3>
+        <ul>
+            <li>Admin → <code>Vegetable</code> ou <code>Fruit</code></li>
+            <li>Cliquer sur "Ajouter"</li>
+            <li>Remplir tous les champs (nom, couleur, saison, prix, conseils...)</li>
+            <li>Sauvegarder</li>
+        </ul>
+
+        <h3>Ajouter des cultures en masse</h3>
+        <div class="code-block">
+python manage.py shell &lt; ajouter_cultures_rares.py
+        </div>
+
+        <h3>Ajouter des fleurs pollinisatrices</h3>
+        <p>Les 78 fleurs sont gérées directement dans <code>views.py</code> (fonction <code>ajouter_fleur</code>).</p>
+
+        <h2>📊 7. Gestion des abonnements</h2>
+        <ul>
+            <li>Admin → <code>PlanTarification</code> : prix, limites, features</li>
+            <li>Admin → <code>Abonnement</code> : abonnements utilisateurs</li>
+            <li>Admin → <code>Facture</code> : factures Stripe</li>
+        </ul>
+
+        <h3>Voir un abonnement</h3>
+        <ul>
+            <li>Utilisateur concerné</li>
+            <li>Plan actif</li>
+            <li>Statut (<code>ACTIF</code>, <code>ESSAI</code>, <code>ANNULE</code>…)</li>
+            <li>Dates (début, fin, prochain paiement)</li>
+            <li>Stripe IDs (customer, subscription)</li>
+        </ul>
+
+        <h2>📸 8. Modération galerie</h2>
+        <p>Les photos des élèves sont validées par les enseignants de leur classe.
+        En tant qu'admin, vous pouvez aussi valider ou supprimer :</p>
+        <ul>
+            <li>Admin → <code>PhotoJardin</code></li>
+            <li>Filtrer par <code>est_validee=False</code></li>
+            <li>Action : cocher <code>est_validee=True</code></li>
+        </ul>
+
+        <h2>🛡️ 9. Modération forum</h2>
+        <p>Deux forums existent :</p>
+        <ul>
+            <li><strong>Forum école</strong> (élèves + enseignants) → modéré par les enseignants</li>
+            <li><strong>Forum adulte</strong> (Basique + Premium) → modéré par les modérateurs</li>
+        </ul>
+
+        <h3>Voir les signalements</h3>
+        <ul>
+            <li>Admin → <code>Signalements forum</code></li>
+            <li>Admin → <code>Signalements forum adulte</code></li>
+            <li>Filtrer par statut : <code>en_attente</code>, <code>traite</code>, <code>refuse</code></li>
+        </ul>
+
+        <h2>🔍 10. Analyse des connexions suspectes</h2>
+        <p>Le middleware <code>ConnexionLogMiddleware</code> enregistre les connexions pour
+        détecter les abus (multi-IP, multi-appareils).</p>
+
+        <h3>Consulter les logs</h3>
+        <ul>
+            <li>URL : <code>/analyse-connexions/</code> (réservé <code>is_staff</code>)</li>
+            <li>Voir les utilisateurs avec plusieurs IP</li>
+            <li>Voir les connexions suspectes</li>
+            <li>Statistiques globales</li>
+        </ul>
+
+        <h2>🛠️ 11. Maintenance</h2>
+
+        <h3>Sauvegarde de la base</h3>
+        <div class="code-block">
+python manage.py dumpdata > sauvegarde.json
+        </div>
+
+        <h3>Restaurer une sauvegarde</h3>
+        <div class="code-block">
+python manage.py loaddata sauvegarde.json
+        </div>
+
+        <h3>Réinitialiser complètement</h3>
+        <div class="danger-box">
+            <strong>⚠️ DANGER :</strong> Cette commande supprime <strong>TOUTES</strong> les données.
+            À utiliser uniquement en développement.
+        </div>
+        <div class="code-block">
+python manage.py flush
+        </div>
+
+        <h3>Migrations</h3>
+        <div class="code-block">
+python manage.py makemigrations
+python manage.py migrate
+        </div>
+
+        <h3>Fichiers statiques</h3>
+        <div class="code-block">
+python manage.py collectstatic --noinput
+        </div>
+
+        <h2>📈 12. Supervision</h2>
+        <ul>
+            <li>🔍 Vérifier les API externes (Mapbox, OpenWeatherMap)</li>
+            <li>💳 Surveiller les erreurs Stripe (webhooks)</li>
+            <li>📧 Surveiller les emails (Brevo / Sendinblue)</li>
+            <li>👥 Voir les utilisateurs actifs</li>
+            <li>📊 Voir les statistiques d'utilisation</li>
+            <li>⚠️ Vérifier les connexions suspectes</li>
+        </ul>
+
+        <h2>📚 13. Documentation</h2>
+        <p>La documentation complète est accessible via :</p>
+        <p><code>/documentation/</code> (lien dans le footer)</p>
+        <p>Elle contient :</p>
+        <ul>
+            <li>Guides (particulier, enseignant, élève, junior, admin)</li>
+            <li>Plans de test (5 profils)</li>
+            <li>Technique (architecture, déploiement)</li>
+            <li>Business (business plan, prévisionnel, vente écoles)</li>
+        </ul>
+
+        <h2>🚀 14. Déploiement (production)</h2>
+        <p>Voir le guide <code>strategie_deploiement.html</code> pour le déploiement complet.</p>
+        <p>Points clés :</p>
+        <ul>
+            <li>Passer <code>DEBUG = False</code></li>
+            <li>Configurer <code>ALLOWED_HOSTS</code></li>
+            <li>Passer à PostgreSQL</li>
+            <li>Configurer WhiteNoise + Nginx</li>
+            <li>Configurer HTTPS</li>
+            <li>Configurer les variables d'environnement (.env)</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>📧 <a href="mailto:contact@agriculture2.0">contact@agriculture2.0</a></p>
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align:center; color:#6c757d; font-size:0.85rem;">&copy; 2026 Agriculture 2.0 – Tous droits réservés</p>
+    </div>
+</div>
+{% endblock %}

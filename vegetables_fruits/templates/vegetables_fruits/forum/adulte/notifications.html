@@ -1,0 +1,76 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}🔔 Notifications - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Vos alertes jardinage 🌿{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+    {% if notifications|length > 0 %}
+        <button id="btn-tout-lu" data-url="{% url 'vegetables_fruits:forum_adulte_notifications_toutes_lues' %}" class="btn-outline-forum">
+            <span>✓✓</span> Tout marquer comme lu
+        </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="background: #fff; border-radius: var(--radius); padding: 24px 28px; border: 1px solid rgba(109,76,42,0.06);">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+        <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+            🔔 Notifications
+            <span style="font-size: 0.8rem; color: #999; font-weight: 400;">
+                ({{ stats.non_lues|default:0 }} non lues)
+            </span>
+        </h3>
+        <span style="font-size: 0.8rem; color: #999;">{{ stats.total|default:0 }} au total</span>
+    </div>
+    
+    {% for notif in notifications %}
+    <div class="notification-item {% if not notif.est_lue %}unread{% endif %}">
+        <div class="notif-icon">
+            {% if notif.type_notification == 'reponse' %}🌱
+            {% elif notif.type_notification == 'mention' %}@
+            {% elif notif.type_notification == 'solution' %}✅
+            {% elif notif.type_notification == 'vote' %}👍
+            {% elif notif.type_notification == 'signalement' %}🏷️
+            {% else %}🔔{% endif %}
+        </div>
+        <div class="notif-content">
+            <div class="notif-text">
+                {{ notif.message }}
+                {% if notif.expediteur %}
+                    <span style="color: var(--vert-jardin);">par {{ notif.expediteur.username }}</span>
+                {% endif %}
+            </div>
+            <div class="notif-date">{{ notif.date_creation|timesince }}</div>
+        </div>
+        <div>
+            {% if not notif.est_lue %}
+                <button class="btn-marquer-lu" data-url="{% url 'vegetables_fruits:forum_adulte_notification_lue' notif.id %}" 
+                        style="background: none; border: none; color: var(--vert-jardin); cursor: pointer; font-size: 0.8rem;">
+                    ✓ Marquer lu
+                </button>
+            {% endif %}
+            <a href="{{ notif.lien }}" class="notif-link">Voir →</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="empty-icon">🔕</div>
+        <div class="empty-title">Aucune notification</div>
+        <p>Vous n'avez pas encore de notifications. Participez au forum !</p>
+        <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-primary-forum" style="margin-top: 12px; display: inline-flex;">
+            <span>🌿</span> Explorer le forum
+        </a>
+    </div>
+    {% endfor %}
+    
+    {% include "vegetables_fruits/forum/adulte/includes/pagination.html" with page_obj=notifications %}
+</div>
+
+{% endblock %}

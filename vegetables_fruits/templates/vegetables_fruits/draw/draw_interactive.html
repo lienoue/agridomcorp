@@ -1,0 +1,1720 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+<!-- Styles pour mobile -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<style>
+    /* Variables */
+    :root {
+        --primary: #28a745;
+        --primary-dark: #218838;
+        --secondary: #6c757d;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #17a2b8;
+        --light: #f8f9fa;
+        --dark: #343a40;
+    }
+
+    /* Layout général */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: #f0f2f5;
+        overflow-x: hidden;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 1.5rem 0;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Conteneur principal */
+    .main-container {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 15px;
+        gap: 15px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Colonne de gauche - Carte */
+    .map-column {
+        flex: 2;
+        min-width: 300px;
+        position: relative;
+    }
+
+    #map-container {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        background: #e9ecef;
+    }
+
+    /* Sélecteur de mode */
+    .mode-selector {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+        background: white;
+        padding: 10px;
+        border-radius: 50px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .mode-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 40px;
+        background: transparent;
+        color: var(--secondary);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .mode-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Colonne de droite - Panneau de contrôle */
+    .control-column {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .control-panel {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    /* Style pour tous les formulaires */
+    .form-section {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 1rem;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+
+    /* ===== TYPE DE TERRAIN ===== */
+    .type-card {
+        background: linear-gradient(135deg, #f0f9f0, #e8f5e9);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        border-left: 8px solid var(--primary);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
+    }
+
+    .type-card h4 {
+        color: var(--primary);
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .type-card h4 span {
+        font-size: 2rem;
+    }
+
+    .type-select {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .required-star {
+        color: var(--danger);
+        font-size: 0.9rem;
+        font-weight: normal;
+        margin-left: 5px;
+    }
+
+    /* ===== ADRESSE POSTALE ===== */
+    .address-card {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        border-left: 6px solid var(--info);
+        position: relative;
+    }
+
+    .address-card h4 {
+        color: var(--info);
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .address-search {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .address-search input {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .address-search button {
+        padding: 12px 20px;
+        background: var(--info);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .address-search button:hover {
+        background: #0b5e7e;
+        transform: translateY(-2px);
+    }
+
+    .address-search button:disabled {
+        background: var(--secondary);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .address-suggestions {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        position: absolute;
+        width: calc(100% - 40px);
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .address-suggestion-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+    }
+
+    .address-suggestion-item:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .address-suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .address-result {
+        background: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        border-left: 3px solid var(--info);
+    }
+
+    .location-btn {
+        background: var(--info);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .location-btn:hover {
+        background: #0b5e7e;
+        transform: translateY(-2px);
+    }
+
+    .location-btn:disabled {
+        background: var(--secondary);
+        cursor: not-allowed;
+    }
+
+    /* Culture section */
+    .culture-card {
+        background: #fff3cd;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        border-left: 6px solid var(--warning);
+        display: block;
+    }
+
+    .culture-card h5 {
+        color: #856404;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Instructions */
+    .instructions-card {
+        background: #e8f5e9;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 25px 0;
+    }
+
+    .instructions-card h5 {
+        color: var(--primary);
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+
+    .instructions-card ul {
+        padding-left: 20px;
+    }
+
+    .instructions-card li {
+        margin-bottom: 8px;
+        color: #2d6a4f;
+    }
+
+    /* Boutons */
+    .btn {
+        padding: 16px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-info {
+        background: var(--info);
+        color: white;
+    }
+
+    .btn-success {
+        background: #218838;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .button-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    /* Indicateur GPS */
+    .gps-indicator {
+        background: var(--light);
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .gps-signal {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--danger);
+        transition: all 0.3s;
+    }
+
+    .gps-signal.active {
+        background: var(--primary);
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Compteur de points */
+    .point-counter {
+        background: linear-gradient(135deg, var(--primary), #20c997);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .point-number {
+        font-size: 3rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    /* Liste des points */
+    .points-list {
+        background: var(--light);
+        border-radius: 10px;
+        padding: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin: 15px 0;
+    }
+
+    .point-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        border-bottom: 1px solid #dee2e6;
+        font-family: monospace;
+    }
+
+    .point-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Aperçu type sélectionné */
+    .type-preview {
+        margin-top: 15px;
+        padding: 12px;
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        border-radius: 8px;
+        display: none;
+        font-weight: 500;
+    }
+
+    /* Marqueurs sur la carte */
+    .address-marker, .gps-marker {
+        transition: transform 0.3s;
+    }
+
+    .address-marker:hover, .gps-marker:hover {
+        transform: scale(1.1);
+    }
+
+    /* Notification */
+    .notification {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--dark);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 50px;
+        z-index: 3000;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    @keyframes slideDown {
+        from { top: -100px; opacity: 0; }
+        to { top: 20px; opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .main-container {
+            flex-direction: column;
+        }
+
+        #map-container {
+            height: 350px;
+        }
+
+        .control-panel {
+            max-height: none;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .address-search {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>🌱 Gestion des parcelles et infrastructures</h1>
+        <p>Dessinez sur la carte ou utilisez le GPS terrain</p>
+    </div>
+</div>
+
+<div class="main-container">
+    <!-- Colonne gauche : Carte -->
+    <div class="map-column">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+
+        <!-- Sélecteur de mode -->
+        <div class="mode-selector">
+            <button class="mode-btn active" id="mode-draw-btn" onclick="switchMode('draw')">
+                <span>✏️</span> Mode Dessin
+            </button>
+            <button class="mode-btn" id="mode-terrain-btn" onclick="switchMode('terrain')">
+                <span>📍</span> Mode Terrain GPS
+            </button>
+        </div>
+    </div>
+
+    <!-- Colonne droite : Panneau de contrôle -->
+    <div class="control-column">
+        <!-- ===== PANEL MODE DESSIN ===== -->
+        <div id="draw-mode-panel" class="control-panel">
+            <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 1.5rem;">✏️ Mode Dessin</h3>
+
+            <!-- ===== FORMULAIRE PRINCIPAL ===== -->
+            <form method="post" id="draw-form" action="{% url 'vegetables_fruits:save_figure' %}">
+                {% csrf_token %}
+
+                <!-- ===== TYPE DE TERRAIN ===== -->
+                <div class="type-card">
+                    <h4>
+                        <span>🌍</span>
+                        TYPE DE TERRAIN <span class="required-star">(obligatoire)</span>
+                    </h4>
+
+                    <select id="type-terrain-draw" name="type_terrain_draw" required class="type-select">
+                        <option value="">-- Sélectionnez le type de terrain --</option>
+                        <option value="parcelle_agricole">🌾 Parcelle agricole</option>
+                        <option value="verger">🍎 Verger</option>
+                        <option value="vigne">🍇 Vigne</option>
+                        <option value="batiment">🏠 Bâtiment / Hangar</option>
+                        <option value="maison">🏡 Maison d'habitation</option>
+                        <option value="serre">♻️ Serre</option>
+                        <option value="point_eau">💧 Point d'eau / Bassin</option>
+                        <option value="foret">🌲 Forêt / Bois</option>
+                        <option value="chemin">🛤️ Chemin / Route</option>
+                        <option value="zone_irrigation">💦 Zone d'irrigation</option>
+                        <option value="zone_paturage">🐄 Zone de pâturage</option>
+                        <option value="friche">🌿 Friche / Jachère</option>
+                        <option value="autre">📌 Autre</option>
+                    </select>
+
+                    <!-- Aperçu du type sélectionné -->
+                    <div id="type-preview-draw" class="type-preview">
+                        ✅ Type sélectionné: <span id="selected-type-text-draw"></span>
+                    </div>
+
+                    <p style="margin-top: 12px; color: #2d6a4f; font-size: 0.9rem;">
+                        <i>💡 Le type détermine la catégorie de votre élément</i>
+                    </p>
+                </div>
+
+                <!-- ===== ADRESSE POSTALE - MODE DESSIN ===== -->
+                <div class="address-card">
+                    <h4>
+                        <span>📍</span>
+                        ADRESSE POSTALE DU TERRAIN
+                    </h4>
+
+                    <div class="address-search" style="position: relative;">
+                        <input type="text" id="address-input" name="adresse" class="form-control"
+                               placeholder="Saisissez une adresse (ex: 15 rue de Rivoli, Paris)"
+                               autocomplete="off">
+                        <button type="button" id="search-address-btn">🔍 Rechercher</button>
+
+                        <!-- Suggestions d'adresses -->
+                        <div id="address-suggestions" class="address-suggestions"></div>
+                    </div>
+
+                    <div id="address-result" class="address-result"></div>
+
+                    <!-- Bouton de géolocalisation -->
+                    <button type="button" id="use-current-location-btn" class="location-btn">
+                        📍 Utiliser ma position actuelle
+                    </button>
+
+                    <!-- Champs cachés pour les coordonnées -->
+                    <input type="hidden" id="address-lat" name="address_lat">
+                    <input type="hidden" id="address-lng" name="address_lng">
+                    <input type="hidden" id="address-formatted" name="address_formatted">
+                </div>
+
+                <!-- Nom de la parcelle -->
+                <div class="form-section">
+                    <label class="form-label">📝 Nom de l'élément <span class="required-star">*</span></label>
+                    <input type="text" class="form-control" name="nom" required
+                           placeholder="Ex: Parcelle Nord, Bâtiment agricole...">
+                </div>
+
+                <!-- Type de culture -->
+                <div id="culture-group-draw" class="culture-card">
+                    <h5>
+                        <span>🌱</span>
+                        Type de culture
+                    </h5>
+                    <select class="form-control" name="culture_draw" style="border-color: #ffc107;">
+                        <option value="">Sélectionnez le type de culture...</option>
+                        <option value="ble">🌾 Blé</option>
+                        <option value="mais">🌽 Maïs</option>
+                        <option value="tournesol">🌻 Tournesol</option>
+                        <option value="colza">🌼 Colza</option>
+                        <option value="orge">🌾 Orge</option>
+                        <option value="avoine">🌾 Avoine</option>
+                        <option value="pomme_de_terre">🥔 Pomme de terre</option>
+                        <option value="betterave">🍠 Betterave</option>
+                        <option value="legumes">🥕 Légumes variés</option>
+                        <option value="prairie">🌿 Prairie</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="form-section">
+                    <label class="form-label">📋 Description (optionnelle)</label>
+                    <textarea class="form-control" name="description_draw" rows="3"
+                              placeholder="Informations complémentaires, remarques, accès..."></textarea>
+                </div>
+
+                <!-- Instructions de dessin - Version conditionnelle selon mode junior -->
+                {% if user.is_authenticated and user.mode_junior %}
+                    <!-- Mode Junior -->
+                    <div class="instructions-card">
+                        <h5>🎨 Comment dessiner ton champ ?</h5>
+                        <ul>
+                            <li>① Clique sur l'outil <strong>forme</strong> (🔷) à gauche</li>
+                            <li>② Clique sur la carte pour faire les coins de ton champ</li>
+                            <li>③ <strong>Double-clique</strong> pour terminer</li>
+                            <li>④ Choisis ce que tu veux planter 🌱</li>
+                            <li>⑤ Clique sur "Enregistrer" pour sauvegarder</li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <!-- Mode normal -->
+                    <div class="instructions-card">
+                        <h5>📐 Instructions de dessin</h5>
+                        <ul>
+                            <li>① Cliquez sur l'icône <strong>polygone</strong> (🔷) à gauche de la carte</li>
+                            <li>② Cliquez sur la carte pour placer les points de votre parcelle</li>
+                            <li>③ <strong>Double-cliquez</strong> pour terminer le dessin</li>
+                            <li>④ Vérifiez que le type de terrain est sélectionné</li>
+                            <li>⑤ Cliquez sur "Enregistrer" pour sauvegarder</li>
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <!-- Champ caché pour les données GeoJSON -->
+                <input type="hidden" id="draw-geojson" name="geojson_data">
+
+                <!-- Bouton d'enregistrement -->
+                <button type="submit" id="draw-submit" class="btn btn-primary">
+                    💾 Enregistrer le dessin
+                </button>
+            </form>
+        </div>
+
+        <!-- ===== PANEL MODE TERRAIN ===== -->
+        <div id="terrain-mode-panel" class="control-panel" style="display: none;">
+            <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 1.5rem;">📍 Mode Terrain GPS</h3>
+
+            <!-- Indicateur GPS -->
+            <div class="gps-indicator">
+                <div class="gps-signal" id="gpsSignal"></div>
+                <div>
+                    <div id="gpsStatus">Recherche du signal GPS...</div>
+                    <div id="gpsCoords" style="font-family: monospace; font-weight: bold;">-</div>
+                </div>
+            </div>
+
+            <!-- ===== FORMULAIRE MODE TERRAIN ===== -->
+            <form method="post" id="terrain-form" action="{% url 'vegetables_fruits:save_figure' %}">
+                {% csrf_token %}
+                <input type="hidden" name="mode" value="terrain">
+                <!-- ✅ Champ corrigé : figure_shape au lieu de figure_sahpe -->
+                <input type="hidden" name="figure_shape" id="terrain-figure-shape" value="polygon">
+                <input type="hidden" name="circle_radius" id="terrain-circle-radius" value="100">
+
+                <!-- ===== TYPE DE TERRAIN ===== -->
+                <div class="type-card">
+                    <h4>
+                        <span>🌍</span>
+                        TYPE DE TERRAIN <span class="required-star">(obligatoire)</span>
+                    </h4>
+
+                    <select id="type-terrain" name="type_terrain" required class="type-select">
+                        <option value="">-- Sélectionnez le type de terrain --</option>
+                        <option value="parcelle_agricole">🌾 Parcelle agricole</option>
+                        <option value="verger">🍎 Verger</option>
+                        <option value="vigne">🍇 Vigne</option>
+                        <option value="batiment">🏠 Bâtiment / Hangar</option>
+                        <option value="maison">🏡 Maison d'habitation</option>
+                        <option value="serre">♻️ Serre</option>
+                        <option value="point_eau">💧 Point d'eau / Bassin</option>
+                        <option value="foret">🌲 Forêt / Bois</option>
+                        <option value="chemin">🛤️ Chemin / Route</option>
+                        <option value="zone_irrigation">💦 Zone d'irrigation</option>
+                        <option value="zone_paturage">🐄 Zone de pâturage</option>
+                        <option value="friche">🌿 Friche / Jachère</option>
+                        <option value="autre">📌 Autre</option>
+                    </select>
+
+                    <!-- Aperçu du type sélectionné -->
+                    <div id="type-preview-terrain" class="type-preview">
+                        ✅ Type sélectionné: <span id="selected-type-text-terrain"></span>
+                    </div>
+                </div>
+
+                <!-- ===== ADRESSE POSTALE - MODE TERRAIN ===== -->
+                <div class="address-card">
+                    <h4>
+                        <span>📍</span>
+                        ADRESSE POSTALE DU TERRAIN
+                    </h4>
+
+                    <div class="address-search" style="position: relative;">
+                        <input type="text" id="address-input-terrain" name="adresse_terrain" class="form-control"
+                               placeholder="Saisissez une adresse" autocomplete="off">
+                        <button type="button" id="search-address-terrain-btn">🔍 Rechercher</button>
+
+                        <div id="address-suggestions-terrain" class="address-suggestions"></div>
+                    </div>
+
+                    <div id="address-result-terrain" class="address-result"></div>
+
+                    <!-- Bouton de géolocalisation pour mode terrain -->
+                    <button type="button" id="use-current-location-terrain-btn" class="location-btn">
+                        📍 Utiliser ma position actuelle
+                    </button>
+
+                    <input type="hidden" id="address-lat-terrain" name="address_lat_terrain">
+                    <input type="hidden" id="address-lng-terrain" name="address_lng_terrain">
+                    <input type="hidden" id="address-formatted-terrain" name="address_formatted_terrain">
+                </div>
+
+                <!-- Nom de l'élément -->
+                <div class="form-section">
+                    <label class="form-label">📝 Nom de l'élément</label>
+                    <input type="text" class="form-control" name="nom_terrain"
+                           id="terrain-nom" placeholder="Ex: Parcelle Sud">
+                </div>
+
+                <!-- Type de culture -->
+                <div id="culture-group" class="culture-card">
+                    <h5>
+                        <span>🌱</span>
+                        Type de culture
+                    </h5>
+                    <select class="form-control" name="culture" id="terrain-culture" style="border-color: #ffc107;">
+                        <option value="">Sélectionnez le type de culture...</option>
+                        <option value="ble">🌾 Blé</option>
+                        <option value="mais">🌽 Maïs</option>
+                        <option value="tournesol">🌻 Tournesol</option>
+                        <option value="colza">🌼 Colza</option>
+                        <option value="orge">🌾 Orge</option>
+                        <option value="pomme_de_terre">🥔 Pomme de terre</option>
+                        <option value="legumes">🥕 Légumes variés</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="form-section">
+                    <label class="form-label">📋 Description</label>
+                    <textarea class="form-control" name="description_terrain" rows="2"
+                              id="terrain-description" placeholder="Informations complémentaires..."></textarea>
+                </div>
+
+                <!-- Compteur de points -->
+                <div class="point-counter">
+                    <div class="point-number" id="pointCount">0</div>
+                    <div>Points enregistrés</div>
+                </div>
+
+                <!-- Liste des points -->
+                <div class="points-list" id="terrainPointsList">
+                    <p class="text-muted text-center">Aucun point enregistré</p>
+                </div>
+
+                <!-- Champ caché pour les coordonnées -->
+                <input type="hidden" id="terrain-coords" name="terrain_coords">
+
+                <!-- Boutons d'action -->
+                <div class="button-grid">
+                    <button type="button" class="btn btn-primary" onclick="validateTerrainPoint()">
+                        ✅ Valider ce point
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="finishTerrainFigure()" id="finishTerrainBtn" disabled>
+                        🏁 Terminer
+                    </button>
+                </div>
+
+                <div class="button-grid-3">
+                    <button type="button" class="btn btn-outline" onclick="undoLastTerrainPoint()" id="undoPointBtn" disabled>
+                        ↩️ Annuler
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="refreshGPS()">
+                        🔄 Rafraîchir GPS
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="resetTerrain()">
+                        🔄 Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<script>
+// ==================== ÉTAT GLOBAL ====================
+let appState = {
+    currentMode: 'draw',
+    map: null,
+    drawControl: null,
+    drawnItems: null,
+    terrainPoints: [],
+    watchId: null,
+    currentPosition: null,
+    terrainMarkers: [],
+    terrainLayer: null,
+    minPoints: 3,
+    lastMarker: null,
+    lastCircle: null
+};
+
+// ==================== INITIALISATION ====================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Application démarrée');
+    initMap();
+    initGPS();
+    setupTypeListeners();
+    setupAddressSearch();
+
+    // Gestionnaire de formulaire
+    const drawForm = document.getElementById('draw-form');
+    if (drawForm) {
+        drawForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('📝 Soumission du formulaire...');
+
+            const typeSelect = document.getElementById('type-terrain-draw');
+            if (!typeSelect || !typeSelect.value) {
+                alert('❌ Veuillez sélectionner un type de terrain');
+                return;
+            }
+
+            if (!appState.drawnItems || appState.drawnItems.getLayers().length === 0) {
+                alert('❌ Veuillez dessiner une figure');
+                return;
+            }
+
+            const geojson = appState.drawnItems.toGeoJSON();
+            document.getElementById('draw-geojson').value = JSON.stringify(geojson);
+            console.log('✅ GeoJSON généré');
+
+            this.submit();
+        });
+    }
+});
+
+// ==================== INIT MAP ====================
+function initMap() {
+    appState.map = L.map('map').setView([46.603354, 1.888334], 6);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3ih6_1_4b54795fabf7d713823323fc&language=fr', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 20
+    }).addTo(appState.map);
+
+    appState.drawnItems = new L.FeatureGroup();
+    appState.map.addLayer(appState.drawnItems);
+
+    appState.drawControl = new L.Control.Draw({
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                showArea: true,
+                shapeOptions: { color: '#28a745' }
+            },
+            rectangle: { shapeOptions: { color: '#28a745' } },
+            circle: { shapeOptions: { color: '#28a745' } },
+            marker: true,
+            polyline: { shapeOptions: { color: '#28a745' } }
+        },
+        edit: { featureGroup: appState.drawnItems }
+    });
+    appState.map.addControl(appState.drawControl);
+
+    // ===== ÉCOUTEUR DE CRÉATION =====
+    appState.map.on(L.Draw.Event.CREATED, function(e) {
+        appState.drawnItems.clearLayers();
+        appState.drawnItems.addLayer(e.layer);
+        updateDrawForm(e.layer);
+
+        console.log('Champ draw-geojson:', document.getElementById('draw-geojson').value);
+
+        // 🔥 Mise à jour de la forme pour le mode terrain
+        var type = e.layerType;
+        var shapeInput = document.getElementById('terrain-figure-shape');
+        var radiusInput = document.getElementById('terrain-circle-radius');
+
+        if (shapeInput) {
+            if (type === 'circle') {
+                shapeInput.value = 'circle';
+                if (radiusInput) radiusInput.value = Math.round(e.layer.getRadius());
+                console.log('⚪ Cercle créé, rayon:', e.layer.getRadius());
+            } else if (type === 'marker') {
+                shapeInput.value = 'point';
+                console.log('📍 Point créé');
+            } else {
+                shapeInput.value = 'polygon';
+                console.log('🔷 Polygone créé');
+            }
+        }
+    });
+
+    // ===== ÉCOUTEUR DE MODIFICATION =====
+    appState.map.on(L.Draw.Event.EDITED, function(e) {
+        var layers = e.layers;
+        layers.eachLayer(function(layer) {
+            if (layer instanceof L.Circle) {
+                var radiusInput = document.getElementById('terrain-circle-radius');
+                if (radiusInput) radiusInput.value = Math.round(layer.getRadius());
+                console.log('✏️ Cercle modifié, nouveau rayon:', layer.getRadius());
+            }
+        });
+    });
+
+    appState.map.zoomControl.setPosition('bottomright');
+}
+
+// ==================== GESTION DES TYPES ====================
+function setupTypeListeners() {
+    const typeSelectDraw = document.getElementById('type-terrain-draw');
+    if (typeSelectDraw) {
+        typeSelectDraw.addEventListener('change', function() {
+            const type = this.value;
+            const cultureGroup = document.getElementById('culture-group-draw');
+            const preview = document.getElementById('type-preview-draw');
+            const previewText = document.getElementById('selected-type-text-draw');
+
+            cultureGroup.style.display = 'block';
+
+            if (type) {
+                preview.style.display = 'block';
+                previewText.textContent = this.options[this.selectedIndex].text;
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    }
+
+    const typeSelectTerrain = document.getElementById('type-terrain');
+    if (typeSelectTerrain) {
+        typeSelectTerrain.addEventListener('change', function() {
+            const type = this.value;
+            const cultureGroup = document.getElementById('culture-group');
+            const preview = document.getElementById('type-preview-terrain');
+            const previewText = document.getElementById('selected-type-text-terrain');
+
+            cultureGroup.style.display = 'block';
+
+            if (type) {
+                preview.style.display = 'block';
+                previewText.textContent = this.options[this.selectedIndex].text;
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    }
+}
+
+// ==================== RECHERCHE D'ADRESSE ====================
+function setupAddressSearch() {
+    console.log('🔍 Initialisation de la recherche d\'adresse');
+
+    // Éléments du mode DESSIN
+    const drawSearchBtn = document.getElementById('search-address-btn');
+    const drawAddressInput = document.getElementById('address-input');
+    const drawSuggestionsDiv = document.getElementById('address-suggestions');
+    const drawAddressResult = document.getElementById('address-result');
+    const drawAddressLat = document.getElementById('address-lat');
+    const drawAddressLng = document.getElementById('address-lng');
+    const drawAddressFormatted = document.getElementById('address-formatted');
+    const drawUseLocationBtn = document.getElementById('use-current-location-btn');
+
+    // Éléments du mode TERRAIN
+    const terrainSearchBtn = document.getElementById('search-address-terrain-btn');
+    const terrainAddressInput = document.getElementById('address-input-terrain');
+    const terrainSuggestionsDiv = document.getElementById('address-suggestions-terrain');
+    const terrainAddressResult = document.getElementById('address-result-terrain');
+    const terrainAddressLat = document.getElementById('address-lat-terrain');
+    const terrainAddressLng = document.getElementById('address-lng-terrain');
+    const terrainAddressFormatted = document.getElementById('address-formatted-terrain');
+    const terrainUseLocationBtn = document.getElementById('use-current-location-terrain-btn');
+
+    // Fonction pour centrer la carte sur une adresse
+    function centerMapOnAddress(lat, lng, displayName, isGps = false) {
+        if (!appState || !appState.map) return;
+
+        if (appState.lastMarker) appState.map.removeLayer(appState.lastMarker);
+        if (appState.lastCircle) appState.map.removeLayer(appState.lastCircle);
+
+        const latNum = parseFloat(lat);
+        const lngNum = parseFloat(lng);
+
+        appState.map.setView([latNum, lngNum], 17);
+
+        const markerColor = isGps ? 'var(--info)' : 'var(--primary)';
+
+        appState.lastMarker = L.marker([latNum, lngNum], {
+            icon: L.divIcon({
+                html: `<div style="background: ${markerColor}; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">📍</div>`,
+                className: 'address-marker',
+                iconSize: [40, 40]
+            })
+        }).addTo(appState.map);
+
+        appState.lastCircle = L.circle([latNum, lngNum], {
+            color: markerColor,
+            fillColor: markerColor,
+            fillOpacity: 0.1,
+            radius: 50,
+            weight: 2
+        }).addTo(appState.map);
+
+        appState.lastMarker.bindPopup(`
+            <div style="text-align: center;">
+                <strong>${isGps ? '📍 Votre position' : '📍 Adresse sélectionnée'}</strong><br>
+                ${displayName}<br>
+                <small>Lat: ${latNum.toFixed(6)}<br>Lng: ${lngNum.toFixed(6)}</small>
+            </div>
+        `).openPopup();
+    }
+
+    // Fonction pour gérer la géolocalisation
+    function handleGeolocation(mode) {
+        console.log(`📍 Géolocalisation - mode ${mode}`);
+
+        if (!navigator.geolocation) {
+            alert('Géolocalisation non supportée');
+            return;
+        }
+
+        const btn = document.getElementById(mode === 'draw' ? 'use-current-location-btn' : 'use-current-location-terrain-btn');
+        if (btn) {
+            btn.innerHTML = '⏳...';
+            btn.disabled = true;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // ✅ Remplir les champs cachés avec les coordonnées
+                            if (mode === 'draw') {
+                                const latInput = document.getElementById('address-lat');
+                                const lngInput = document.getElementById('address-lng');
+                                if (latInput) latInput.value = lat;
+                                if (lngInput) lngInput.value = lng;
+                                console.log(`✅ Coordonnées enregistrées: lat=${lat}, lng=${lng}`);
+                            } else {
+                                const latInput = document.getElementById('address-lat-terrain');
+                                const lngInput = document.getElementById('address-lng-terrain');
+                                if (latInput) latInput.value = lat;
+                                if (lngInput) lngInput.value = lng;
+                                console.log(`✅ Coordonnées enregistrées: lat=${lat}, lng=${lng}`);
+                            }
+
+                const url = `/api/geocode/?mode=reverse&lat=${lat}&lng=${lng}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const place = data.features && data.features[0];
+                        const adresse = place ? place.place_name : 'Position actuelle';
+
+                        if (mode === 'draw') {
+                            if (drawAddressInput) drawAddressInput.value = adresse;
+                            if (drawAddressResult) drawAddressResult.textContent = `📍 ${adresse}`;
+                            if (drawAddressLat) drawAddressLat.value = lat;
+                            if (drawAddressLng) drawAddressLng.value = lng;
+                            if (drawAddressFormatted) drawAddressFormatted.value = adresse;
+                            if (drawSuggestionsDiv) drawSuggestionsDiv.style.display = 'none';
+                        } else {
+                            if (terrainAddressInput) terrainAddressInput.value = adresse;
+                            if (terrainAddressResult) terrainAddressResult.textContent = `📍 ${adresse}`;
+                            if (terrainAddressLat) terrainAddressLat.value = lat;
+                            if (terrainAddressLng) terrainAddressLng.value = lng;
+                            if (terrainAddressFormatted) terrainAddressFormatted.value = adresse;
+                            if (terrainSuggestionsDiv) terrainSuggestionsDiv.style.display = 'none';
+                        }
+
+                        centerMapOnAddress(lat, lng, adresse, true);
+
+                        if (btn) {
+                            btn.innerHTML = '📍 Utiliser ma position actuelle';
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur de géocodage:', error);
+                        if (btn) {
+                            btn.innerHTML = '📍 Utiliser ma position actuelle';
+                            btn.disabled = false;
+                        }
+                    });
+            },
+            function(error) {
+                console.error('Erreur GPS:', error);
+                alert('Erreur de géolocalisation');
+                if (btn) {
+                    btn.innerHTML = '📍 Utiliser ma position actuelle';
+                    btn.disabled = false;
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    }
+
+    // Fonction pour gérer la recherche d'adresse
+    function setupSearchMode(searchBtn, addressInput, suggestionsDiv, addressResult, addressLat, addressLng, addressFormatted, mode) {
+        if (!searchBtn || !addressInput) return;
+
+        searchBtn.addEventListener('click', function() {
+            const query = addressInput.value.trim();
+
+            if (query.length < 3) {
+                alert('Veuillez saisir au moins 3 caractères');
+                return;
+            }
+
+            searchBtn.innerHTML = '⏳...';
+            searchBtn.disabled = true;
+
+            const url = `/api/geocode/?q=${encodeURIComponent(query)}&mode=search`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    searchBtn.innerHTML = '🔍 Rechercher';
+                    searchBtn.disabled = false;
+
+                    if (suggestionsDiv) suggestionsDiv.innerHTML = '';
+
+                    const places = data.features || [];
+
+                    if (places.length > 0) {
+                        if (places.length === 1) {
+                            const place = places[0];
+
+                            addressInput.value = place.place_name;
+                            if (addressResult) addressResult.textContent = '📍 ' + place.place_name;
+                            if (addressLat) addressLat.value = place.center[1];
+                            if (addressLng) addressLng.value = place.center[0];
+                            if (addressFormatted) addressFormatted.value = place.place_name;
+
+                            if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+
+                            centerMapOnAddress(place.center[1], place.center[0], place.place_name, false);
+
+                        } else {
+                            if (suggestionsDiv) {
+                                suggestionsDiv.style.display = 'block';
+
+                                places.forEach(function(place) {
+                                    const item = document.createElement('div');
+                                    item.className = 'address-suggestion-item';
+                                    item.textContent = place.place_name;
+
+                                    (function(p) {
+                                        item.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+
+                                            addressInput.value = p.place_name;
+                                            if (addressResult) addressResult.textContent = '📍 ' + p.place_name;
+                                            if (addressLat) addressLat.value = p.center[1];
+                                            if (addressLng) addressLng.value = p.center[0];
+                                            if (addressFormatted) addressFormatted.value = p.place_name;
+
+                                            if (suggestionsDiv) {
+                                                suggestionsDiv.innerHTML = '';
+                                                suggestionsDiv.style.display = 'none';
+                                            }
+
+                                            centerMapOnAddress(p.center[1], p.center[0], p.place_name, false);
+                                        });
+                                    })(place);
+
+                                    suggestionsDiv.appendChild(item);
+                                });
+                            }
+                        }
+                    } else {
+                        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                        alert('Aucune adresse trouvée');
+                    }
+                })
+
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur de recherche');
+                    searchBtn.innerHTML = '🔍 Rechercher';
+                    searchBtn.disabled = false;
+                });
+        });
+    }
+
+    // Initialiser la recherche pour le mode DESSIN
+    setupSearchMode(
+        drawSearchBtn, drawAddressInput, drawSuggestionsDiv,
+        drawAddressResult, drawAddressLat, drawAddressLng, drawAddressFormatted,
+        'draw'
+    );
+
+    // Initialiser la recherche pour le mode TERRAIN
+    setupSearchMode(
+        terrainSearchBtn, terrainAddressInput, terrainSuggestionsDiv,
+        terrainAddressResult, terrainAddressLat, terrainAddressLng, terrainAddressFormatted,
+        'terrain'
+    );
+
+    // Gestionnaires de géolocalisation
+    if (drawUseLocationBtn) {
+        drawUseLocationBtn.addEventListener('click', function() {
+            handleGeolocation('draw');
+        });
+    }
+
+    if (terrainUseLocationBtn) {
+        terrainUseLocationBtn.addEventListener('click', function() {
+            handleGeolocation('terrain');
+        });
+    }
+
+    // Cacher les suggestions au clic ailleurs
+    document.addEventListener('click', function(e) {
+        if (drawSuggestionsDiv && !drawSuggestionsDiv.contains(e.target) &&
+            e.target !== drawAddressInput && e.target !== drawSearchBtn) {
+            drawSuggestionsDiv.style.display = 'none';
+        }
+        if (terrainSuggestionsDiv && !terrainSuggestionsDiv.contains(e.target) &&
+            e.target !== terrainAddressInput && e.target !== terrainSearchBtn) {
+            terrainSuggestionsDiv.style.display = 'none';
+        }
+    });
+}
+
+// ==================== GPS ====================
+function initGPS() {
+    if (!navigator.geolocation) {
+        updateGPSStatus('❌ GPS non supporté', false);
+        return;
+    }
+
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+    };
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            updateGPSStatus('✅ Signal GPS actif', true);
+            updateGPSCoords(position);
+        },
+        error => handleGPSError(error),
+        options
+    );
+
+    appState.watchId = navigator.geolocation.watchPosition(
+        position => {
+            updateGPSStatus('📍 Position mise à jour', true);
+            updateGPSCoords(position);
+        },
+        error => handleGPSError(error),
+        options
+    );
+}
+
+function updateGPSCoords(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const accuracy = position.coords.accuracy;
+
+    appState.currentPosition = { lat, lng, accuracy };
+
+    document.getElementById('gpsCoords').innerHTML =
+        `${lat.toFixed(6)}°, ${lng.toFixed(6)}° ±${accuracy.toFixed(0)}m`;
+
+    updatePositionMarker(lat, lng);
+}
+
+function updatePositionMarker(lat, lng) {
+    if (appState.positionMarker) {
+        appState.positionMarker.setLatLng([lat, lng]);
+    } else {
+        appState.positionMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                html: '📍',
+                className: 'position-marker',
+                iconSize: [30, 30]
+            })
+        }).addTo(appState.map);
+    }
+}
+
+function updateGPSStatus(message, active) {
+    document.getElementById('gpsStatus').innerHTML = message;
+    const signal = document.getElementById('gpsSignal');
+    signal.classList.toggle('active', active);
+}
+
+function handleGPSError(error) {
+    let message = 'Erreur GPS';
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = '❌ Permission refusée';
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = '📡 Signal indisponible';
+            break;
+        case error.TIMEOUT:
+            message = '⏱️ Délai dépassé';
+            break;
+    }
+    updateGPSStatus(message, false);
+    showNotification(message, 'error');
+}
+
+// ==================== MODE TERRAIN ====================
+function validateTerrainPoint() {
+    if (!appState.currentPosition) {
+        showNotification('❌ Position GPS non disponible', 'error');
+        return;
+    }
+
+    appState.terrainPoints.push(appState.currentPosition);
+    updateTerrainDisplay();
+    addPointToMap(appState.currentPosition, appState.terrainPoints.length);
+
+    if (appState.terrainPoints.length >= 2) {
+        drawTerrainFigure();
+    }
+    if (appState.terrainPoints.length >= appState.minPoints) {
+        document.getElementById('finishTerrainBtn').disabled = false;
+    }
+    document.getElementById('undoPointBtn').disabled = false;
+
+    if (navigator.vibrate) navigator.vibrate(100);
+    showNotification(`✅ Point ${appState.terrainPoints.length} enregistré`, 'success');
+}
+
+function addPointToMap(point, index) {
+    const marker = L.marker([point.lat, point.lng], {
+        icon: L.divIcon({
+            html: `<div style="background:#28a745; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">${index}</div>`
+        })
+    }).addTo(appState.map);
+
+    appState.terrainMarkers.push(marker);
+}
+
+function drawTerrainFigure() {
+    if (appState.terrainLayer) {
+        appState.map.removeLayer(appState.terrainLayer);
+    }
+
+    const latlngs = appState.terrainPoints.map(p => [p.lat, p.lng]);
+    appState.terrainLayer = L.polyline(latlngs, {
+        color: '#28a745',
+        weight: 4,
+        opacity: 0.8
+    }).addTo(appState.map);
+
+    if (latlngs.length > 0) {
+        appState.map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50] });
+    }
+}
+
+function updateTerrainDisplay() {
+    document.getElementById('pointCount').textContent = appState.terrainPoints.length;
+
+    const listContainer = document.getElementById('terrainPointsList');
+
+    if (appState.terrainPoints.length === 0) {
+        listContainer.innerHTML = '<p class="text-muted text-center">Aucun point enregistré</p>';
+        return;
+    }
+
+    let html = '';
+    appState.terrainPoints.forEach((point, index) => {
+        html += `
+            <div class="point-item">
+                <span><strong>${index + 1}</strong></span>
+                <span>${point.lat.toFixed(6)}°, ${point.lng.toFixed(6)}°</span>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+
+    document.getElementById('terrain-coords').value = JSON.stringify(appState.terrainPoints);
+}
+
+function undoLastTerrainPoint() {
+    if (appState.terrainPoints.length === 0) return;
+
+    appState.terrainPoints.pop();
+
+    const lastMarker = appState.terrainMarkers.pop();
+    if (lastMarker) appState.map.removeLayer(lastMarker);
+
+    if (appState.terrainPoints.length >= 2) {
+        drawTerrainFigure();
+    } else if (appState.terrainLayer) {
+        appState.map.removeLayer(appState.terrainLayer);
+        appState.terrainLayer = null;
+    }
+
+    updateTerrainDisplay();
+
+    if (appState.terrainPoints.length < appState.minPoints) {
+        document.getElementById('finishTerrainBtn').disabled = true;
+    }
+    if (appState.terrainPoints.length === 0) {
+        document.getElementById('undoPointBtn').disabled = true;
+    }
+
+    showNotification('↩️ Dernier point annulé', 'info');
+}
+
+function sendDataToServer(data) {
+    fetch('/save-terrain-figure/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showNotification('✅ Parcelle enregistrée !', 'success');
+            setTimeout(() => {
+                window.location.href = '/view/';
+            }, 1500);
+        } else {
+            showNotification('❌ Erreur: ' + result.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('❌ Erreur réseau', 'error');
+    });
+}
+
+// Fonction utilitaire pour récupérer le cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function finishTerrainFigure() {
+    const typeSelect = document.getElementById('type-terrain');
+    if (!typeSelect.value) {
+        showNotification('❌ Veuillez sélectionner un type de terrain', 'error');
+        return;
+    }
+
+    if (appState.terrainPoints.length < appState.minPoints) {
+        showNotification(`❌ Minimum ${appState.minPoints} points requis`, 'error');
+        return;
+    }
+
+    const area = calculateArea(appState.terrainPoints);
+
+    // 🔥 Récupération des informations de forme
+    var shapeInput = document.getElementById('terrain-figure-shape');
+    var radiusInput = document.getElementById('terrain-circle-radius');
+
+    const data = {
+        nom: document.getElementById('terrain-nom').value || 'Sans nom',
+        type: typeSelect.value,
+        type_text: typeSelect.options[typeSelect.selectedIndex].text,
+        culture: document.getElementById('terrain-culture').value,
+        description: document.getElementById('terrain-description').value,
+        points: appState.terrainPoints,
+        surface_hectares: (area / 10000).toFixed(2),
+        // ✅ Ajout des informations de forme
+        figure_shape: shapeInput ? shapeInput.value : 'polygon',
+        circle_radius: radiusInput ? radiusInput.value : 100
+    };
+
+    console.log('📤 Données à enregistrer:', data);
+    showNotification('✅ Figure terminée!', 'success');
+
+    // Ici, tu peux envoyer les données au serveur
+    sendDataToServer(data);
+}
+
+function resetTerrain() {
+    appState.terrainPoints = [];
+
+    appState.terrainMarkers.forEach(m => appState.map.removeLayer(m));
+    appState.terrainMarkers = [];
+
+    if (appState.terrainLayer) {
+        appState.map.removeLayer(appState.terrainLayer);
+        appState.terrainLayer = null;
+    }
+
+    updateTerrainDisplay();
+
+    document.getElementById('finishTerrainBtn').disabled = true;
+    document.getElementById('undoPointBtn').disabled = true;
+
+    showNotification('🔄 Réinitialisé', 'info');
+}
+
+function refreshGPS() {
+    showNotification('🔄 Rafraîchissement GPS...', 'info');
+    navigator.geolocation.getCurrentPosition(
+        position => updateGPSCoords(position),
+        error => handleGPSError(error),
+        { enableHighAccuracy: true }
+    );
+}
+
+// ==================== MODE DESSIN ====================
+function updateDrawForm(layer) {
+    var geojson = layer.toGeoJSON();
+
+    // 🔥 Si c'est un cercle, ajoute le radius dans properties
+    if (layer instanceof L.Circle) {
+        // S'assurer que properties existe
+        if (!geojson.properties) {
+            geojson.properties = {};
+        }
+        // Ajouter le radius
+        geojson.properties.radius = layer.getRadius();
+        console.log('⚪ Cercle avec rayon:', layer.getRadius(), 'm');
+
+        if (geojson.type == 'Feature') {
+            geojson.properties._force_radius = true;
+        }
+
+        console.log(' Radius forcé:', layer.getRadius());
+        console.log(' GeoJSON final:', JSON.stringify(geojson));
+
+    }
+
+    document.getElementById('draw-geojson').value = JSON.stringify(geojson);
+
+    if (layer instanceof L.Polygon) {
+        try {
+            const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+            showNotification(`📐 Surface: ${(area/10000).toFixed(2)} hectares`, 'info');
+        } catch(e) {
+            console.log('Surface non calculable');
+        }
+    }
+}
+// ==================== UTILS ====================
+function switchMode(mode) {
+    appState.currentMode = mode;
+
+    document.getElementById('draw-mode-panel').style.display = mode === 'draw' ? 'block' : 'none';
+    document.getElementById('terrain-mode-panel').style.display = mode === 'terrain' ? 'block' : 'none';
+
+    document.getElementById('mode-draw-btn').classList.toggle('active', mode === 'draw');
+    document.getElementById('mode-terrain-btn').classList.toggle('active', mode === 'terrain');
+
+    // 🔥 Réinitialisation pour le mode terrain
+    if (mode === 'terrain') {
+        var shapeInput = document.getElementById('terrain-figure-shape');
+        var radiusInput = document.getElementById('terrain-circle-radius');
+        if (shapeInput) shapeInput.value = 'polygon';
+        if (radiusInput) radiusInput.value = '100';
+    }
+
+    if (mode === 'draw') {
+        appState.map.addControl(appState.drawControl);
+    } else {
+        appState.map.removeControl(appState.drawControl);
+    }
+}
+
+function calculateArea(points) {
+    if (points.length < 3) return 0;
+
+    let area = 0;
+    const n = points.length;
+
+    for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        area += points[i].lat * points[j].lng;
+        area -= points[j].lat * points[i].lng;
+    }
+
+    area = Math.abs(area / 2) * 111319.9 * 111319.9;
+    return area;
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+
+    const colors = {
+        success: '#28a745',
+        error: '#dc3545',
+        warning: '#ffc107',
+        info: '#17a2b8'
+    };
+
+    notification.style.background = colors[type] || '#333';
+    notification.style.color = type === 'warning' ? '#333' : 'white';
+    notification.innerHTML = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 3000);
+}
+
+// Nettoyage
+window.addEventListener('beforeunload', function() {
+    if (appState.watchId) {
+        navigator.geolocation.clearWatch(appState.watchId);
+    }
+});
+</script>
+{% endblock %}

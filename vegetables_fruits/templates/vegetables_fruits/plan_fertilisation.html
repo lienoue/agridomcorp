@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Plan de fertilisation</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌱 Plan de fertilisation personnalisé
+            </div>
+            <div class="card-body">
+
+                <p class="text-muted mb-4">
+                    Recevez des recommandations d'engrais adaptées à chaque culture présente sur votre parcelle, en fonction de son type.
+                </p>
+
+                <!-- Sélecteur de parcelle -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex align-items-center gap-3">
+                            <label class="fw-bold">📍 Parcelle :</label>
+                            <select name="parcelle_id" class="form-select" onchange="this.form.submit()" style="max-width: 250px;">
+                                <option value="">-- Sélectionnez --</option>
+                                {% for parcelle in parcelles %}
+                                    <option value="{{ parcelle.id }}"
+                                            {% if parcelle.id == selected_parcelle.id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        {% if selected_parcelle %}
+                        <br>
+                            <span class="badge bg-info fs-6 p-2" style="padding-left: 40px" >
+                                🌿 {{ stats.nb_cultures }} culture(s) sur cette parcelle
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+<br>
+                {% if selected_parcelle %}
+                    <!-- Liste des cultures présentes -->
+                    <div class="alert alert-light border mb-4">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="fw-bold">🌱 Cultures présentes :</span>
+                            {% if cultures_parcelle %}
+                                {% for culture in cultures_parcelle %}
+                                    <span class="badge bg-secondary p-2">{{ culture }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">Aucune culture sur cette parcelle.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Recommandations sous forme de cartes -->
+                    {% if recommandations %}
+                        <h5 class="mb-3">🧪 Recommandations</h5>
+                <br>
+                        <div class="row g-4">
+                            {% for rec in recommandations %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <strong>{{ rec.culture }}</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <span class="badge bg-primary">🧪 {{ rec.engrais }}</span>
+                                        </div>
+                                        <p class="mb-1"><strong>📦 Quantité :</strong> {{ rec.quantite }}</p>
+                                        <p class="mb-1"><strong>🔄 Fréquence :</strong> {{ rec.frequence }}</p>
+                                        {% if rec.conseils %}
+                                            <p class="mb-0 text-muted small mt-2">💡 {{ rec.conseils }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <h6 class="mb-0">⚠️ Aucune recommandation disponible pour ces cultures.</h6>
+                            <small>Les recommandations sont générées automatiquement selon le type de culture.</small>
+                        </div>
+                    {% endif %}
+
+                    <!-- Conseils généraux -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="p-4 bg-light rounded">
+                                <h6 class="mb-3">🧑‍🌾 Conseils généraux</h6>
+                                <ul class="mb-0 ps-3" style="padding-left: 40px">
+                                    <li>🌅 Fertilisez de préférence le matin ou le soir, jamais en plein soleil.</li>
+                                    <li>💧 Arrosez après la fertilisation pour faire pénétrer les nutriments.</li>
+                                    <li>🔄 Alternez les engrais pour éviter l'accumulation de sels dans le sol.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <h5 class="mb-1">🌱 Sélectionnez une parcelle</h5>
+                        <p class="mb-0 text-muted">Choisissez une parcelle pour voir les recommandations de fertilisation adaptées à vos cultures.</p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Consentement RGPD - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="text-center mb-4">
+                <span style="font-size: 4rem;">🔒</span>
+                <h1 class="fw-bold">Protection de vos données</h1>
+                <p class="text-muted">Nous avons besoin de votre consentement pour continuer</p>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <form method="POST" action="{% url 'vegetables_fruits:consentement_rgpd' %}">
+                        {% csrf_token %}
+                        
+                        <!-- CGU -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="cgu" id="cgu" required>
+                                <label class="form-check-label" for="cgu">
+                                    J'accepte les 
+                                    <a href="{% url 'vegetables_fruits:cgu' %}" target="_blank">
+                                        Conditions Générales d'Utilisation
+                                    </a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Confidentialité -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="confidentialite" id="confidentialite" required>
+                                <label class="form-check-label" for="confidentialite">
+                                    J'ai lu et j'accepte la 
+                                    <a href="{% url 'vegetables_fruits:confidentialite' %}" target="_blank">
+                                        Politique de Confidentialité
+                                    </a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Traitement des données -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="donnees" id="donnees" required>
+                                <label class="form-check-label" for="donnees">
+                                    Je consens au traitement de mes données personnelles 
+                                    conformément à la politique de confidentialité
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Marketing (optionnel) -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="marketing" id="marketing">
+                                <label class="form-check-label" for="marketing">
+                                    Je souhaite recevoir des informations sur les nouveautés 
+                                    et offres (optionnel)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Mineur -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="est_mineur" id="est_mineur" 
+                                       onchange="toggleFormParental()">
+                                <label class="form-check-label fw-bold" for="est_mineur">
+                                    🧒 Je suis âgé(e) de moins de 16 ans
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulaire parental (caché par défaut) -->
+                        <div id="formulaireParental" style="display: none;" 
+                             class="p-4 bg-warning bg-opacity-10 rounded-3 mb-4 border border-warning">
+                            <h5 class="fw-bold mb-3">👨‍👩‍👧 Autorisation du représentant légal</h5>
+                            <p class="text-muted small">
+                                Conformément au RGPD, le consentement d'un parent ou tuteur 
+                                est requis pour les utilisateurs de moins de 16 ans.
+                            </p>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nom du représentant légal *</label>
+                                    <input type="text" class="form-control" 
+                                           name="parent_nom" id="parentNom">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Prénom *</label>
+                                    <input type="text" class="form-control" 
+                                           name="parent_prenom" id="parentPrenom">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" 
+                                           name="parent_email" id="parentEmail">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" 
+                                           name="parent_tel" id="parentTel">
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mt-3">
+                                <input type="checkbox" class="form-check-input" 
+                                       name="parent_consent" id="parentConsent">
+                                <label class="form-check-label" for="parentConsent">
+                                    En tant que représentant légal, j'autorise 
+                                    l'utilisation de la plateforme et le traitement 
+                                    des données conformément à la politique de confidentialité *
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                ✅ Valider mes consentements
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFormParental() {
+    const estMineur = document.getElementById('est_mineur');
+    const formParental = document.getElementById('formulaireParental');
+    
+    if (estMineur.checked) {
+        formParental.style.display = 'block';
+        // Rendre les champs obligatoires
+        document.getElementById('parentNom').required = true;
+        document.getElementById('parentPrenom').required = true;
+        document.getElementById('parentEmail').required = true;
+        document.getElementById('parentConsent').required = true;
+    } else {
+        formParental.style.display = 'none';
+        // Retirer l'obligation
+        document.getElementById('parentNom').required = false;
+        document.getElementById('parentPrenom').required = false;
+        document.getElementById('parentEmail').required = false;
+        document.getElementById('parentConsent').required = false;
+    }
+}
+</script>
+{% endblock %}

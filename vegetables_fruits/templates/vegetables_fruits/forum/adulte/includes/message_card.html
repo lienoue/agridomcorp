@@ -1,0 +1,55 @@
+{# ============================================================ #}
+{# CARTE MESSAGE - Réutilisable #}
+{# ============================================================ #}
+{% load custom_filters %}
+
+<div class="message-card
+    {% if message.est_premium %}is-premium{% endif %}
+    {% if message.est_solution %}is-solution{% endif %}"
+    id="message-{{ message.id }}">
+
+    <div class="message-header">
+        <div>
+            <span class="auteur">👤 {{ message.auteur.username }}</span>
+            {% if message.est_premium %}
+                <span class="badge-premium-msg" style="margin-left: 6px;">🔒 Premium</span>
+            {% endif %}
+            {% if message.est_solution %}
+                <span class="badge-solution" style="margin-left: 6px;">✅ Solution</span>
+            {% endif %}
+        </div>
+        <span class="date">🗓️ {{ message.date_creation|date:"d/m/Y à H:i" }}</span>
+    </div>
+
+    <div class="message-content">
+        {{ message.contenu|linebreaks }}
+    </div>
+
+    <div class="message-actions">
+        {% if peut_voter and message.auteur != user %}
+        <button class="vote-btn upvote {% if votes_dict|get_item:message.id == 'up' %}active{% endif %}"
+                data-url="{% url 'vegetables_fruits:forum_adulte_voter' message.id %}"
+                data-type="up">
+            👍 <span class="vote-count-up">{{ message.nb_upvotes }}</span>
+        </button>
+        <button class="vote-btn downvote {% if votes_dict|get_item:message.id == 'down' %}active{% endif %}"
+                data-url="{% url 'vegetables_fruits:forum_adulte_voter' message.id %}"
+                data-type="down">
+            👎 <span class="vote-count-down">{{ message.nb_downvotes }}</span>
+        </button>
+        <span style="font-size:0.8rem; color:#999;">Score: {{ message.score }}</span>
+        {% endif %}
+
+        {% if est_premium and not message.est_solution and sujet.auteur == user and message.auteur != user %}
+        <button class="btn-outline-forum btn-solution" style="padding: 4px 14px; font-size: 0.8rem;"
+                data-url="{% url 'vegetables_fruits:forum_adulte_marquer_solution' message.id %}">
+            ✅ Marquer comme solution
+        </button>
+        {% endif %}
+
+        <a href="{% url 'vegetables_fruits:forum_adulte_signalement' %}?message_id={{ message.id }}"
+           style="color: #999; font-size: 0.8rem; text-decoration: none;">
+            <span>🚩</span> Signaler
+        </a>
+    </div>
+</div>

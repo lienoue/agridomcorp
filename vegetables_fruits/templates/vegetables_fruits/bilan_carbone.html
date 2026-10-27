@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
+<li class="breadcrumb-item active">Bilan carbone</li>
+{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .statut-card {
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .statut-positive {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        border: 2px solid #28a745;
+    }
+    .statut-negative {
+        background: linear-gradient(135deg, #fff3cd, #ffeeba);
+        border: 2px solid #ffc107;
+    }
+    .statut-neutral {
+        background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+        border: 2px solid #17a2b8;
+    }
+    .number-large {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌍 {{ titre_page|default:"Bilan carbone" }}
+            </div>
+            <div class="card-body">
+
+                <!-- 🔒 Vérification d'accès -->
+                {% if not a_acces_bilan_carbone %}
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">🔒 Accès restreint</h5>
+                        <p>Le bilan carbone est disponible avec les abonnements <strong>Premium</strong> et <strong>Enseignant</strong>.</p>
+                        <hr>
+                        <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-success">Voir les abonnements</a>
+                    </div>
+                {% else %}
+
+                    {# ============================================================ #}
+                    {# SÉLECTEUR DE PARCELLE #}
+                    {# ============================================================ #}
+                    <div class="mb-4">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <label for="parcelle-select" class="fw-bold mb-0" style="color: #2d6a4f;">
+                                📍 Parcelle :
+                            </label>
+                            <select id="parcelle-select" class="form-select" style="max-width: 300px; border-color: #d4c8bc; border-radius: 10px;" onchange="window.location.href='?parcelle_id='+this.value">
+                                <option value="">-- Toutes les parcelles --</option>
+                                {% for parcelle in parcelles %}
+                                    <option value="{{ parcelle.id }}" {% if selected_parcelle and selected_parcelle.id == parcelle.id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <span class="text-muted ms-2" style="font-size: 0.9rem;">
+                                {{ parcelles|length }} parcelle(s)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Statut global -->
+                    <div class="statut-card statut-{{ statut.couleur }} text-center">
+                        <h2>{{ statut.icone }} {{ statut.message }}</h2>
+                        <p class="mt-2 mb-0 text-muted">
+                            Bilan net : <span class="fw-bold">{{ total_bilan }} kg CO₂</span>
+                        </p>
+                    </div>
+
+                    <!-- Résumé -->
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="text-danger">Émissions</h5>
+                                    <p class="number-large">{{ total_emission }} <small>kg</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="text-success">Séquestration</h5>
+                                    <p class="number-large">{{ total_sequestration }} <small>kg</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="text-primary">Bilan net</h5>
+                                    <p class="number-large">{{ total_bilan }} <small>kg</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if details_parcelles %}
+                        <!-- Graphique -->
+                        <div class="row mb-5">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center mb-3">📊 Émissions vs Séquestration par parcelle</h5>
+                                        <canvas id="carboneChart" width="400" height="200" style="max-height: 300px;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Détails par parcelle -->
+                        <h5 class="mb-3">📋 Détail par parcelle</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Parcelle</th>
+                                        <th>Nombre de cultures</th>
+                                        <th>Émissions (kg CO₂)</th>
+                                        <th>Séquestration (kg CO₂)</th>
+                                        <th>Bilan (kg CO₂)</th>
+                                        <th>Statut</th>
+                                        {% if request.user.is_enseignant %}
+                                        <th>Propriétaire</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detail in details_parcelles %}
+                                    <tr>
+                                        <td><strong>{{ detail.parcelle.nom }}</strong></td>
+                                        <td>{{ detail.cultures }}</td>
+                                        <td class="text-danger">{{ detail.emission }}</td>
+                                        <td class="text-success">{{ detail.sequestration }}</td>
+                                        <td class="fw-bold">{{ detail.bilan }}</td>
+                                        <td>
+                                            {% if detail.bilan > 0 %}
+                                                <span class="badge bg-success">🌱 Puits</span>
+                                            {% elif detail.bilan < 0 %}
+                                                <span class="badge bg-warning text-dark">⚠️ Émetteur</span>
+                                            {% else %}
+                                                <span class="badge bg-info">⚖️ Neutre</span>
+                                            {% endif %}
+                                        </td>
+                                        {% if request.user.is_enseignant %}
+                                        <td>{{ detail.proprietaire }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bouton export PDF -->
+                        <div class="text-center mt-4">
+                            <a href="{% url 'vegetables_fruits:export_bilan_carbone_pdf' %}" class="btn btn-outline-success btn-lg">
+                                📄 Exporter en PDF
+                            </a>
+                        </div>
+
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">⚠️ Aucune donnée carbone disponible</h5>
+                            <p>Ajoutez des cultures à vos parcelles pour calculer votre bilan carbone.</p>
+                        </div>
+                    {% endif %}
+
+                {% endif %} <!-- Fin du bloc d'accès -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SECTION EXPLICATIONS (AJOUTÉE) ===== -->
+{% if a_acces_bilan_carbone %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">📖 Comment est calculé ce bilan ?</h5>
+            </div>
+            <div class="card-body">
+
+                <h6>🌱 Les statuts</h6>
+                <br>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded" style="background: #d4edda; border: 1px solid #28a745;">
+                            <strong>🌱 Puits de carbone</strong>
+                            <p class="mb-0 small">Votre jardin absorbe plus de CO₂ qu'il n'en émet.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded" style="background: #fff3cd; border: 1px solid #ffc107;">
+                            <strong>⚠️ Émetteur</strong>
+                            <p class="mb-0 small">Votre jardin émet plus de CO₂ qu'il n'en absorbe.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded" style="background: #d1ecf1; border: 1px solid #17a2b8;">
+                            <strong>⚖️ Neutre</strong>
+                            <p class="mb-0 small">Émissions et séquestration s'équilibrent.</p>
+                        </div>
+                    </div>
+                </div>
+<br>
+                <h6>🧮 Le calcul</h6>
+                <p class="text-muted">
+                    Le bilan est calculé selon la formule simplifiée suivante :
+                </p>
+                <div class="p-3 bg-light rounded mb-3" style="font-family: monospace;">
+                    <strong>Bilan net</strong> = Séquestration - Émissions<br>
+                    <strong>Séquestration</strong> = Surface (m²) × 0.5 kg CO₂/m²<br>
+                    <strong>Émissions</strong> = Nombre de cultures × 2.5 kg CO₂/culture
+                </div>
+                <p class="small text-muted">
+                    <i class="fas fa-info-circle"></i> Ces coefficients sont basés sur des estimations moyennes.
+                    Ils seront affinés dans les versions futures.
+                </p>
+
+                <h6>💡 Que pouvez-vous faire ?</h6>
+                <ul>
+                    <li><strong>Augmenter la séquestration</strong> : plantez plus d'arbres, de haies, ou utilisez du paillage.</li>
+                    <li><strong>Réduire les émissions</strong> : limitez l'usage d'engrais chimiques et privilégiez le compost.</li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sélecteur de parcelle
+        const parcelleSelect = document.getElementById('parcelle-select');
+        if (parcelleSelect) {
+            parcelleSelect.addEventListener('change', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('parcelle_id', this.value);
+                window.location.href = url.toString();
+            });
+        }
+
+        // Graphique
+        {% if details_parcelles and a_acces_bilan_carbone %}
+            const ctx = document.getElementById('carboneChart').getContext('2d');
+            const labels = [{% for label in labels_graphique %}'{{ label }}',{% endfor %}];
+            const emissionData = [{% for value in data_emission %}{{ value }},{% endfor %}];
+            const sequestrationData = [{% for value in data_sequestration %}{{ value }},{% endfor %}];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Émissions (kg CO₂)',
+                            data: emissionData,
+                            backgroundColor: 'rgba(220, 53, 69, 0.6)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Séquestration (kg CO₂)',
+                            data: sequestrationData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'kg CO₂'
+                            }
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}

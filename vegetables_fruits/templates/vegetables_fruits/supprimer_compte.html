@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:profile' %}">Mon profil</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Supprimer mon compte</li>
+{% endblock %}
+
+{% block title %}⚠️ Supprimer mon compte{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 700px;">
+
+    <!-- En-tête -->
+    <div class="text-center mb-4">
+        <div style="font-size: 4rem;">⚠️</div>
+        <h1 class="text-danger">Supprimer mon compte</h1>
+        <p class="text-muted">
+            Cette action est <strong>irréversible</strong>. Toutes vos données seront définitivement supprimées.
+        </p>
+    </div>
+
+    <!-- Ce qui va être supprimé -->
+    <div class="card border-danger mb-4">
+        <div class="card-header bg-danger text-white">
+            <strong>🗑️ Ce qui sera supprimé :</strong>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li>Vos <strong>parcelles</strong> et figures dessinées</li>
+                <li>Vos <strong>cultures</strong> et leur historique</li>
+                <li>Vos <strong>notes de journal</strong> de bord</li>
+                <li>Vos <strong>photos</strong> uploadées</li>
+                <li>Vos <strong>alertes</strong> (semis, météo, traitements)</li>
+                <li>Vos <strong>rappels</strong> et calendriers personnalisés</li>
+                <li>Votre <strong>abonnement</strong> (sans remboursement)</li>
+                <li>Vos <strong>consentements RGPD</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Ce qui sera conservé -->
+    <div class="alert alert-info">
+        <strong>ℹ️ Ce qui sera conservé (anonymisé) :</strong>
+        <ul class="mb-0 mt-2">
+            <li>Votre identifiant sera remplacé par un identifiant anonyme</li>
+            <li>Vos données statistiques (sans lien avec votre identité) peuvent être conservées pour améliorer l'app</li>
+        </ul>
+    </div>
+
+    <!-- Alternative proposée -->
+    <div class="alert alert-warning">
+        <strong>💡 Vous voulez juste faire une pause ?</strong><br>
+        Vous pouvez simplement <a href="{% url 'vegetables_fruits:exporter_mes_donnees' %}" class="alert-link">exporter vos données</a>
+        et ne plus vous connecter. Votre compte sera conservé.
+    </div>
+
+    <!-- Formulaire de confirmation -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-danger mb-4">🔒 Confirmation obligatoire</h5>
+
+            <form method="post" action="{% url 'vegetables_fruits:supprimer_mon_compte' %}">
+                {% csrf_token %}
+
+                <!-- Mot de passe -->
+                <div class="mb-3">
+                    <label for="mot_de_passe" class="form-label">
+                        <strong>1. Saisissez votre mot de passe actuel</strong>
+                    </label>
+                    <input type="password"
+                           class="form-control"
+                           id="mot_de_passe"
+                           name="mot_de_passe"
+                           required
+                           autocomplete="current-password">
+                    <small class="form-text text-muted">
+                        Pour des raisons de sécurité, nous vérifions votre identité.
+                    </small>
+                </div>
+
+                <!-- Texte de confirmation -->
+                <div class="mb-3">
+                    <label for="confirmation" class="form-label">
+                        <strong>2. Tapez « SUPPRIMER » pour confirmer</strong>
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="confirmation"
+                           name="confirmation"
+                           placeholder="SUPPRIMER"
+                           required
+                           autocomplete="off">
+                    <small class="form-text text-muted">
+                        En majuscules, exactement comme affiché.
+                    </small>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{% url 'vegetables_fruits:profile' %}" class="btn btn-outline-secondary">
+                        ← Annuler
+                    </a>
+                    <button type="submit"
+                            class="btn btn-danger"
+                            onclick="return confirm('Êtes-vous vraiment sûr ? Cette action est irréversible.')">
+                        🗑️ Supprimer définitivement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:profile' %}">Profil</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Bilan carbone</li>
+{% endblock %}
+
+{% block title %}{{ photo.titre }} - Galerie{% endblock %}
+
+{% block extra_css %}
+<style>
+    .photo-detail {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .photo-container {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .photo-image {
+        width: 100%;
+        max-height: 600px;
+        object-fit: contain;
+        background: #f8f9fa;
+    }
+    .photo-header {
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .photo-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .photo-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 12px;
+    }
+    .photo-description {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin: 20px;
+    }
+    .photo-actions {
+        display: flex;
+        gap: 15px;
+        padding: 15px 20px;
+        border-top: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .btn-like {
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .btn-like:hover {
+        transform: scale(1.1);
+    }
+    .btn-like.liked {
+        color: #dc3545;
+    }
+    .comment-section {
+        padding: 20px;
+    }
+    .comment-list {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+    .comment-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .comment-author {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .comment-date {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-left: 10px;
+    }
+    .comment-content {
+        margin-top: 5px;
+        font-size: 0.9rem;
+    }
+    .btn-submit {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+    }
+    .btn-submit:hover {
+        background: #1e7e34;
+    }
+    .btn-danger-custom {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+    .btn-danger-custom:hover {
+        background: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="photo-detail">
+        <div class="mb-3">
+            <a href="{% url 'vegetables_fruits:galerie_index' %}" class="btn btn-sm btn-secondary">
+                ← Retour à la galerie
+            </a>
+        </div>
+
+        <div class="photo-container">
+            <!-- Image -->
+            <img src="{{ photo.image.url }}" alt="{{ photo.titre }}" class="photo-image">
+
+            <!-- En-tête -->
+            <div class="photo-header">
+                <h1 class="photo-title">{{ photo.titre }}</h1>
+                <div class="photo-meta">
+                    <span>👤 {{ photo.auteur.username }}</span>
+                    <span>📅 {{ photo.date_creation|date:"d/m/Y H:i" }}</span>
+                    {% if photo.figure %}
+                    <span>📍 <a href="{% url 'vegetables_fruits:figure_detail' photo.figure.id %}" class="text-decoration-none">{{ photo.figure.name }}</a></span>
+                    {% endif %}
+                </div>
+                {% if user == photo.auteur or user.is_enseignant %}
+                <div class="mt-2">
+                    <a href="{% url 'vegetables_fruits:galerie_supprimer' photo.id %}" class="btn-danger-custom" 
+                       onclick="return confirm('Supprimer cette photo ?')">
+                        🗑️ Supprimer
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            {% if photo.description %}
+            <div class="photo-description">
+                <strong>📝 Description</strong>
+                <p class="mb-0 mt-2">{{ photo.description|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="photo-actions">
+                <button class="btn-like {% if user_liked %}liked{% endif %}" onclick="toggleLike({{ photo.id }})">
+                    ❤️ <span id="like-count">{{ photo.nb_likes }}</span>
+                </button>
+                <span>💬 {{ photo.nb_commentaires }}</span>
+                {% if user.is_enseignant and not photo.est_validee %}
+                <a href="{% url 'vegetables_fruits:galerie_valider' photo.id %}" class="btn btn-sm btn-success ms-auto">
+                    ✅ Valider cette photo
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Commentaires -->
+            <div class="comment-section">
+                <h5>💬 Commentaires ({{ photo.nb_commentaires }})</h5>
+                
+                <div class="comment-list">
+                    {% for commentaire in commentaires %}
+                    <div class="comment-item">
+                        <div>
+                            <span class="comment-author">{{ commentaire.auteur.username }}</span>
+                            <span class="comment-date">{{ commentaire.date_creation|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="comment-content">{{ commentaire.contenu|linebreaks }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-3">
+                        Aucun commentaire. Soyez le premier à réagir !
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Formulaire de commentaire -->
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="contenu" class="form-control" rows="3" placeholder="Votre commentaire..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">
+                        📤 Publier le commentaire
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleLike(photoId) {
+    fetch(`/galerie/liker/${photoId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const likeBtn = document.querySelector('.btn-like');
+        const likeCount = document.getElementById('like-count');
+        likeCount.textContent = data.nb_likes;
+        if (data.liked) {
+            likeBtn.classList.add('liked');
+        } else {
+            likeBtn.classList.remove('liked');
+        }
+    });
+}
+</script>
+{% endblock %}

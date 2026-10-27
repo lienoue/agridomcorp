@@ -1,0 +1,74 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+
+{% block title %}🚩 Signaler - Forum Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}Signaler un contenu inapproprié 🚩{% endblock %}
+
+{% block forum_actions %}
+<div class="forum-actions">
+    <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+        <span>←</span> Retour
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div style="background: #fff; border-radius: var(--radius); padding: 32px; max-width: 700px; margin: 0 auto; border: 1px solid rgba(109,76,42,0.06);">
+    <h2 style="font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--brun-terre); margin-bottom: 8px;">
+        🚩 Signaler un contenu
+    </h2>
+    <p style="color: #888; margin-bottom: 24px;">
+        {% if sujet %}
+            Vous signalez le sujet : <strong>{{ sujet.titre }}</strong>
+        {% elif message %}
+            Vous signalez un message dans le sujet : <strong>{{ message.sujet.titre }}</strong>
+        {% else %}
+            Veuillez sélectionner un contenu à signaler.
+        {% endif %}
+    </p>
+    
+    <form method="POST" class="forum-form">
+        {% csrf_token %}
+        <input type="hidden" name="type_contenu" value="{{ type_contenu }}">
+        <input type="hidden" name="contenu_id" value="{{ contenu_id }}">
+        
+        <div style="margin-bottom: 16px;">
+            <label for="raison" class="form-label">Raison du signalement <span style="color: var(--tomate);">*</span></label>
+            <select id="raison" name="raison" required style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); background:#fff;">
+                <option value="">-- Sélectionnez une raison --</option>
+                <option value="Spam publicitaire">📢 Spam publicitaire</option>
+                <option value="Contenu inapproprié">⚠️ Contenu inapproprié</option>
+                <option value="Harcèlement">😡 Harcèlement</option>
+                <option value="Fausses informations">❌ Fausses informations</option>
+                <option value="Langage offensant">😤 Langage offensant</option>
+                <option value="Hors sujet">📌 Hors sujet</option>
+                <option value="Autre">❓ Autre</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <label for="details" class="form-label">Détails (optionnel)</label>
+            <textarea id="details" name="details" placeholder="Précisez votre signalement..." style="width:100%; padding:12px 16px; border:2px solid #e8e0d8; border-radius:var(--radius-sm); font-size:0.95rem; font-family:var(--font-sans); min-height:100px; resize:vertical;"></textarea>
+            <div class="form-hint">Plus vous détaillez, plus le traitement sera efficace.</div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+            <button type="submit" class="btn-danger-forum">
+                <span>🚩</span> Envoyer le signalement
+            </button>
+            <a href="{% url 'vegetables_fruits:forum_adulte_index' %}" class="btn-outline-forum">
+                Annuler
+            </a>
+        </div>
+    </form>
+    
+    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;">
+        <p style="font-size: 0.85rem; color: #999;">
+            <span>ℹ️</span> Votre signalement sera examiné par un modérateur dans les plus brefs délais.
+            Les signalements abusifs peuvent entraîner des sanctions.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

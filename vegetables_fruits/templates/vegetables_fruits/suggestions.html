@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Suggestions personnalisées</li>
+{% endblock %}
+
+{% block title %}💡 Suggestions personnalisées{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>💡 Suggestions pour votre jardin</h1>
+        <p class="text-muted">
+            🌍 Basé sur votre localisation : <strong>{{ region|default:"Non définie" }}</strong>
+            {% if pays %} ({{ pays }}){% endif %}
+            &nbsp;•&nbsp; 🌤️ Saison : <strong>{{ saison|title }}</strong>
+            <br>
+            🌱 Vous avez déjà planté <strong>{{ cultures_plantees }}</strong> culture(s).
+            {% if semis_planifies %}
+                &nbsp;•&nbsp; 📅 Semis planifiés : <strong>{{ semis_planifies }}</strong>
+            {% endif %}
+        </p>
+        <br>
+    </div>
+
+    <div class="row">
+        {% for suggestion in suggestions %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-1">{{ suggestion.emoji }}</div>
+                    <h3 class="card-title mt-2">{{ suggestion.culture }}</h3>
+
+                    <div class="mb-3">
+                        <span class="badge bg-info">
+                            {% if suggestion.difficulte == 1 %}🌱 Facile
+                            {% elif suggestion.difficulte == 2 %}🌿 Moyen
+                            {% else %}🌟 Difficile{% endif %}
+                        </span>
+                        <span class="badge bg-secondary ms-2">⏱️ {{ suggestion.temps }} jours</span>
+                    </div>
+
+                    <p class="card-text">{{ suggestion.raison }}</p>
+
+                    <hr>
+
+                    <div class="text-muted small">
+                        💡 <strong>Conseil :</strong>
+                        {% if suggestion.culture == 'Salade' %}
+                        Semez tous les 15 jours pour des récoltes étalées.
+                        {% elif suggestion.culture == 'Carotte' %}
+                        Éclaircissez à 5cm pour de belles carottes.
+                        {% elif suggestion.culture == 'Tomate' %}
+                        Tuteurez dès la plantation.
+                        {% elif suggestion.culture == 'Courgette' %}
+                        Arrosez au pied, évitez de mouiller les feuilles.
+                        {% else %}
+                        Plantez en pleine terre après les gelées.
+                        {% endif %}
+                    </div>
+
+                    {# ============================================================ #}
+                    {# ✅ ACCORDÉON CONSEILS ENRICHIS (AJOUT) #}
+                    {# ============================================================ #}
+                    {% if suggestion.conseils %}
+
+                        {% if suggestion.conseils.est_generique %}
+                        {# ---------- CAS 1 : Fallback générique ---------- #}
+                        <div class="mt-3"
+                             style="padding: 12px; background: #fff8e1; border-radius: 8px; border-left: 3px solid #ffb300; font-size: 0.8rem; text-align: left; color: #5d4037;">
+                            <strong>🌱 Fiche en préparation</strong>
+                            <div style="margin-top: 6px;">
+                                {{ suggestion.conseils.conseils_generaux|linebreaks }}
+                            </div>
+                        </div>
+                        {% else %}
+                        {# ---------- CAS 2 : Conseils enrichis ---------- #}
+                        <div class="mt-3">
+                            <button type="button"
+                                    class="btn-conseils-toggle-sugg"
+                                    onclick="toggleConseilsSugg({{ forloop.counter }})"
+                                    style="width: 100%; padding: 8px 12px; background: #e8f5e9; color: #2d6a4f; border: 1px solid #a5d6a7; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                                <span>🌱 Conseils détaillés</span>
+                                <span id="arrow-sugg-{{ forloop.counter }}">▼</span>
+                            </button>
+
+                            <div id="conseils-sugg-{{ forloop.counter }}"
+                                 style="display: none; margin-top: 8px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #28a745; font-size: 0.8rem; text-align: left;">
+
+                                {# Famille botanique #}
+                                {% if suggestion.conseils.famille %}
+                                <div style="margin-bottom: 8px;">
+                                    <span class="badge" style="background: #2d6a4f; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem;">
+                                        {{ suggestion.conseils.famille_emoji }} {{ suggestion.conseils.famille }}
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                {# Températures #}
+                                {% if suggestion.conseils.temperature_min is not None or suggestion.conseils.temperature_max is not None %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    🌡️
+                                    {% if suggestion.conseils.temperature_min is not None %}<strong>{{ suggestion.conseils.temperature_min }}°C</strong>{% endif %}
+                                    {% if suggestion.conseils.temperature_optimale_min is not None %} - {{ suggestion.conseils.temperature_optimale_min }}°C{% endif %}
+                                    {% if suggestion.conseils.temperature_optimale_max is not None %} à {{ suggestion.conseils.temperature_optimale_max }}°C{% endif %}
+                                    {% if suggestion.conseils.temperature_max is not None %} - <strong>{{ suggestion.conseils.temperature_max }}°C</strong>{% endif %}
+                                </div>
+                                {% endif %}
+
+                                {# Durée #}
+                                {% if suggestion.conseils.duree_culture_min_jours %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    ⏱️ <strong>Durée :</strong> {{ suggestion.conseils.duree_culture_min_jours }}{% if suggestion.conseils.duree_culture_max_jours %} à {{ suggestion.conseils.duree_culture_max_jours }}{% endif %} jours
+                                </div>
+                                {% endif %}
+
+                                {# Conseils détaillés #}
+                                {% if suggestion.conseils.conseils_climat %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_climat }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_plantation %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_plantation }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_arrosage %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_arrosage }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_fertilisation %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_fertilisation }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_protection %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_protection }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_recolte %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_recolte }}
+                                </div>
+                                {% endif %}
+
+                                {% if suggestion.conseils.conseils_conservation %}
+                                <div style="margin-bottom: 6px; padding: 6px; background: white; border-radius: 5px;">
+                                    {{ suggestion.conseils.conseils_conservation }}
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    {% endif %}
+                    {# ============================================================ #}
+                    {# FIN ACCORDÉON CONSEILS #}
+                    {# ============================================================ #}
+
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <button class="btn btn-sm btn-success planter-btn"
+                            data-culture="{{ suggestion.culture }}"
+                            data-figure-id="{{ figure_id }}">
+                        🌱 Planter
+                    </button>
+
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-success text-center">
+                🎉 Félicitations ! Vous avez déjà planté toutes nos suggestions !
+                <br>
+                <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-primary mt-3">
+                    Voir mes cultures
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+document.querySelectorAll('.planter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var culture = this.getAttribute('data-culture');
+        // Rediriger vers une page de choix de parcelle
+        window.location.href = '/choisir-parcelle/?culture=' + encodeURIComponent(culture);
+    });
+});
+
+// ==================== TOGGLE CONSEILS (AJOUT) ====================
+function toggleConseilsSugg(id) {
+    const conseils = document.getElementById('conseils-sugg-' + id);
+    const arrow = document.getElementById('arrow-sugg-' + id);
+
+    if (!conseils) return;
+
+    if (conseils.style.display === 'none' || conseils.style.display === '') {
+        conseils.style.display = 'block';
+        if (arrow) arrow.textContent = '▲';
+    } else {
+        conseils.style.display = 'none';
+        if (arrow) arrow.textContent = '▼';
+    }
+}
+</script>
+{% endblock %}

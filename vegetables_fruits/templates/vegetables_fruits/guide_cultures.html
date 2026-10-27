@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Agriculture 2.0 - Guide des cultures{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">📖 Guide des cultures</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Sélecteur de parcelle -->
+    <div class="parcelle-selector">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <label for="parcelle-select" class="form-label fw-bold mb-0 me-2">
+                    <i class="bi bi-geo-alt"></i> Choisir une parcelle :
+                </label>
+                <select id="parcelle-select" class="form-select d-inline-block w-auto" style="display: inline-block !important; width: auto; min-width: 200px;">
+                    <option value="">Toutes les parcelles</option>
+                    {% for figure in figures %}
+                        <option value="{{ figure.id }}" {% if figure.id == selected_figure_id %}selected{% endif %}>
+                            {{ figure.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nouvelle parcelle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <ul class="nav nav-pills mb-3" id="guideTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="conseiller-sol-tab" data-bs-target="#conseiller-sol" type="button" role="tab">
+                <i class="bi bi-geo-alt"></i> Conseiller Sol
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="fertilisation-tab" data-bs-target="#fertilisation" type="button" role="tab">
+                <i class="bi bi-droplet"></i> Fertilisation
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="compagnonnage-tab" data-bs-target="#compagnonnage" type="button" role="tab">
+                <i class="bi bi-flower1"></i> Compagnonnage
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rotation-tab" data-bs-target="#rotation" type="button" role="tab">
+                <i class="bi bi-arrow-repeat"></i> Rotation
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="guideTabsContent">
+        <div class="tab-pane fade show active" id="conseiller-sol" role="tabpanel">
+            <div id="conseiller-sol-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+        <div class="tab-pane fade" id="fertilisation" role="tabpanel">
+            <div id="fertilisation-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+        <div class="tab-pane fade" id="compagnonnage" role="tabpanel">
+            <div id="compagnonnage-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+        <div class="tab-pane fade" id="rotation" role="tabpanel">
+            <div id="rotation-content">
+                <!-- Chargé via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .parcelle-selector {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    #guideTabs {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 5px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin: 0 !important;
+    }
+
+    #guideTabs .nav-item {
+        flex: 0 0 auto !important;
+        list-style: none !important;
+    }
+
+    #guideTabs .nav-link {
+        white-space: nowrap !important;
+        color: #495057;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    #guideTabs .nav-link:hover {
+        background: #e9ecef;
+    }
+
+    #guideTabs .nav-link.active {
+        background: #28a745;
+        color: white;
+    }
+
+    .tab-content {
+        padding: 20px 0;
+    }
+</style>
+
+<script>
+    function chargerOnglet(tabName) {
+        const parcelleId = document.getElementById('parcelle-select')?.value || '';
+        console.log('chargement onglet:', tabName, 'parcelle:', parcelleId);
+        const url = `/api/tab/guide/${tabName}/?parcelle_id=${parcelleId}`;
+        console.log('URL:', url);
+
+        let contentId = '';
+        if (tabName === 'conseiller-sol') contentId = 'conseiller-sol-content';
+        else if (tabName === 'fertilisation') contentId = 'fertilisation-content';
+        else if (tabName === 'compagnonnage') contentId = 'compagnonnage-content';
+        else if (tabName === 'rotation') contentId = 'rotation-content';
+        else return;
+
+        const contentDiv = document.getElementById(contentId);
+        if (!contentDiv) return;
+
+        contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Chargement...</p></div>';
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                contentDiv.innerHTML = html;
+            })
+            .catch(error => {
+                contentDiv.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>';
+                console.error('Erreur:', error);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion manuelle des onglets
+        const tabs = document.querySelectorAll('#guideTabs button');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                document.querySelectorAll('#guideTabs .nav-link').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                this.classList.add('active');
+
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                    pane.style.display = 'none';
+                });
+
+                const target = this.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(target);
+                if (targetPane) {
+                    targetPane.style.display = 'block';
+                    targetPane.classList.add('show', 'active');
+                }
+
+                const tabName = this.id.replace('-tab', '');
+                chargerOnglet(tabName);
+            });
+        });
+
+        // Changement de parcelle
+        const parcelleSelect = document.getElementById('parcelle-select');
+        if (parcelleSelect) {
+            parcelleSelect.addEventListener('change', function() {
+                const activeTab = document.querySelector('#guideTabs .nav-link.active');
+                if (activeTab) {
+                    const tabName = activeTab.id.replace('-tab', '');
+                    chargerOnglet(tabName);
+                }
+            });
+        }
+
+        // Charger le premier onglet
+        chargerOnglet('conseiller-sol');
+    });
+</script>
+{% endblock %}

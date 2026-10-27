@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Calendrier agricole - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Calendrier agricole</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendrier-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .calendrier-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .calendrier-header h2 {
+        color: #2d6a4f;
+        margin: 0;
+    }
+    .calendrier-header .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .calendrier-header .nav-buttons .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: #2d6a4f;
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .calendrier-header .nav-buttons .btn:hover {
+        background: #1b4332;
+    }
+    .calendrier-header .nav-buttons .btn-outline {
+        background: transparent;
+        border: 2px solid #2d6a4f;
+        color: #2d6a4f;
+    }
+    .calendrier-header .nav-buttons .btn-outline:hover {
+        background: #2d6a4f;
+        color: white;
+    }
+
+    .stats-badge {
+        background: #f8f9fa;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .stats-badge strong {
+        color: #2d6a4f;
+    }
+
+    table.calendrier {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    table.calendrier th {
+        background: #2d6a4f;
+        color: white;
+        padding: 12px 8px;
+        text-align: center;
+        font-weight: 600;
+    }
+    table.calendrier td {
+        border: 1px solid #e9ecef;
+        padding: 8px;
+        vertical-align: top;
+        height: 100px;
+        width: 14.28%;
+        transition: 0.2s;
+        background: white;
+    }
+    table.calendrier td:hover {
+        background: #f8f9fa;
+    }
+    table.calendrier td .date {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #343a40;
+        margin-bottom: 5px;
+    }
+    table.calendrier td .date.today {
+        background: #2d6a4f;
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    table.calendrier td .events-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    table.calendrier td .event {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: none;
+        display: block;
+        border: none;
+    }
+    table.calendrier td .event:hover {
+        transform: scale(1.02);
+        filter: brightness(0.95);
+    }
+    table.calendrier td .event.semis {
+        background: #d4edda;
+        color: #155724;
+        border-left: 3px solid #28a745;
+    }
+    table.calendrier td .event.recolte {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left: 3px solid #17a2b8;
+    }
+    table.calendrier td .event.traitement {
+        background: #f8d7da;
+        color: #721c24;
+        border-left: 3px solid #dc3545;
+    }
+    table.calendrier td .event.irrigation {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 3px solid #ffc107;
+    }
+    table.calendrier td .event .emoji {
+        margin-right: 3px;
+    }
+
+    .empty-day {
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-align: center;
+        padding-top: 30px;
+    }
+
+    .legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+        padding: 15px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    .legend-item .color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    .legend-item .color.semis { background: #d4edda; border-left: 3px solid #28a745; }
+    .legend-item .color.recolte { background: #d1ecf1; border-left: 3px solid #17a2b8; }
+    .legend-item .color.traitement { background: #f8d7da; border-left: 3px solid #dc3545; }
+    .legend-item .color.irrigation { background: #fff3cd; border-left: 3px solid #ffc107; }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    .empty-state .icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    .empty-state h4 {
+        color: #2d6a4f;
+    }
+    .empty-state p {
+        color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        table.calendrier td {
+            height: 60px;
+            font-size: 0.7rem;
+            padding: 4px;
+        }
+        table.calendrier td .event {
+            font-size: 0.6rem;
+            padding: 1px 4px;
+        }
+        table.calendrier td .date {
+            font-size: 0.7rem;
+        }
+        table.calendrier td .date.today {
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+        }
+        .calendrier-header {
+            flex-direction: column;
+            align-items: center;
+        }
+        .legend {
+            justify-content: center;
+            gap: 10px;
+        }
+        .legend-item {
+            font-size: 0.7rem;
+        }
+        .calendrier-header h2 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendrier-container">
+
+    <!-- Header -->
+    <div class="calendrier-header">
+        <h2>📅 {{ mois_nom }} {{ annee }}</h2>
+        <div>
+            <span class="stats-badge">📌 {{ total_evenements }} événement(s) ce mois</span>
+        </div>
+        <div class="nav-buttons">
+            <a href="{% url 'vegetables_fruits:calendrier_agricole' annee_precedente mois_precedent %}" class="btn btn-outline">◀</a>
+            <a href="{% url 'vegetables_fruits:calendrier_agricole' %}" class="btn">Aujourd'hui</a>
+            <a href="{% url 'vegetables_fruits:calendrier_agricole' annee_suivante mois_suivant %}" class="btn btn-outline">▶</a>
+        </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="legend">
+        <span class="legend-item"><span class="color semis"></span> 🌱 Semis</span>
+        <span class="legend-item"><span class="color recolte"></span> 🍅 Récolte</span>
+        <span class="legend-item"><span class="color traitement"></span> 🧪 Traitement</span>
+        <span class="legend-item"><span class="color irrigation"></span> 💧 Irrigation</span>
+    </div>
+
+    <!-- Calendrier -->
+    {% if total_evenements > 0 %}
+    <table class="calendrier">
+        <thead>
+            <tr>
+                {% for jour in jours_semaine %}
+                <th>{{ jour }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for semaine in cal %}
+            <tr>
+                {% for jour in semaine %}
+                <td>
+                    {% if jour != 0 %}
+                        <div class="date {% if jour == aujourdhui %}today{% endif %}">
+                            {% if jour != aujourdhui %}{{ jour }}{% endif %}
+                        </div>
+                        <div class="events-container">
+                            {% for event in evenements_par_jour|get_item:jour %}
+                                {% if event.type == 'semis' %}
+                                <a href="{% url 'vegetables_fruits:mes_semis' %}" class="event semis" title="{{ event.titre }} - {{ event.parcelle }}">
+                                    <span class="emoji">{{ event.emoji }}</span> {{ event.titre|truncatechars:12 }}
+                                </a>
+                                {% elif event.type == 'recolte' %}
+                                <a href="{% url 'vegetables_fruits:figure_detail' event.parcelle_id %}" class="event recolte" title="{{ event.titre }} - {{ event.parcelle }}">
+                                    <span class="emoji">{{ event.emoji }}</span> {{ event.titre|truncatechars:12 }}
+                                </a>
+                                {% elif event.type == 'traitement' %}
+                                <a href="{% url 'vegetables_fruits:alertes_traitements' %}" class="event traitement" title="{{ event.titre }} - {{ event.parcelle }}">
+                                    <span class="emoji">{{ event.emoji }}</span> {{ event.titre|truncatechars:12 }}
+                                </a>
+                                {% elif event.type == 'irrigation' %}
+                                <a href="{% url 'vegetables_fruits:plan_irrigation' %}" class="event irrigation" title="{{ event.titre }}">
+                                    <span class="emoji">{{ event.emoji }}</span> {{ event.titre|truncatechars:12 }}
+                                </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-day">-</div>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">📅</div>
+        <h4>Aucun événement ce mois-ci</h4>
+        <p>Commencez à planifier vos semis, récoltes et traitements !</p>
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success" style="margin-top: 15px; display: inline-block; padding: 10px 25px; border-radius: 8px; text-decoration: none; color: white; background: #2d6a4f;">
+            🌱 Créer ma première parcelle
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ajouter un filtre personnalisé pour accéder aux événements par jour
+    // Ceci est géré via le contexte Django
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("📅 Calendrier agricole chargé");
+    });
+</script>
+{% endblock %}

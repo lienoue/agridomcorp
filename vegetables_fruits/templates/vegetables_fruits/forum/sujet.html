@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ sujet.titre }} - Forum{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:forum_index' %}">Forum</a></li>
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:forum_categorie' sujet.categorie.id %}">{{ sujet.categorie.nom }}</a></li>
+<li class="breadcrumb-item active">{{ sujet.titre }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- EN-TÊTE DU SUJET -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="h3 mb-2">{{ sujet.titre }}</h1>
+            <div class="text-muted small">
+                <i class="bi bi-person-circle"></i> {{ sujet.auteur.username }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-calendar3"></i> {{ sujet.date_creation|date:"d/m/Y à H:i" }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-chat-dots"></i> {{ sujet.messages.count }} messages
+                <span class="mx-2">•</span>
+                <i class="bi bi-eye"></i> {{ sujet.vues|default:0 }} vues
+                {% if sujet.est_epingle %}
+                    <span class="badge bg-warning text-dark ms-2">📌 Épinglé</span>
+                {% endif %}
+                {% if sujet.est_ferme %}
+                    <span class="badge bg-danger ms-2">🔒 Fermé</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            {% if not sujet.est_ferme %}
+                <a href="#repondre" class="btn btn-success">
+                    <i class="bi bi-reply"></i> Répondre
+                </a>
+            {% endif %}
+            {% if est_enseignant %}
+                <div class="btn-group">
+                    <a href="{% url 'vegetables_fruits:forum_epingler' sujet.id %}" class="btn btn-outline-warning btn-sm">
+                        {% if sujet.est_epingle %}📌 Désépingler{% else %}📌 Épingler{% endif %}
+                    </a>
+                    <a href="{% url 'vegetables_fruits:forum_fermer' sujet.id %}" class="btn btn-outline-danger btn-sm">
+                        {% if sujet.est_ferme %}🔓 Rouvrir{% else %}🔒 Fermer{% endif %}
+                    </a>
+                    <a href="{% url 'vegetables_fruits:forum_supprimer_sujet' sujet.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ce sujet ?')">
+                        🗑️ Supprimer
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- LISTE DES MESSAGES -->
+    <div class="messages-list">
+        <!-- PREMIER MESSAGE (LE SUJET ORIGINAL) -->
+        {% if messages %}
+        <div class="message card mb-3 border-success" id="message-{{ messages.0.id }}" data-message-id="{{ messages.0.id }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>{{ messages.0.auteur.username }}</strong>
+                        {% if messages.0.auteur == request.user %}
+                            <span class="badge bg-info text-white ms-2">Vous</span>
+                        {% endif %}
+                        {% if messages.0.auteur.is_enseignant %}
+                            <span class="badge bg-primary ms-2">👨‍🏫 Enseignant</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="message-content mt-2">
+                    {{ messages.0.contenu|linebreaks }}
+                </div>
+                <div class="message-footer mt-2">
+                    <small class="text-muted">#1</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- LES RÉPONSES (MESSAGES SUIVANTS) -->
+        {% for message in messages|slice:"1:" %}
+        <div class="message card mb-3" id="message-{{ message.id }}" data-message-id="{{ message.id }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>{{ message.auteur.username }}</strong>
+                        {% if message.auteur == request.user %}
+                            <span class="badge bg-info text-white ms-2">Vous</span>
+                        {% endif %}
+                        {% if message.auteur.is_enseignant %}
+                            <span class="badge bg-primary ms-2">👨‍🏫 Enseignant</span>
+                        {% endif %}
+                    </div>
+                    {% if est_enseignant %}
+                        <a href="{% url 'vegetables_fruits:forum_supprimer_message' message.id %}" class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Supprimer ce message ?')">
+                            🗑️
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="message-content mt-2">
+                    {{ message.contenu|linebreaks }}
+                </div>
+                <div class="message-footer mt-2 d-flex justify-content-between align-items-center">
+                    <small class="text-muted">#{{ forloop.counter|add:1 }}</small>
+                    {% if message.auteur != request.user %}
+                    <small>
+                        <a href="{% url 'vegetables_fruits:forum_signalement' %}?message_id={{ message.id }}" class="text-danger text-decoration-none" title="Signaler ce message">
+                            ⚠️ Signaler
+                        </a>
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if messages.has_other_pages %}
+        <nav aria-label="Pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if messages.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ messages.previous_page_number }}">‹</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">‹</span>
+                    </li>
+                {% endif %}
+
+                {% for num in messages.paginator.page_range %}
+                    {% if messages.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > messages.number|add:'-3' and num < messages.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if messages.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ messages.next_page_number }}">›</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">›</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <!-- FORMULAIRE DE RÉPONSE -->
+    <div id="repondre" class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">💬 Répondre</h5>
+        </div>
+        <div class="card-body">
+            {% if sujet.est_ferme %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-lock"></i> Ce sujet est fermé. Vous ne pouvez plus répondre.
+                </div>
+            {% elif request.user.is_authenticated %}
+                <form method="post" action="{% url 'vegetables_fruits:forum_repondre' sujet.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="contenu" class="form-control" rows="4" placeholder="Écrivez votre réponse..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send"></i> Envoyer
+                    </button>
+                </form>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> <a href="{% url 'vegetables_fruits:login' %}">Connectez-vous</a> pour répondre.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // ✅ Marquer les messages comme lus
+    document.addEventListener('DOMContentLoaded', function() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const messageElement = entry.target;
+                    const messageId = messageElement.dataset.messageId;
+                    if (messageId) {
+                        fetch(`/forum/marquer-lu/${messageId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/json',
+                            },
+                        }).catch(error => console.error('Erreur:', error));
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.message').forEach(msg => observer.observe(msg));
+
+        // Marquer le premier message visible immédiatement
+        const premierMessage = document.querySelector('.message:first-child');
+        if (premierMessage) {
+            const messageId = premierMessage.dataset.messageId;
+            if (messageId) {
+                fetch(`/forum/marquer-lu/${messageId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                }).catch(error => console.error('Erreur:', error));
+            }
+        }
+    });
+</script>
+
+<style>
+    .message {
+        transition: background-color 0.2s;
+    }
+    .message:hover {
+        background-color: #f8f9fa;
+    }
+    .message-content {
+        color: #2d3436;
+        line-height: 1.6;
+    }
+    .message-footer a {
+        text-decoration: none;
+    }
+    .message-footer a:hover {
+        text-decoration: underline;
+    }
+    .pagination .page-link {
+        color: #28a745;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+</style>
+{% endblock %}

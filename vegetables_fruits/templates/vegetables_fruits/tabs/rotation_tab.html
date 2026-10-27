@@ -1,0 +1,913 @@
+<style>
+    /* ============================================================ */
+    /* ✅ STYLES ROTATION - ESPACEMENT & LISIBILITÉ */
+    /* ============================================================ */
+
+    .rotation-container {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #2c3e50;
+    }
+
+    .rotation-container .card-header {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 14px 20px;
+        letter-spacing: 0.3px;
+    }
+
+    .rotation-container .card-body {
+        padding: 20px 24px;
+    }
+
+    /* ✅ TABLEAUX */
+    .rotation-container table {
+        font-size: 0.92rem;
+        margin-bottom: 0;
+    }
+
+    .rotation-container table th,
+    .rotation-container table td {
+        padding: 14px 18px !important;
+        vertical-align: middle;
+        line-height: 1.5;
+    }
+
+    .rotation-container table thead th {
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        letter-spacing: 0.2px;
+    }
+
+    .rotation-container table tbody td:first-child {
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    /* ✅ Largeurs plan rotation */
+    .rotation-container .table-rotation-plan th:nth-child(1),
+    .rotation-container .table-rotation-plan td:nth-child(1) { width: 14%; }
+    .rotation-container .table-rotation-plan th:nth-child(2),
+    .rotation-container .table-rotation-plan td:nth-child(2) { width: 22%; }
+    .rotation-container .table-rotation-plan th:nth-child(3),
+    .rotation-container .table-rotation-plan td:nth-child(3) { width: 33%; }
+    .rotation-container .table-rotation-plan th:nth-child(4),
+    .rotation-container .table-rotation-plan td:nth-child(4) { width: 31%; }
+
+    /* ✅ Tableau recommandations */
+    .rotation-container .table-recommandations {
+        font-size: 0.88rem;
+    }
+
+    .rotation-container .table-recommandations th,
+    .rotation-container .table-recommandations td {
+        padding: 12px 14px !important;
+        text-align: center;
+    }
+
+    .rotation-container .table-recommandations th:first-child,
+    .rotation-container .table-recommandations td:first-child,
+    .rotation-container .table-recommandations th:nth-child(2),
+    .rotation-container .table-recommandations td:nth-child(2) {
+        text-align: left;
+    }
+
+    /* ✅ Badges */
+    .rotation-container .badge {
+        font-size: 0.78rem;
+        padding: 5px 10px;
+        font-weight: 500;
+    }
+
+    .rotation-container .badge-culture {
+        font-size: 0.88rem;
+        padding: 8px 14px;
+        margin: 3px;
+    }
+
+    .rotation-container .culture-card-junior {
+        min-width: 100px;
+        padding: 14px 10px;
+        font-size: 0.9rem;
+    }
+
+    /* ✅ Alertes */
+    .rotation-container .alert {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        padding: 16px 20px;
+    }
+
+    .rotation-container .alert h6 {
+        font-size: 0.98rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .rotation-container .cell-info {
+        padding: 16px 18px;
+        border-radius: 10px;
+    }
+
+    .rotation-container .cell-info small { font-size: 0.82rem; }
+    .rotation-container .cell-info strong { font-size: 1.05rem; }
+
+    .rotation-container .plan-card {
+        padding: 16px 12px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 0.88rem;
+    }
+
+    .rotation-container .plan-card strong {
+        font-size: 0.95rem;
+        display: block;
+        margin-top: 6px;
+    }
+
+    .rotation-container .plan-card .small {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    /* ============================================================ */
+    /* ✅ CARTES DES 4 ANNÉES (HISTORIQUE) */
+    /* ============================================================ */
+    .year-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .year-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .year-card-active {
+        border-color: #2d6a4f;
+        box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2);
+    }
+
+    .year-header {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .year-card-active .year-header {
+        background: #2d6a4f;
+        color: white;
+        border-bottom-color: #1b4332;
+    }
+
+    .year-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: #2d6a4f;
+        color: white;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .year-card-active .year-number {
+        background: white;
+        color: #2d6a4f;
+    }
+
+    .year-label {
+        font-weight: 600;
+        font-size: 0.92rem;
+    }
+
+    .year-body {
+        padding: 14px 15px;
+        min-height: 100px;
+    }
+
+    .year-cultures {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .year-cultures li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+        font-size: 0.88rem;
+        color: #2c3e50;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .year-cultures li:last-child { border-bottom: none; }
+
+    .culture-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #2d6a4f;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    /* ✅ Responsive */
+    @media (max-width: 768px) {
+        .rotation-container { font-size: 0.88rem; }
+
+        .rotation-container .card-body { padding: 16px 18px; }
+
+        .rotation-container table th,
+        .rotation-container table td {
+            padding: 10px 12px !important;
+            font-size: 0.83rem;
+        }
+
+        .rotation-container table thead th { font-size: 0.82rem; }
+
+        .rotation-container .table-rotation-plan th:nth-child(1),
+        .rotation-container .table-rotation-plan td:nth-child(1),
+        .rotation-container .table-rotation-plan th:nth-child(2),
+        .rotation-container .table-rotation-plan td:nth-child(2),
+        .rotation-container .table-rotation-plan th:nth-child(3),
+        .rotation-container .table-rotation-plan td:nth-child(3),
+        .rotation-container .table-rotation-plan th:nth-child(4),
+        .rotation-container .table-rotation-plan td:nth-child(4) {
+            width: auto;
+        }
+
+        .rotation-container .badge-culture {
+            font-size: 0.8rem;
+            padding: 6px 10px;
+        }
+
+        .year-body {
+            padding: 10px 12px;
+            min-height: 80px;
+        }
+
+        .year-cultures li {
+            font-size: 0.82rem;
+            padding: 4px 0;
+        }
+
+        .year-label { font-size: 0.85rem; }
+    }
+</style>
+
+
+<div class="rotation-container">
+
+    {# ============================================================ #}
+    {# EN-TÊTE #}
+    {# ============================================================ #}
+    {% if version_enfant %}
+        <div class="card mb-4" style="background: linear-gradient(135deg, #2d6a4f, #40916c); color: white; border: none;">
+            <div class="card-body text-center py-4">
+                <span style="font-size: 3rem;">🔄</span>
+                <h4 class="mb-1" style="color: white;">Rotation des cultures</h4>
+                <p class="mb-0" style="opacity: 0.9;">🌱 Pour garder un sol en bonne santé !</p>
+                <div class="mt-2">
+                    <span class="badge bg-light text-dark" style="font-size: 0.9rem; padding: 6px 14px;">
+                        📅 Cycle {{ annee_cycle }} sur 4 ans
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span style="font-size: 2rem;">🔄</span>
+                    <div>
+                        <h5 class="mb-0">Rotation des cultures</h5>
+                        <small class="text-muted">Plan sur 4 ans pour préserver la fertilité du sol</small>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge bg-primary">📅 Année {{ annee_cycle }} / 4</span>
+                    {% if recommandations %}
+                        <span class="badge bg-success ms-2">{{ recommandations|length }} culture(s)</span>
+                    {% endif %}
+                    {% if derniere_recolte %}
+                        <span class="badge bg-warning text-dark ms-2">
+                            🧺 Dernière récolte : {{ derniere_recolte.culture_nom }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# 🧺 SECTION APRÈS-RÉCOLTE #}
+    {# ============================================================ #}
+    {% if derniere_recolte and derniere_recolte_rotation %}
+        {% if version_enfant %}
+            <div class="card mb-4" style="background: #fff8e1; border: 2px solid #ffc107;">
+                <div class="card-header bg-warning text-dark">
+                    🧺 Bravo pour ta récolte !
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span style="font-size: 3rem;">🎉</span>
+                        <div>
+                            <h6 class="mb-1">Tu viens de récolter : <strong>{{ derniere_recolte.culture_nom }}</strong></h6>
+                            <small class="text-muted">
+                                Le {{ derniere_recolte.date_recolte_effective|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mb-2">
+                        <strong>✅ Bonne nouvelle !</strong> Tu peux planter une <strong>autre famille</strong> ici.
+                    </div>
+
+                    <div class="alert alert-danger mb-2">
+                        <strong>🚫 Attention :</strong>
+                        Ne replante pas de <strong>{{ derniere_recolte_rotation.famille }}</strong> au même endroit !
+                        <br>
+                        <small>Sinon tes plantes risquent d'être malades.</small>
+                    </div>
+
+                    {% if derniere_recolte_rotation.plan %}
+                        <div class="alert alert-info mb-0">
+                            <strong>🌱 Astuce :</strong>
+                            Pour la prochaine culture, essaie :
+                            <strong>{{ derniere_recolte_rotation.plan.1|default:derniere_recolte_rotation.plan.0 }}</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-basket"></i> 🧺 Conseil après-récolte
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="cell-info bg-light">
+                                <small class="text-muted d-block mb-1">Dernière récolte</small>
+                                <strong>{{ derniere_recolte.culture_nom }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ derniere_recolte.date_recolte_effective|date:"d/m/Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="cell-info bg-light">
+                                <small class="text-muted d-block mb-1">Famille botanique</small>
+                                <strong>{{ derniere_recolte_rotation.famille }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger mb-3">
+                        <h6 class="mb-2">🚫 Ne replantez pas</h6>
+                        <p class="mb-0">
+                            Évitez de planter une culture de la famille
+                            <strong>{{ derniere_recolte_rotation.famille }}</strong>
+                            au même endroit pendant au moins 2-3 ans.
+                        </p>
+                    </div>
+
+                    {% if derniere_recolte_rotation.plan %}
+                        <div class="alert alert-success mb-3">
+                            <h6 class="mb-2">✅ À la place, plantez</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for culture in derniere_recolte_rotation.plan %}
+                                    {% if culture != derniere_recolte.culture_nom %}
+                                        <span class="badge bg-success badge-culture">{{ culture }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if derniere_recolte_rotation.conseils %}
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-lightbulb"></i>
+                            <strong>Conseil :</strong> {{ derniere_recolte_rotation.conseils }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {# ============================================================ #}
+    {# ⚠️ SECTION CONFLITS #}
+    {# ============================================================ #}
+    {% if conflits %}
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                ⚠️ Conflits de familles détectés
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Vous avez plusieurs cultures de la <strong>même famille botanique</strong>
+                    sur cette parcelle. Cela augmente le risque de maladies et d'épuisement du sol.
+                </p>
+
+                {% for famille, cultures in conflits.items %}
+                    <div class="alert alert-warning mb-2">
+                        <strong>⚠️ {{ famille }}</strong> :
+                        {% for c in cultures %}
+                            <span class="badge bg-secondary badge-culture">{{ c|capfirst }}</span>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-lightbulb"></i>
+                    <strong>Conseil :</strong> Essayez de diversifier les familles botaniques
+                    pour limiter les maladies et améliorer la fertilité du sol.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# 🌍 CULTURES SANS DONNÉES #}
+    {# ============================================================ #}
+    {% if cultures_sans_donnees %}
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                🌍 Cultures exotiques / sans données
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Pour ces cultures, nous n'avons pas encore de données de rotation spécifiques.
+                    <br>
+                    <small class="text-muted">
+                        Voici des conseils généraux pour bien les cultiver.
+                    </small>
+                </p>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for culture in cultures_sans_donnees %}
+                        <span class="badge bg-info badge-culture">
+                            🌍 {{ culture|capfirst }}
+                        </span>
+                    {% endfor %}
+                </div>
+
+                <div class="alert alert-info mb-0">
+                    <h6 class="mb-2">💡 Conseils généraux</h6>
+                    <ul class="mb-0 ps-3">
+                        <li>🌿 <strong>Alternez les familles</strong> si vous connaissez la famille botanique.</li>
+                        <li>🌱 <strong>Plantez des légumineuses</strong> (haricot, pois, fève) entre deux cultures pour enrichir le sol.</li>
+                        <li>💧 <strong>Amendez</strong> avec du compost avant chaque plantation.</li>
+                        <li>📸 <strong>Notez vos observations</strong> dans le journal pour créer votre propre historique.</li>
+                        <li>🌾 <strong>Semez un engrais vert</strong> (phacélie, trèfle) en fin de saison.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# 📊 HISTORIQUE DES CULTURES PAR ANNÉE (4 CASES) #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-header {% if version_enfant %}bg-success text-white{% else %}bg-light{% endif %}">
+            <i class="bi bi-grid-3x3-gap"></i>
+            {% if version_enfant %}📊 Mes cultures par année{% else %}Historique des cultures par année{% endif %}
+        </div>
+        <div class="card-body">
+            {% if version_enfant %}
+                <p class="text-muted small mb-3">
+                    🌱 Regarde dans quelle année se trouvent tes cultures !
+                </p>
+            {% else %}
+                <p class="text-muted small mb-3">
+                    💡 Répartition de vos cultures selon les 4 années du cycle de rotation.
+                </p>
+            <br>
+            {% endif %}
+
+            <div class="row g-3">
+                {% for annee in historique_annees %}
+                    <div class="col-md-3 col-6">
+                        <div class="year-card {% if annee.est_courante %}year-card-active{% endif %}">
+                            <div class="year-header">
+                                <span class="year-number">{{ annee.numero }}</span>
+                                <span class="year-label">Année {{ annee.numero }}</span>
+                            </div>
+                            <div class="year-body">
+                                {% if annee.cultures %}
+                                    <ul class="year-cultures">
+                                        {% for culture in annee.cultures %}
+                                            <li>
+                                                <span class="culture-dot"></span>
+                                                {{ culture|capfirst }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <small class="text-muted d-block mt-2">
+                                        {{ annee.cultures|length }} culture(s)
+                                    </small>
+                                {% else %}
+                                    <p class="text-muted small mb-0 text-center">
+                                        <em>Aucune culture</em>
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if version_enfant %}
+                <div class="mt-3 text-center text-muted small">
+                    ⭐ L'année en cours est mise en évidence
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# 🗓️ PLAN DE ROTATION IDÉAL SUR 4 ANS #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-header {% if version_enfant %}bg-info text-white{% else %}bg-light{% endif %}">
+            <i class="bi bi-calendar-check"></i>
+            {% if version_enfant %}🗓️ Le cycle idéal sur 4 ans{% else %}Plan de rotation idéal sur 4 ans{% endif %}
+        </div>
+        <div class="card-body">
+            {% if version_enfant %}
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <div class="plan-card {% if annee_cycle == 1 %}bg-success text-white{% else %}bg-light{% endif %}">
+                            <div style="font-size: 2rem;">🌱</div>
+                            <strong>Année 1</strong>
+                            <div class="small">Légumes-feuilles</div>
+                            <div class="small text-muted">Salade, épinard, chou</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="plan-card {% if annee_cycle == 2 %}bg-success text-white{% else %}bg-light{% endif %}">
+                            <div style="font-size: 2rem;">🍅</div>
+                            <strong>Année 2</strong>
+                            <div class="small">Légumes-fruits</div>
+                            <div class="small text-muted">Tomate, courgette, poivron</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="plan-card {% if annee_cycle == 3 %}bg-success text-white{% else %}bg-light{% endif %}">
+                            <div style="font-size: 2rem;">🥕</div>
+                            <strong>Année 3</strong>
+                            <div class="small">Légumes-racines</div>
+                            <div class="small text-muted">Carotte, betterave, radis</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="plan-card {% if annee_cycle == 4 %}bg-success text-white{% else %}bg-light{% endif %}">
+                            <div style="font-size: 2rem;">🫘</div>
+                            <strong>Année 4</strong>
+                            <div class="small">Légumineuses</div>
+                            <div class="small text-muted">Haricot, pois, fève</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-muted small">
+                    ⭐ L'année en cours est mise en évidence
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-rotation-plan">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Année</th>
+                                <th>Famille</th>
+                                <th>Exemples de cultures</th>
+                                <th>Bénéfice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="{% if annee_cycle == 1 %}table-success{% endif %}">
+                                <td><strong>Année 1</strong></td>
+                                <td>🌱 Légumes-feuilles</td>
+                                <td>Salade, épinard, chou, poireau</td>
+                                <td>Appauvrissent peu le sol</td>
+                            </tr>
+                            <tr class="{% if annee_cycle == 2 %}table-success{% endif %}">
+                                <td><strong>Année 2</strong></td>
+                                <td>🍅 Légumes-fruits</td>
+                                <td>Tomate, courgette, poivron, aubergine</td>
+                                <td>Gourmands en nutriments</td>
+                            </tr>
+                            <tr class="{% if annee_cycle == 3 %}table-success{% endif %}">
+                                <td><strong>Année 3</strong></td>
+                                <td>🥕 Légumes-racines</td>
+                                <td>Carotte, betterave, radis, navet</td>
+                                <td>Drainent les nutriments en profondeur</td>
+                            </tr>
+                            <tr class="{% if annee_cycle == 4 %}table-success{% endif %}">
+                                <td><strong>Année 4</strong></td>
+                                <td>🫘 Légumineuses</td>
+                                <td>Haricot, pois, fève, lentille</td>
+                                <td>Enrichissent le sol en azote</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-muted small">
+                    ⭐ L'année en cours est mise en évidence
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# LIEN POUR AJOUTER UNE CULTURE #}
+    {# ============================================================ #}
+    {% if selected_figure %}
+    <div class="mb-4">
+        <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}"
+           class="btn {% if version_enfant %}btn-success btn-lg{% else %}btn-outline-success{% endif %} w-100"
+           style="{% if version_enfant %}padding: 15px; font-size: 1.1rem; border-radius: 15px;{% endif %}">
+            ➕ {% if version_enfant %}Ajouter une culture 🌱{% else %}Modifier les cultures de la parcelle{% endif %}
+        </a>
+        {% if version_enfant %}
+            <p class="text-center text-muted small mt-2">🌿 Tu peux ajouter ou supprimer des cultures à tout moment !</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# MES CULTURES #}
+    {# ============================================================ #}
+    {% if cultures_parcelle %}
+        {% if version_enfant %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    🌱 Mes cultures dans cette parcelle
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3">
+                        {% for culture in cultures_parcelle %}
+                            <div class="culture-card-junior bg-light rounded-3 text-center" style="border: 2px solid #2d6a4f;">
+                                <div style="font-size: 2rem;">🌿</div>
+                                <strong>{{ culture|capfirst }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted small mt-2">📌 {{ cultures_parcelle|length }} culture(s) dans cette parcelle</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <i class="bi bi-seedling"></i> Cultures de la parcelle
+                    <span class="badge bg-secondary ms-2">{{ cultures_parcelle|length }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for culture in cultures_parcelle %}
+                            <span class="badge bg-success badge-culture">
+                                🌱 {{ culture|capfirst }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            {% if version_enfant %}
+                🌱 Oups ! Tu n'as pas encore de cultures dans cette parcelle.
+                <br>
+                {% if selected_figure %}
+                <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="alert-link">Ajoute ta première culture 🌱</a>
+                {% endif %}
+            {% else %}
+                Aucune culture détectée sur cette parcelle.
+                {% if selected_figure %}
+                <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="alert-link">Ajoutez des cultures</a> pour voir les recommandations de rotation.
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# RECOMMANDATIONS DE ROTATION #}
+    {# ============================================================ #}
+    {% if recommandations %}
+        {% if version_enfant %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    📅 Que planter cette année ?
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        🌟 Nous sommes en <strong>Année {{ annee_cycle }}</strong>. Voici ce que tu peux planter :
+                    </p>
+
+                    <div class="row g-3">
+                        {% for rec in recommandations %}
+                            <div class="col-md-6">
+                                <div class="card h-100" style="border-left: 5px solid #2d6a4f;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-1">
+                                                <span style="font-size: 1.5rem;">🌱</span>
+                                                {{ rec.culture }}
+                                            </h6>
+                                            <span class="badge bg-success">✅ {{ rec.recommande }}</span>
+                                        </div>
+                                        <small class="text-muted d-block mb-2">{{ rec.famille }}</small>
+
+                                        <div class="row g-1 mt-2 small">
+                                            <div class="col-3 text-center p-1 {% if annee_cycle == 1 %}bg-success bg-opacity-10 rounded{% endif %}">
+                                                <div class="fw-bold">Année 1</div>
+                                                <div>{{ rec.plan_annee1|default:"-" }}</div>
+                                            </div>
+                                            <div class="col-3 text-center p-1 {% if annee_cycle == 2 %}bg-success bg-opacity-10 rounded{% endif %}">
+                                                <div class="fw-bold">Année 2</div>
+                                                <div>{{ rec.plan_annee2|default:"-" }}</div>
+                                            </div>
+                                            <div class="col-3 text-center p-1 {% if annee_cycle == 3 %}bg-success bg-opacity-10 rounded{% endif %}">
+                                                <div class="fw-bold">Année 3</div>
+                                                <div>{{ rec.plan_annee3|default:"-" }}</div>
+                                            </div>
+                                            <div class="col-3 text-center p-1 {% if annee_cycle == 4 %}bg-success bg-opacity-10 rounded{% endif %}">
+                                                <div class="fw-bold">Année 4</div>
+                                                <div>{{ rec.plan_annee4|default:"-" }}</div>
+                                            </div>
+                                        </div>
+
+                                        {% if rec.prochaine_culture %}
+                                            <p class="mb-1 mt-2 small">
+                                                ➡️ <strong>L'année prochaine :</strong>
+                                                <span class="badge bg-info">{{ rec.prochaine_culture }}</span>
+                                            </p>
+                                        {% endif %}
+
+                                        {% if rec.conseil_annee %}
+                                            <p class="mb-0 text-muted small mt-2">
+                                                💡 {{ rec.conseil_annee }}
+                                            </p>
+                                        {% elif rec.conseils %}
+                                            <p class="mb-0 text-muted small mt-2">
+                                                💡 {{ rec.conseils }}
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="background: #f0f7f0; border: 2px dashed #2d6a4f;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <span style="font-size: 3rem;">🧑‍🌾</span>
+                        <div>
+                            <h6 class="mb-1">Le conseil du jardinier</h6>
+                            <p class="mb-0 small text-muted">
+                                🌱 Ne plante jamais la même famille de légumes au même endroit deux années de suite !
+                                Alterne les familles pour garder un sol en bonne santé.
+                            </p>
+                            <div class="mt-2">
+                                <span class="badge bg-success badge-culture">🥕 Carotte → Apiacées</span>
+                                <span class="badge bg-warning text-dark badge-culture">🍅 Tomate → Solanacées</span>
+                                <span class="badge bg-info badge-culture">🫘 Haricot → Fabacées</span>
+                                <span class="badge bg-danger badge-culture">🥬 Chou → Brassicacées</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-range"></i> Plan de rotation recommandé
+                    <span class="badge bg-info ms-2">Année {{ annee_cycle }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        💡 Voici les cultures recommandées en <strong>Année {{ annee_cycle }}</strong>
+                        pour chaque culture de votre parcelle.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-recommandations">
+                            <thead>
+                                <tr>
+                                    <th>Culture</th>
+                                    <th>Famille</th>
+                                    <th>Année 1</th>
+                                    <th>Année 2</th>
+                                    <th>Année 3</th>
+                                    <th>Année 4</th>
+                                    <th>Recommandé</th>
+                                    <th>Prochaine</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in recommandations %}
+                                    <tr>
+                                        <td><strong>{{ rec.culture }}</strong></td>
+                                        <td>
+                                            {{ rec.famille }}
+                                            {% if rec.source == 'json' %}
+                                                <span class="badge bg-info ms-1" style="font-size: 0.65rem;">Auto</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ rec.plan_annee1|default:"-" }}</td>
+                                        <td>{{ rec.plan_annee2|default:"-" }}</td>
+                                        <td>{{ rec.plan_annee3|default:"-" }}</td>
+                                        <td>{{ rec.plan_annee4|default:"-" }}</td>
+                                        <td><span class="badge bg-success">✅ {{ rec.recommande }}</span></td>
+                                        <td>
+                                            {% if rec.prochaine_culture %}
+                                                <span class="badge bg-info">➡️ {{ rec.prochaine_culture }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% for rec in recommandations %}
+                        {% if rec.conseil_annee %}
+                            <div class="mt-3 p-3 bg-light rounded-3">
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>{{ rec.culture }} :</strong> {{ rec.conseil_annee }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <i class="bi bi-lightbulb"></i> Conseils de rotation
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                                <h6>🌱 Pourquoi faire une rotation ?</h6>
+                                <p class="mb-0 small">La rotation des cultures évite l'épuisement du sol, limite les maladies et améliore la fertilité naturelle.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-info bg-opacity-10 rounded-3">
+                                <h6>🔄 Règle de base</h6>
+                                <p class="mb-0 small">Ne jamais planter deux fois de suite la même famille botanique au même endroit.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded-3">
+                                <h6>📅 Durée idéale</h6>
+                                <p class="mb-0 small">Un cycle de 4 ans est recommandé pour la plupart des légumes du potager.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-secondary bg-opacity-10 rounded-3">
+                                <h6>🌿 Engrais verts</h6>
+                                <p class="mb-0 small">Pensez à semer des engrais verts (moutarde, phacélie) entre deux cultures pour enrichir le sol.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        {% if cultures_parcelle %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                {% if version_enfant %}
+                    Pas encore de conseils de rotation pour ces cultures.
+                    Mais tu peux déjà commencer à planter ! 🌱
+                {% else %}
+                    Aucune recommandation de rotation disponible pour les cultures de cette parcelle.
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>

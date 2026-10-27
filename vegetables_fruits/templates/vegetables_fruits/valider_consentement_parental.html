@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Validation du consentement parental - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">👨‍👩‍👧 Consentement parental</li>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5">
+                    
+                    <div class="text-center mb-4">
+                        <div style="font-size: 4rem;">👨‍👩‍👧</div>
+                        <h2 style="color: #2d6a4f;">Consentement parental</h2>
+                        <p class="text-muted">
+                            Votre enfant <strong>{{ consentement.utilisateur.username }}</strong> 
+                            souhaite utiliser Agriculture 2.0
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6>📋 Informations importantes</h6>
+                        <p class="mb-0">
+                            Agriculture 2.0 est une application éducative de jardinage. 
+                            Votre enfant pourra créer des parcelles, planter des cultures 
+                            et apprendre en s'amusant.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6>🔒 Protection des données</h6>
+                        <p class="mb-0">
+                            Les données de votre enfant sont protégées et ne seront 
+                            jamais utilisées à des fins publicitaires.
+                        </p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5 class="mt-4 mb-3">👤 Vos informations (parent/tuteur légal)</h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" name="parent_nom" class="form-control" required
+                                       value="{{ consentement.representant_legal_nom|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" name="parent_prenom" class="form-control" required
+                                       value="{{ consentement.representant_legal_prenom|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email *</label>
+                                <input type="email" name="parent_email" class="form-control" required
+                                       value="{{ consentement.representant_legal_email|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Téléphone (optionnel)</label>
+                                <input type="tel" name="parent_telephone" class="form-control"
+                                       value="{{ consentement.representant_legal_telephone|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">✅ Consentements obligatoires</h5>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="cgu" id="cgu" required>
+                            <label class="form-check-label" for="cgu">
+                                J'accepte les 
+                                <a href="{% url 'vegetables_fruits:cgu' %}" target="_blank">
+                                    Conditions Générales d'Utilisation
+                                </a> *
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="confidentialite" id="confidentialite" required>
+                            <label class="form-check-label" for="confidentialite">
+                                J'accepte la 
+                                <a href="{% url 'vegetables_fruits:confidentialite' %}" target="_blank">
+                                    Politique de Confidentialité
+                                </a> *
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" name="donnees" id="donnees" required>
+                            <label class="form-check-label" for="donnees">
+                                Je consens au traitement des données de mon enfant 
+                                pour l'utilisation de l'application *
+                            </label>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                ✅ Valider le consentement
+                            </button>
+                        </div>
+                        
+                        <p class="text-center text-muted mt-3" style="font-size: 0.85rem;">
+                            * Champs obligatoires
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

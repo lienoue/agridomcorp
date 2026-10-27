@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                🔔 Créer un rappel d'arrosage
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>🌱 {{ parcelle.nom }}</h5>
+                    <p class="text-muted">Surface : {{ parcelle.surface_m2 }} m²</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Culture concernée</label>
+                        <select name="culture" class="form-select" required>
+                            <option value="">-- Choisir une culture --</option>
+                            {% for besoin in besoins %}
+                                <option value="{{ besoin.culture }}">{{ besoin.culture }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Date du prochain rappel</label>
+                        <input type="date" name="date_rappel" class="form-control" required>
+                        <small class="text-muted">Date à laquelle vous souhaitez recevoir le rappel</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Fréquence (jours)</label>
+                        <input type="number" name="frequence_jours" class="form-control" value="3" min="1" max="30" required>
+                        <small class="text-muted">Tous les combien de jours voulez-vous être rappelé ?</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Message personnalisé (optionnel)</label>
+                        <textarea name="message_personnalise" class="form-control" rows="3" placeholder="Ex: Pensez à arroser les tomates ce soir..."></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">✅ Créer le rappel</button>
+                        <a href="{% url 'vegetables_fruits:plan_irrigation' %}" class="btn btn-secondary">Retour</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "vegetables_fruits/forum/adulte/base_forum.html" %}
+{% load cache %}
+
+{% block title %}🌿 Forum Jardin & Partage - Agriculture 2.0{% endblock %}
+
+{% block header_subtitle %}🌱 Le jardinage, c'est mieux quand on le partage{% endblock %}
+
+{% block content %}
+
+{# ✅ CATÉGORIES (caché pendant 1 heure) #}
+{% cache 600 forum_categories user.id %}
+<section class="mb-20">
+    <h3 style="font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.2rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>📂</span> Catégories
+        <span style="font-size: 0.8rem; color: #999; font-weight: 400;">({{ categories|length }})</span>
+    </h3>
+
+    <div class="categorie-grid">
+        {% for cat in categories %}
+        <a href="{% url 'vegetables_fruits:forum_adulte_categorie' cat.id %}" class="categorie-card">
+            <span class="cat-icon">{{ cat.icone|default:'🌿' }}</span>
+            <div class="cat-info">
+                <div class="cat-nom">
+                    {{ cat.nom }}
+                    {% if cat.est_premium %}
+                        <span class="cat-badge-premium">🔒</span>
+                    {% endif %}
+                </div>
+                <div class="cat-stats">
+                    {{ cat.nb_sujets|default:0 }} sujets • {{ cat.nb_messages|default:0 }} messages
+                </div>
+            </div>
+            <span style="font-size: 0.8rem; color: #ccc;">→</span>
+        </a>
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1/-1;">
+            <div class="empty-icon">🌱</div>
+            <div class="empty-title">Aucune catégorie disponible</div>
+            <p>Revenez plus tard, le forum se prépare !</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endcache %}
+
+{# ✅ SUJETS ÉPINGLÉS #}
+{% if sujets_epingles %}
+<section class="mb-20">
+    <h3 style="font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>📌</span> Sujets épinglés
+    </h3>
+    {% for sujet in sujets_epingles %}
+        {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet is_epingle=True %}
+    {% endfor %}
+</section>
+{% endif %}
+
+{# ✅ SUJETS POPULAIRES #}
+{% if sujets_populaires %}
+<section class="mb-20">
+    <h3 style="font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>🔥</span> Sujets populaires
+    </h3>
+    {% for sujet in sujets_populaires %}
+        {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet is_populaire=True %}
+    {% endfor %}
+</section>
+{% endif %}
+
+{# ✅ DERNIERS SUJETS #}
+<section>
+    <h3 style="font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>📋</span> Derniers sujets
+        <span style="font-size: 0.8rem; color: #999; font-weight: 400;">({{ derniers_sujets|length }})</span>
+    </h3>
+    
+    {% for sujet in derniers_sujets %}
+        {% include "vegetables_fruits/forum/adulte/includes/sujet_card.html" with sujet=sujet %}
+    {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">🌱</div>
+            <div class="empty-title">Aucun sujet pour l'instant</div>
+            <p>Soyez le premier à lancer une discussion !</p>
+            <a href="{% url 'vegetables_fruits:forum_adulte_nouveau_sujet' %}" class="btn-primary-forum" style="margin-top: 12px; display: inline-flex;">
+                <span>✏️</span> Créer un sujet
+            </a>
+        </div>
+    {% endfor %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,184 @@
+{% load static %}
+
+<div class="planification-container">
+    <!-- En-tête -->
+    <div class="planification-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="mb-0">
+                <i class="bi bi-calendar-week text-success"></i>
+                Suivi des cultures
+            </h5>
+            <small class="text-muted">
+                {% if selected_figure %}
+                    Parcelle : <strong>{{ selected_figure.name }}</strong>
+                {% else %}
+                    Aucune parcelle sélectionnée
+                {% endif %}
+            </small>
+        </div>
+        <span class="badge bg-success rounded-pill">{{ cultures|length }} culture(s)</span>
+    </div>
+    <br>
+
+    <!-- Grille des cultures -->
+    {% if cultures %}
+        <div class="row g-3">
+            {% for culture in cultures %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card culture-card h-100 border-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="culture-info">
+                                    <div class="culture-emoji" style="font-size: 2rem; line-height: 1;">
+                                        {{ culture.emoji }}
+                                    </div>
+                                    <h6 class="card-title mt-2 mb-1">{{ culture.nom }}</h6>
+                                    <span class="badge
+                                        {% if culture.statut == 'Planté' or culture.statut == 'Prêt à récolter' or culture.statut == 'Fructification' %}bg-success
+                                        {% elif culture.statut == 'Semé' or culture.statut == 'Levée' %}bg-warning text-dark
+                                        {% elif culture.statut == 'Planifié' %}bg-info
+                                        {% else %}bg-secondary{% endif %} rounded-pill">
+                                        {{ culture.statut }}
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info rounded-pill">
+                                        {{ culture.progression }}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Barre de progression -->
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar
+                                            {% if culture.progression >= 85 %}bg-success
+                                            {% elif culture.progression >= 60 %}bg-info
+                                            {% elif culture.progression >= 30 %}bg-warning
+                                            {% else %}bg-secondary{% endif %}"
+                                     style="width: {{ culture.progression }}%;
+                                            border-radius: 10px;">
+                                </div>
+                            </div>
+
+                            <!-- Détails -->
+                            <hr class="my-2">
+                            <div class="culture-details small">
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <span class="text-muted">🌱 Semis</span>
+                                        <div>
+                                            {% if culture.date_semis %}
+                                                {{ culture.date_semis|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-muted">🌿 Plantation</span>
+                                        <div>
+                                            {% if culture.date_plantation %}
+                                                {{ culture.date_plantation|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-1 mt-1">
+                                    <div class="col-6">
+                                        <span class="text-muted">🌾 Récolte</span>
+                                        <div>
+                                            {% if culture.date_recolte_prevue %}
+                                                {{ culture.date_recolte_prevue|date:"d/m/Y" }}
+                                                {% if culture.date_recolte_prevue < today %}
+                                                    <span class="badge bg-danger">⚠️ Prête !</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-muted">⏳ Jours en terre</span>
+                                        <div><strong>{{ culture.jours_pousse }} jours</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Message si aucune culture -->
+        <div class="text-center py-5">
+            <div style="font-size: 4rem;">🌾</div>
+            <h5 class="mt-3">Aucune culture plantée sur cette parcelle</h5>
+            <p class="text-muted">
+                Commencez par planter des cultures depuis l'onglet
+                <a href="#" class="text-success" onclick="switchTab('calendrier')">Calendrier</a>
+                ou depuis
+                <a href="#" class="text-success" onclick="switchTab('mes-semis')">Mes semis</a>
+            </p>
+            {% if selected_figure %}
+                <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Ajouter une culture
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .planification-container {
+        padding: 5px 0;
+    }
+
+    .planification-header {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .culture-card {
+        border: 1px solid #28a745 !important;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: #f8fff8;
+    }
+
+    .culture-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .culture-emoji {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .culture-details span.text-muted {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<script>
+    function switchTab(tabName) {
+        const tabMap = {
+            'calendrier': 'calendrier-tab',
+            'mes-semis': 'mes-semis-tab'
+        };
+
+        const tabId = tabMap[tabName];
+        if (tabId) {
+            const tab = document.getElementById(tabId);
+            if (tab) {
+                tab.click();
+            }
+        }
+    }
+</script>

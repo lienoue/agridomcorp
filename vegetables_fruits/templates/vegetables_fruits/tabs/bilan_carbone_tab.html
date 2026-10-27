@@ -1,0 +1,112 @@
+<div class="bilan-carbone-container">
+
+    {# ============================================================ #}
+    {# SÉLECTEUR DE PARCELLE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label for="parcelle-select-bilan" class="form-label fw-semibold">
+                        🌱 Choisir une parcelle
+                    </label>
+                    <select id="parcelle-select-bilan" class="form-select" onchange="window.location.href=this.value;">
+                        <option value="{% url 'vegetables_fruits:bilan_carbone' %}">🌍 Toutes les parcelles</option>
+                        {% for parcelle in parcelles %}
+                            <option value="{% url 'vegetables_fruits:bilan_carbone' %}?parcelle_id={{ parcelle.id }}"
+                                    {% if parcelle.id|stringformat:"s" == selected_parcelle_id|stringformat:"s" %}selected{% endif %}>
+                                {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-{{ statut.couleur }} rounded-pill" style="font-size: 1rem; padding: 8px 16px;">
+                        {{ statut.icone }} {{ statut.message }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+            <i class="bi bi-tree text-success"></i> Bilan carbone
+        </h5>
+    </div>
+    <br>
+
+    <!-- Résumé global -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Émissions</h6>
+                    <h3 class="text-danger">{{ total_emission }} kg</h3>
+                    <small>CO₂ équivalent</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Séquestration</h6>
+                    <h3 class="text-success">{{ total_sequestration }} kg</h3>
+                    <small>CO₂ équivalent</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Bilan net</h6>
+                    <h3 class="{% if total_bilan > 0 %}text-success{% else %}text-warning{% endif %}">
+                        {{ total_bilan }} kg
+                    </h3>
+                    <small>CO₂ équivalent</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détail par parcelle -->
+    {% if details_parcelles %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Détail par parcelle
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Parcelle</th>
+                                <th>Émissions</th>
+                                <th>Séquestration</th>
+                                <th>Bilan</th>
+                                <th>Cultures</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in details_parcelles %}
+                                <tr>
+                                    <td>{{ item.parcelle.nom }}</td>
+                                    <td>{{ item.emission }} kg</td>
+                                    <td>{{ item.sequestration }} kg</td>
+                                    <td class="{% if item.bilan > 0 %}text-success{% else %}text-warning{% endif %}">
+                                        {{ item.bilan }} kg
+                                    </td>
+                                    <td>{{ item.cultures }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune parcelle avec des cultures pour calculer le bilan carbone.
+        </div>
+    {% endif %}
+</div>

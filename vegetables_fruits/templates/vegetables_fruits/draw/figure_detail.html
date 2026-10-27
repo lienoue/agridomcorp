@@ -1,0 +1,1653 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Figure détail</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .detail-header {
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    .crops-section {
+        margin: 30px 0;
+    }
+    .crops-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .crop-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+    }
+    .crop-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-color: #28a745;
+    }
+    .crop-emoji {
+        font-size: 3rem;
+    }
+    .crop-name {
+        font-weight: bold;
+        margin: 8px 0;
+        font-size: 1.1rem;
+    }
+    .crop-info {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    .crop-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #28a745;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+    .map-container {
+        margin: 20px 0;
+    }
+    .journal-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    .journal-list {
+        margin: 15px 0;
+    }
+    .journal-item {
+        background: white;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #28a745;
+    }
+    .journal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .journal-content {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .journal-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 15px;
+    }
+    .journal-actions a {
+        font-size: 0.8rem;
+        color: #28a745;
+        text-decoration: none;
+    }
+    .btn-add-note {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 8px 16px;
+        background: #28a745;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+    .btn-add-note:hover {
+        background: #218838;
+    }
+    .text-muted {
+        color: #6c757d;
+    }
+    .chronologie-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    .chronologie-list {
+        margin: 15px 0;
+    }
+    .chronologie-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #17a2b8;
+    }
+    .chronologie-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    .chrono-emoji {
+        font-size: 1.5rem;
+    }
+    .chrono-statut {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: #e9ecef;
+    }
+    .statut-recolte {
+        background: #28a745;
+        color: white;
+    }
+    .statut-pret {
+        background: #ffc107;
+        color: #333;
+    }
+    .chronologie-progress {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    .progress-bar {
+        flex: 1;
+        height: 10px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background: #28a745;
+        border-radius: 10px;
+        transition: width 0.3s;
+    }
+    .chronologie-dates {
+        display: flex;
+        gap: 20px;
+        font-size: 0.8rem;
+        color: #6c757d;
+        flex-wrap: wrap;
+    }
+    .btn-recolter {
+        margin-top: 10px;
+        padding: 5px 12px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .btn-recolter:hover {
+        background: #218838;
+    }
+    .weather-section {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin: 20px 0;
+        cursor: pointer;
+        transition: transform 0.3s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .weather-section:hover {
+        transform: translateY(-2px);
+    }
+    .weather-temp-large {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    .weather-popup {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 300px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 1000;
+        overflow: hidden;
+    }
+    .weather-popup-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .weather-popup-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    .weather-popup-content {
+        padding: 15px;
+        text-align: center;
+    }
+    .auto-popup {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 350px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 1000;
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .auto-popup-header {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .auto-popup-header h4 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    .auto-popup-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    .auto-popup-content {
+        padding: 15px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .auto-popup-minimize {
+        text-align: center;
+        padding: 8px;
+        font-size: 0.7rem;
+        color: #6c757d;
+        cursor: pointer;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+    }
+    .auto-popup-minimize:hover {
+        background: #e9ecef;
+    }
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .lunar-calendar {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .pollinisation-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        margin: 2px;
+    }
+    .badge-auto { background: #d4edda; color: #155724; }
+    .badge-insectes { background: #fff3cd; color: #856404; }
+    .badge-vent { background: #d1ecf1; color: #0c5460; }
+    .badge-croisee { background: #f8d7da; color: #721c24; }
+    .advice-section {
+        margin: 15px 0;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    .btn-warning {
+        background: #fd7e14;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        background: #e66a0a;
+    }
+    .funfact-popup {
+        position: fixed;
+        bottom: 80px;
+        left: 20px;
+        background: white;
+        border-radius: 15px;
+        padding: 15px 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        z-index: 1001;
+        max-width: 300px;
+        animation: fadeInUp 0.3s ease;
+        border-left: 5px solid #28a745;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .funfact-popup .mascotte-avatar {
+        font-size: 2rem;
+        margin-right: 10px;
+    }
+    .funfact-popup .funfact-text {
+        font-size: 0.9rem;
+        color: #333;
+    }
+    .funfact-popup .funfact-close {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        color: #999;
+    }
+    .mascotte-icon {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: white;
+        border-radius: 50px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: transform 0.3s;
+        z-index: 1000;
+        border: 2px solid #28a745;
+    }
+    .mascotte-icon:hover {
+        transform: scale(1.05);
+    }
+    .mascotte-avatar {
+        font-size: 1.8rem;
+    }
+    .mascotte-name {
+        font-weight: bold;
+        color: #28a745;
+    }
+    .mascotte-text {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="map-container">
+        <div id="detail-map" style="height: 500px; border-radius: 12px;"></div>
+    </div>
+
+    <div class="weather-section" onclick="showWeatherPopup()">
+        <div class="weather-header">
+            <div>
+                <h3>🌤️ Météo en temps réel</h3>
+                <p>Cliquez pour voir les détails</p>
+            </div>
+            <div class="weather-temp-large" id="weather-temp">--°</div>
+        </div>
+        <div id="weather-desc">Chargement...</div>
+    </div>
+
+    <div id="weatherPopup" class="weather-popup" style="display: none;">
+        <div class="weather-popup-header">
+            <h4>🌤️ Météo détaillée</h4>
+            <button class="weather-popup-close" onclick="closeWeatherPopup()">×</button>
+        </div>
+        <div class="weather-popup-content" id="weatherPopupContent">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <h2>{{ figure.name|default:"Parcelle sans nom" }}</h2>
+            <span>ID: #{{ figure.id }}</span>
+        </div>
+        <div class="detail-body">
+            <div class="info-grid">
+                <div><strong>Type:</strong> {{ figure.get_figure_type_display|default:figure.figure_type }}</div>
+                <div><strong>Date de création parcelle:</strong> {{ figure.created_at|date:"d/m/Y" }}</div>
+                <div><strong>Points:</strong> {{ figure.nb_points|default:"0" }}</div>
+                {% if figure.adresse_formatted %}
+                <div><strong>📍 Adresse:</strong> {{ figure.adresse_formatted|truncatechars:50 }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cultures plantées avec taille -->
+    {% if enriched_crops %}
+    <div class="crops-section">
+        <h3>🌱 Cultures présentes ({{ enriched_crops|length }})</h3>
+        <div class="crops-grid">
+            {% for crop in enriched_crops %}
+            <div class="crop-card" data-crop-id="{{ forloop.counter }}">
+                <div class="crop-emoji">{{ crop.emoji }}</div>
+                <div class="crop-name">{{ crop.name }}</div>
+                <div class="crop-info">
+                    {% if crop.details.prix %}💰 {{ crop.details.prix }}€<br>{% endif %}
+                    {% if crop.details.saison %}📅 {{ crop.details.saison }}{% endif %}
+                </div>
+                <!-- ✅ AFFICHAGE TAILLE -->
+                <div class="crop-size" style="font-size: 0.7rem; color: #6c757d; border-top: 1px solid #e9ecef; padding-top: 5px; margin-top: 5px;">
+                    {% if crop.details.hauteur %}
+                    <div>📏 Hauteur: {{ crop.details.hauteur }}</div>
+                    {% endif %}
+                    {% if crop.details.largeur %}
+                    <div>📐 Largeur: {{ crop.details.largeur }}</div>
+                    {% endif %}
+                    {% if crop.details.espacement %}
+                    <div>🌱 Espacement: {{ crop.details.espacement }}</div>
+                    {% endif %}
+                    {% if crop.details.espacement_rangs %}
+                    <div>📏 Rangs: {{ crop.details.espacement_rangs }}</div>
+                    {% endif %}
+                </div>
+                <span class="crop-badge">{% if crop.details.type == 'fruit' %}🍎 Fruit{% else %}🥕 Légume{% endif %}</span>
+            </div>
+
+            {# ============================================================ #}
+            {# ✅ ACCORDÉON CONSEILS ENRICHIS (AJOUT) #}
+            {# ============================================================ #}
+            {% if crop.conseils %}
+            <div class="crop-conseils-wrapper" style="margin-top: 5px;">
+                <button type="button"
+                        class="btn-conseils-toggle"
+                        onclick="toggleConseils({{ forloop.counter }})"
+                        style="width: 100%; padding: 8px 12px; background: #e8f5e9; color: #2d6a4f; border: 1px solid #a5d6a7; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <span>🌱 Conseils {{ crop.name }}</span>
+                    <span id="arrow-conseils-{{ forloop.counter }}">▼</span>
+                </button>
+
+                <div id="conseils-{{ forloop.counter }}"
+                     style="display: none; margin-top: 8px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #28a745; font-size: 0.8rem; text-align: left;">
+
+                    {# Famille botanique #}
+                    {% if crop.conseils.famille %}
+                    <div style="margin-bottom: 8px;">
+                        <span class="badge" style="background: #2d6a4f; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem;">
+                            {{ crop.conseils.famille_emoji }} {{ crop.conseils.famille }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {# Températures #}
+                    {% if crop.conseils.temperature_min is not None or crop.conseils.temperature_max is not None %}
+                    <div style="margin-bottom: 8px; padding: 6px; background: white; border-radius: 5px;">
+                        🌡️ <strong>Températures :</strong>
+                        {% if crop.conseils.temperature_min is not None %}{{ crop.conseils.temperature_min }}°C{% endif %}
+                        {% if crop.conseils.temperature_optimale_min is not None %} | Idéal {{ crop.conseils.temperature_optimale_min }}°C{% endif %}
+                        {% if crop.conseils.temperature_optimale_max is not None %} - {{ crop.conseils.temperature_optimale_max }}°C{% endif %}
+                        {% if crop.conseils.temperature_max is not None %} | Max {{ crop.conseils.temperature_max }}°C{% endif %}
+                    </div>
+                    {% endif %}
+
+                    {# Durée #}
+                    {% if crop.conseils.duree_culture_min_jours %}
+                    <div style="margin-bottom: 8px; padding: 6px; background: white; border-radius: 5px;">
+                        ⏱️ <strong>Durée :</strong> {{ crop.conseils.duree_culture_min_jours }}{% if crop.conseils.duree_culture_max_jours %} à {{ crop.conseils.duree_culture_max_jours }}{% endif %} jours
+                    </div>
+                    {% endif %}
+
+                    {# Conseils détaillés #}
+                    {% if crop.conseils.conseils_climat %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_climat }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_plantation %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_plantation }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_arrosage %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_arrosage }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_fertilisation %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_fertilisation }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_protection %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_protection }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_recolte %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_recolte }}
+                    </div>
+                    {% endif %}
+
+                    {% if crop.conseils.conseils_conservation %}
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 5px;">
+                        {{ crop.conseils.conseils_conservation }}
+                    </div>
+                    {% endif %}
+
+                    {% if culture.conseils.conseils_contextuels %}
+                    <div class="alert alert-info mt-3" style="border-radius: 10px;">
+                        <h6 style="font-weight: 700;">🌍 Conseils adaptés à votre région :</h6>
+                        <ul class="mb-0 mt-2">
+                            {% for conseil in culture.conseils.conseils_contextuels %}
+                                <li>{{ conseil }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endif %}
+            {# ============================================================ #}
+            {# FIN ACCORDÉON CONSEILS #}
+            {# ============================================================ #}
+
+            <script type="application/json" id="crop-details-{{ forloop.counter }}">
+                {{ crop.details_json|safe }}
+            </script>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ========================================================= -->
+    <!-- SECTION VÉRIFICATION DE COMPATIBILITÉ -->
+    <!-- ========================================================= -->
+    <div class="detail-card" style="margin-top: 20px; background: #f8f9fa; border-left: 4px solid #17a2b8;">
+        <div class="detail-header">
+            <h4>🔍 Vérifier la compatibilité de plantation</h4>
+            <button class="btn btn-sm btn-info" onclick="toggleCompatibilite()">Afficher/Masquer</button>
+        </div>
+
+        <div id="compatibilite-container" style="display:none; padding: 15px 0;">
+            <!-- ===== CULTURES DÉJÀ PRÉSENTES DANS LA PARCELLE ===== -->
+            <div style="margin-bottom: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px;">
+                <strong>🌿 Cultures déjà présentes dans cette parcelle :</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                    {% if enriched_crops %}
+                        {% for crop in enriched_crops %}
+                        <span style="background: white; padding: 4px 12px; border-radius: 20px; border: 1px solid #28a745;">
+                            {{ crop.emoji }} {{ crop.name }}
+                        </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">Aucune culture dans cette parcelle</span>
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <!-- ===== SÉLECTEUR POUR VÉRIFIER UNE NOUVELLE CULTURE ===== -->
+            <div class="row">
+                <div class="col-md-8">
+                    <label for="culture-verif" class="form-label">🌱 Choisir une culture à vérifier :</label>
+                    <select id="culture-verif" class="form-control">
+                        <option value="">-- Sélectionnez une culture --</option>
+                        <optgroup label="🍎 Fruits">
+                            {% for fruit in fruits %}
+                            <option value="{{ fruit.nom }}">🍎 {{ fruit.nom }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="🥕 Légumes">
+                            {% for vegetable in vegetables %}
+                            <option value="{{ vegetable.nom }}">🥬 {{ vegetable.nom }}</option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-4" style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-success" onclick="checkCompatibilite()" style="width:100%;">
+                        🔍 Vérifier
+                    </button>
+                </div>
+            </div>
+
+            <div id="compatibilite-resultat-detail" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ===== BOUTON FLEURS POLLINISATRICES ===== -->
+    {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.abonnement.plan.nom == 'BASIQUE' or user.profil_eleve %}
+        <div style="margin: 20px 0; text-align: center;">
+            <a href="{% url 'vegetables_fruits:ajouter_fleur' figure.id %}" class="btn-warning">
+                🌼 Ajouter une fleur pollinisatrice
+                {% if user.mode_junior and user.profil_eleve %}(+8 points){% endif %}
+            </a>
+        </div>
+    {% else %}
+        <div style="margin: 20px 0; text-align: center;">
+                <a href="{% url 'vegetables_fruits:tarification' %}" class="btn-warning">
+                    🔒 Ajouter une fleur pollinisatrice (Premium ou Enseignant)
+                </a>
+        </div>
+    {% endif %}
+
+    <!-- ============================================================ -->
+    <!-- CONSEILS PERSONNALISÉS PAR CULTURE -->
+    <!-- ============================================================ -->
+    {% if conseils_par_culture %}
+    <div class="card mt-5 mb-5 border-0 shadow-sm">
+        <div class="card-header bg-gradient-success text-white py-4">
+            <h5 class="mb-0 fs-4"><i class="bi bi-lightbulb-fill me-2"></i> Conseils personnalisés par culture</h5>
+            <small class="opacity-75">Basés sur votre localisation, la saison et vos cultures</small>
+        </div>
+        <div class="card-body p-4">
+            <!-- Information climat -->
+            {% if conseils.climat_info %}
+            <div class="mb-4 p-4 bg-info bg-opacity-10 rounded-3">
+                <small class="fs-6">
+                    <i class="bi bi-globe2 me-2"></i>
+                    {{ conseils.climat_info }}
+                    {% if conseils.saison_info %}
+                        - {{ conseils.saison_info }}
+                    {% endif %}
+                </small>
+            </div>
+            {% endif %}
+<br>
+            <!-- Conseils par culture -->
+            <div class="row g-4">
+                {% for culture in conseils_par_culture %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h6 class="mb-0 fs-5">
+                                <span style="font-size: 2rem; margin-right: 10px;">{{ culture.emoji }}</span>
+                                {{ culture.nom }}
+                                <span class="badge bg-success float-end fs-6">{{ culture.type|default:"Légume" }}</span>
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Arrosage -->
+                            {% if culture.arrosage %}
+                            <div class="mb-3">
+                                <strong class="text-primary fs-6"><i class="bi bi-droplet-fill me-2"></i> 💧 Arrosage</strong>
+                                <div class="ms-4 mt-2" style="line-height: 2;">
+                                    {% for conseil in culture.arrosage %}
+                                    <div class="mb-2">
+                                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.7rem;"></i>
+                                        <span>{{ conseil }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Fertilisation -->
+                            {% if culture.fertilisation %}
+                            <div class="mb-3">
+                                <strong class="text-warning fs-6"><i class="bi bi-flower1 me-2"></i> 🌱 Fertilisation</strong>
+                                <div class="ms-4 mt-2" style="line-height: 2;">
+                                    {% for conseil in culture.fertilisation %}
+                                    <div class="mb-2">
+                                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.7rem;"></i>
+                                        <span>{{ conseil }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Plantation -->
+                            {% if culture.plantation %}
+                            <div class="mb-3">
+                                <strong class="text-success fs-6"><i class="bi bi-seedling-fill me-2"></i> 🌿 Plantation</strong>
+                                <div class="ms-4 mt-2" style="line-height: 2;">
+                                    {% for conseil in culture.plantation %}
+                                    <div class="mb-2">
+                                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.7rem;"></i>
+                                        <span>{{ conseil }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Protection -->
+                            {% if culture.protection %}
+                            <div class="mb-3">
+                                <strong class="text-danger fs-6"><i class="bi bi-shield-fill me-2"></i> 🛡️ Protection</strong>
+                                <div class="ms-4 mt-2" style="line-height: 2;">
+                                    {% for conseil in culture.protection %}
+                                    <div class="mb-2">
+                                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.7rem;"></i>
+                                        <span>{{ conseil }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ============================================================ -->
+    <!-- EXPOSITION AU SOLEIL / OMBRE -->
+    <!-- ============================================================ -->
+    {% if conseils.exposition %}
+    <div class="card mt-4 border-0 shadow-sm">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-sun-fill me-2"></i>
+                {{ conseils.exposition.emoji }} {{ conseils.exposition.nom }}
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted mb-3">{{ conseils.exposition.description }}</p>
+            <br>
+            <div class="row g-3">
+                {% for conseil in conseils.exposition.conseils %}
+                <div class="col-12">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                        <span>{{ conseil }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ============================================================ -->
+    <!-- CONSEILS PAR TYPE DE TERRAIN -->
+    <!-- ============================================================ -->
+    {% if conseils.type_terrain %}
+    <div class="card mt-4 border-0 shadow-sm">
+        <div class="card-header bg-info text-white py-3">
+            <h5 class="mb-0">
+                <span style="font-size: 1.5rem; margin-right: 10px;">{{ conseils.type_terrain.emoji }}</span>
+                Conseils pour : {{ conseils.type_terrain.titre }}
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                {% for conseil in conseils.type_terrain.conseils %}
+                <div class="col-12">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                        <span>{{ conseil }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ===== PLANIFICATION DES ALERTES ===== -->
+    {% if cultures_disponibles %}
+        <div class="crops-section" style="background: #f0f9f0; border-radius: 15px; padding: 20px; margin-top: 30px;">
+            <h3>📅 Planification des semis et cultures</h3>
+            <p class="text-muted">Renseignez les dates pour recevoir des alertes par email ou SMS</p>
+
+            <div class="planification-container">
+                {% for crop in cultures_disponibles %}
+                <div class="planification-card" data-crop="{{ crop.name }}" style="background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #28a745;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span style="font-size: 1.5rem;">{{ crop.emoji|default:"🌱" }}</span>
+                            <strong style="margin-left: 10px;">{{ crop.name }}</strong>
+                        </div>
+                        <span class="badge bg-secondary">{{ crop.type|default:"culture" }}</span>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">🌱 Date de semis</label>
+                            <input type="date" class="form-control date-semis" data-crop="{{ crop.name }}">
+                            <small class="text-muted">Quand avez-vous semé ?</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">🌿 Date de plantation</label>
+                            <input type="date" class="form-control date-plantation" data-crop="{{ crop.name }}">
+                            <small class="text-muted">Optionnel si différent du semis</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">📱 Recevoir les alertes par</label>
+                            <select class="form-select canal-notification" data-crop="{{ crop.name }}">
+                                <option value="email">📧 Email uniquement</option>
+                                <option value="sms">📱 SMS uniquement</option>
+                                <option value="les_deux">📧📱 Email et SMS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.abonnement.plan.nom == 'BASIQUE' or user.profil_eleve %}
+                <div class="mt-3">
+                    <button id="btn-planifier-tout" class="btn btn-success" data-figure-id="{{ figure.id }}" style="padding: 8px 16px; border-radius: 8px; border: none; background: #28a745; color: white; cursor: pointer;">
+                        📅 Planifier toutes les alertes
+                    </button>
+                </div>
+            {% else %}
+                <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-outline-success">
+                    🔒 Planifier toutes les alertes (Basique+)
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="crops-section" style="background: #f0f9f0; border-radius: 15px; padding: 20px; margin-top: 30px;">
+            <h3>📅 Planification des semis et cultures</h3>
+            <div class="alert alert-success">
+                ✅ Toutes vos cultures sont déjà planifiées !
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="journal-section">
+        <h3>📓 Journal de bord</h3>
+        {% if figure.notes_journal.all %}
+            <div class="journal-list">
+                {% for note in figure.notes_journal.all|slice:":5" %}
+                <div class="journal-item">
+                    <div class="journal-header">
+                        <strong>{{ note.titre }}</strong>
+                        <small>{{ note.date_note|date:"d/m/Y" }}</small>
+                    </div>
+                    <div class="journal-content">{{ note.note|truncatewords:20 }}</div>
+                    <div class="journal-actions">
+                        <a href="{% url 'vegetables_fruits:journal_detail' note.id %}">Voir</a>
+                        <a href="{% url 'vegetables_fruits:journal_modifier' note.id %}">Modifier</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if figure.notes_journal.count > 5 %}
+            <a href="{% url 'vegetables_fruits:journal_liste' %}?figure={{ figure.id }}">Voir toutes les notes →</a>
+            {% endif %}
+        {% else %}
+            <p class="text-muted">Aucune note pour cette parcelle.</p>
+        {% endif %}
+        <a href="{% url 'vegetables_fruits:journal_ajouter' figure.id %}" class="btn-add-note">
+            ✏️ Ajouter une note
+        </a>
+    </div>
+
+    <!-- ===== CHRONOLOGIE DES CULTURES — TIMELINE ===== -->
+    {% if chronologie_cultures %}
+    <div class="chronologie-section" style="background: #f8f9fa; border-radius: 15px; padding: 20px; margin-top: 30px;">
+        <h3>📊 Chronologie des cultures</h3>
+        <p class="text-muted">Suivez la progression de vos cultures étape par étape</p>
+
+        <div class="chronologie-container">
+            {% for chrono in chronologie_cultures %}
+            <div class="chronologie-card"
+                 data-chrono-id="{{ chrono.id }}"
+                 style="background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+
+                <!-- En-tête : culture + statut + récolte -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div>
+                        <span style="font-size: 1.5rem;">{{ chrono.culture_emoji|default:"🌱" }}</span>
+                        <strong style="margin-left: 10px;">{{ chrono.culture_nom }}</strong>
+                        <span class="badge
+                            {% if chrono.statut == 'semis' %}bg-warning
+                            {% elif chrono.statut == 'levee' %}bg-info
+                            {% elif chrono.statut == 'croissance' %}bg-info
+                            {% elif chrono.statut == 'floraison' %}bg-warning
+                            {% elif chrono.statut == 'fructification' %}bg-success
+                            {% elif chrono.statut == 'pret' %}bg-success
+                            {% elif chrono.statut == 'recolte' %}bg-danger
+                            {% else %}bg-secondary{% endif %} ms-2">
+                            {{ chrono.get_statut_display }}
+                        </span>
+                    </div>
+
+                    <div class="text-end">
+                        {% if chrono.statut == 'pret' or chrono.statut == 'fructification' %}
+                            <form method="post" action="{% url 'vegetables_fruits:recolter_culture' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="chrono_id" value="{{ chrono.id }}">
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        onclick="return confirm('Récolter {{ chrono.culture_nom }} maintenant ?')">
+                                    🧺 Récolter maintenant
+                                </button>
+                            </form>
+                        {% elif chrono.statut == 'recolte' %}
+                            <span class="badge bg-secondary">
+                                ✅ Récolté le {{ chrono.date_recolte_effective|date:"d/m/Y" }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-info">
+                                ⏳ Récolte prévue dans {{ chrono.date_recolte_prevue|timeuntil }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Timeline horizontale -->
+                <div class="timeline-culture">
+                    {% for etape in chrono.get_etapes_timeline %}
+                        {% if not forloop.first %}
+                            <div class="timeline-connector
+                                {% if etape.etat == 'passee' %}connector-passee
+                                {% elif etape.etat == 'actuelle' %}connector-actuelle
+                                {% else %}connector-future{% endif %}"></div>
+                        {% endif %}
+                        <div class="timeline-step step-{{ etape.etat }}">
+                            <div class="step-dot">
+                                {% if etape.etat == 'passee' %}✅
+                                {% elif etape.etat == 'actuelle' %}🔵
+                                {% else %}⚪{% endif %}
+                            </div>
+                            <div class="step-label">{{ etape.emoji }} {{ etape.label }}</div>
+                            <div class="step-date">
+                                {% if etape.date %}{{ etape.date|date:"d/m" }}{% else %}—{% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ===== STYLES TIMELINE ===== -->
+    <style>
+    .timeline-culture {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding: 10px 0;
+        overflow-x: auto;
+        gap: 4px;
+    }
+
+    .timeline-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 70px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .step-dot {
+        font-size: 1.4rem;
+        line-height: 1;
+        transition: transform 0.3s ease;
+    }
+
+    .step-actuelle .step-dot {
+        animation: pulse-dot 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .step-date {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+
+    .step-passee .step-label,
+    .step-passee .step-date {
+        color: #28a745;
+    }
+
+    .step-actuelle .step-label {
+        color: #0d6efd;
+        font-weight: 700;
+    }
+
+    .step-future .step-label,
+    .step-future .step-date {
+        opacity: 0.55;
+    }
+
+    /* Connecteurs entre les étapes */
+    .timeline-connector {
+        flex: 0 0 20px;
+        height: 2px;
+        margin-top: 12px;
+        background: #dee2e6;
+        align-self: flex-start;
+    }
+
+    .connector-passee { background: #28a745; }
+    .connector-actuelle { background: linear-gradient(to right, #28a745, #0d6efd); }
+    .connector-future { background: #dee2e6; }
+
+    /* Dark mode */
+    [data-theme="dark"] .timeline-step .step-label { color: #e9ecef; }
+    [data-theme="dark"] .step-date { color: #adb5bd; }
+    [data-theme="dark"] .timeline-connector { background: #495057; }
+    [data-theme="dark"] .connector-future { background: #495057; }
+
+    @media (max-width: 576px) {
+        .timeline-step { min-width: 55px; }
+        .step-label { font-size: 0.65rem; }
+        .step-date { font-size: 0.6rem; }
+        .timeline-connector { flex: 0 0 10px; }
+    }
+    </style>
+    {% endif %}
+
+</div>
+
+<!-- Popup automatique -->
+<div id="autoPopup" class="auto-popup" style="display: none;">
+    <div class="auto-popup-header">
+        <h4><span>💡</span> Conseil du jour & Calendrier lunaire</h4>
+        <button class="auto-popup-close" onclick="closeAutoPopup()">×</button>
+    </div>
+    <div class="auto-popup-content" id="autoPopupContent">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+    </div>
+    <div class="auto-popup-minimize" onclick="minimizePopupForToday()">
+        🔕 Ne plus afficher aujourd'hui
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    // ==================== FONCTIONS UTILITAIRES ====================
+
+    // 1. Récupérer les détails d'une culture
+    function getCropDetails(cropName) {
+        {% for crop in enriched_crops %}
+            if (cropName === "{{ crop.name }}") {
+                return {
+                    id: {{ crop.details.id|default:'null' }},
+                    nom: "{{ crop.name }}",
+                    type: "{{ crop.details.type|default:'vegetable' }}",
+                    jours_levée: {{ crop.details.jours_levée|default:0 }},
+                    jours_recolte: {{ crop.details.jours_recolte|default:0 }}
+                };
+            }
+        {% endfor %}
+        return null;
+    }
+
+    // 2. Enregistrer dans le calendrier des semis
+    async function enregistrerDansCalendrier(culture, date, type, figureId) {
+        try {
+            const response = await fetch('/api/enregistrer-calendrier/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    culture: culture,
+                    date_semis: type === 'semis' ? date : null,
+                    date_plantation: type === 'plantation' ? date : null,
+                    figure_id: figureId
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                console.log(`✅ ${culture} - ${type} enregistré pour le ${date}`);
+                return true;
+            }
+        } catch (error) {
+            console.error('Erreur calendrier:', error);
+        }
+        return false;
+    }
+
+    // 3. Planifier les alertes
+    async function planifierAlertesCulture(card) {
+        const cropName = card.querySelector('.date-semis')?.dataset.crop || 'culture';
+        const dateSemis = card.querySelector('.date-semis').value;
+        const datePlantation = card.querySelector('.date-plantation').value;
+        const canal = card.querySelector('.canal-notification').value;
+        const figureId = {{ figure.id }};
+
+        if (!dateSemis && !datePlantation) {
+            showNotification(`Veuillez renseigner au moins une date pour ${cropName}`, 'warning');
+            return false;
+        }
+
+        if (dateSemis) {
+            await enregistrerDansCalendrier(cropName, dateSemis, 'semis', figureId);
+        }
+        if (datePlantation) {
+            await enregistrerDansCalendrier(cropName, datePlantation, 'plantation', figureId);
+        }
+
+        const culture = getCropDetails(cropName);
+        if (!culture) {
+            showNotification(`Impossible de récupérer les données pour ${cropName}`, 'error');
+            return false;
+        }
+
+        const alertes = [];
+
+        if (dateSemis) {
+            const semisDate = new Date(dateSemis);
+
+            if (culture.jours_levée && culture.jours_levée > 0) {
+                const dateLevee = new Date(semisDate);
+                dateLevee.setDate(dateLevee.getDate() + culture.jours_levée);
+                const dateAlerteLevee = new Date(dateLevee);
+                dateAlerteLevee.setDate(dateAlerteLevee.getDate() - 2);
+
+                if (dateAlerteLevee >= new Date()) {
+                    alertes.push({
+                        type: 'levee',
+                        titre: `🌱 Levée des ${culture.nom}`,
+                        message: `Vos ${culture.nom} semis le ${dateSemis} devraient lever le ${dateLevee.toLocaleDateString('fr-FR')}. Vérifiez l'humidité du sol.`,
+                        date: dateAlerteLevee.toISOString()
+                    });
+                }
+            }
+
+            if (culture.jours_recolte && culture.jours_recolte > 0) {
+                const dateRecolte = new Date(semisDate);
+                dateRecolte.setDate(dateRecolte.getDate() + culture.jours_recolte);
+                const dateAlerteRecolte = new Date(dateRecolte);
+                dateAlerteRecolte.setDate(dateAlerteRecolte.getDate() - 7);
+
+                if (dateAlerteRecolte >= new Date()) {
+                    alertes.push({
+                        type: 'recolte',
+                        titre: `🍅 Récolte des ${culture.nom}`,
+                        message: `Vos ${culture.nom} semis le ${dateSemis} seront prêts à récolter vers le ${dateRecolte.toLocaleDateString('fr-FR')}. Préparez-vous !`,
+                        date: dateAlerteRecolte.toISOString()
+                    });
+                }
+            }
+
+            location.reload();
+        }
+
+        if (alertes.length === 0) {
+            showNotification(`Aucune alerte à planifier pour ${cropName}`, 'warning');
+            return false;
+        }
+
+        const data = {
+            figure_id: figureId,
+            crop: {
+                name: cropName,
+                emoji: card.querySelector('.date-semis')?.dataset.crop || '🌱',
+                id: culture.id,
+                type: culture.type,
+                details: culture
+            },
+            dates: { semis: dateSemis, plantation: datePlantation },
+            canal: canal,
+            alertes: alertes
+        };
+
+        try {
+            const response = await fetch('{% url "vegetables_fruits:planifier_alertes" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                showNotification(`✅ ${result.alertes_crees} alerte(s) planifiée(s) pour ${cropName}`, 'success');
+                return true;
+            } else {
+                showNotification(`❌ Erreur: ${result.error}`, 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showNotification(`❌ Erreur de communication`, 'error');
+            return false;
+        }
+    }
+
+    // ==================== AUTRES FONCTIONS ====================
+
+    let currentFunFactPopup = null;
+
+    function showFunFact() {
+        if (currentFunFactPopup) {
+            currentFunFactPopup.remove();
+        }
+
+        const funFactsList = [
+            "Les tomates étaient considérées comme vénéneuses au 18e siècle !",
+            "Une fraise n'est pas techniquement un fruit, mais un réceptacle floral.",
+            "Les carottes étaient à l'origine violettes, pas oranges.",
+            "Le plus vieux légume connu est le pois, cultivé il y a 8000 ans.",
+            "Les pommes de terre contiennent plus de potassium qu'une banane.",
+            "Un tournesol peut suivre le soleil, c'est l'héliotropisme.",
+            "Le chocolat vient d'une graine, la fève de cacao.",
+            "Une abeille doit butiner 2 millions de fleurs pour faire 1 kg de miel."
+        ];
+
+        const randomFact = funFactsList[Math.floor(Math.random() * funFactsList.length)];
+        const isJunior = {% if user.mode_junior %}true{% else %}false{% endif %};
+        const mascotteEmoji = isJunior ? '🧑‍🌾' : '🧑‍🌾';
+        const mascotteName = isJunior ? 'Titou le jardinier' : 'Sage l\'horticulteur';
+
+        const popup = document.createElement('div');
+        popup.className = 'funfact-popup';
+        popup.innerHTML = `
+            <div class="funfact-close" onclick="this.parentElement.remove();">×</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="mascotte-avatar">${mascotteEmoji}</div>
+                <div>
+                    <strong class="mascotte-name">${mascotteName}</strong>
+                    <div class="funfact-text">${randomFact}</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(popup);
+        currentFunFactPopup = popup;
+
+        setTimeout(() => {
+            if (currentFunFactPopup) {
+                currentFunFactPopup.remove();
+                currentFunFactPopup = null;
+            }
+        }, 5000);
+    }
+
+    async function loadWeatherDetails() {
+        // Récupération des coordonnées depuis Django
+        const latRaw = "{{ figure_lat|default:'' }}";
+        const lonRaw = "{{ figure_lng|default:'' }}";
+
+        // Si vides, on utilise Paris par défaut
+        let lat = latRaw ? parseFloat(latRaw.replace(',', '.')) : 48.813755;
+        let lon = lonRaw ? parseFloat(lonRaw.replace(',', '.')) : 2.794014;
+
+        // Si le parse a échoué, on met Paris
+        if (isNaN(lat)) { lat = 48.813755; }
+        if (isNaN(lon)) { lon = 2.794014; }
+
+        try {
+            console.log(`🌤️ Appel météo pour lat=${lat}, lon=${lon}`);
+            const response = await fetch(`/meteo/?lat=${lat}&lon=${lon}&_=${Date.now()}`);
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.properties) {
+                document.getElementById('weather-temp').textContent = Math.round(data.properties.temp) + '°';
+                document.getElementById('weather-desc').textContent = data.properties.conditions || 'Chargement...';
+            } else {
+                throw new Error("Données météo invalides");
+            }
+        } catch (error) {
+            console.error("❌ Erreur météo:", error);
+            document.getElementById('weather-temp').textContent = '--°';
+            document.getElementById('weather-desc').textContent = 'Météo indisponible';
+        }
+    }
+
+    function showWeatherPopup() {
+        const popup = document.getElementById('weatherPopup');
+        const content = document.getElementById('weatherPopupContent');
+        popup.style.display = 'block';
+
+        // ✅ On utilise les coordonnées passées par Django de la même manière que loadWeatherDetails
+        const latRaw = "{{ figure_lat|default:'' }}";
+        const lonRaw = "{{ figure_lng|default:'' }}";
+
+        let lat = latRaw ? parseFloat(latRaw.replace(',', '.')) : 48.813755;
+        let lon = lonRaw ? parseFloat(lonRaw.replace(',', '.')) : 2.794014;
+
+        if (isNaN(lat)) { lat = 48.813755; }
+        if (isNaN(lon)) { lon = 2.794014; }
+
+        fetch(`/meteo/?lat=${lat}&lon=${lon}&_=${Date.now()}`)
+            .then(r => r.json())
+            .then(data => {
+                const current = data.properties;
+                content.innerHTML = `
+                    <div style="font-size: 3rem;">${current.icon || '🌤️'}</div>
+                    <div style="font-size: 2rem; font-weight: bold;">${Math.round(current.temp)}°C</div>
+                    <div>${current.conditions || '--'}</div>
+                    <hr>
+                    <div>💧 Humidité: ${current.humidity || '--'}%</div>
+                    <div>💨 Vent: ${Math.round(current.wind_speed || 0)} km/h</div>
+                `;
+            })
+            .catch(() => {
+                content.innerHTML = '<div>❌ Météo non disponible</div>';
+            });
+    }
+
+    function closeWeatherPopup() {
+        document.getElementById('weatherPopup').style.display = 'none';
+    }
+
+    function showCropAdvice(cropName, cropEmoji, details) {
+        let html = `<div style="text-align: center;">
+                <div style="font-size: 4rem;">${cropEmoji}</div>
+                <h3 style="margin: 10px 0; color: #28a745;">${cropName}</h3>`;
+
+        if (details && Object.keys(details).length > 0) {
+            html += `<div class="advice-section" style="background: #f0f9f0;"><strong>🌱 Semis</strong><br>`;
+            if (details.semis_interieur) html += `🏠 Intérieur: ${details.semis_interieur}<br>`;
+            if (details.semis_exterieur) html += `🌳 Extérieur: ${details.semis_exterieur}<br>`;
+            if (details.jours_levée) html += `⏱️ Levée: ${details.jours_levée} jours<br>`;
+            html += `</div>`;
+        } else {
+            html += `<div class="advice-section"><p>Aucune information détaillée disponible.</p></div>`;
+        }
+
+        html += `<button onclick="this.closest('div').parentElement.remove(); this.closest('div').previousSibling.remove();"
+                style="background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px;">Fermer</button></div>`;
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;';
+        const popup = document.createElement('div');
+        popup.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 15px; z-index: 1000; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;';
+        popup.innerHTML = html;
+        document.body.appendChild(overlay);
+        document.body.appendChild(popup);
+        overlay.onclick = function() { overlay.remove(); popup.remove(); };
+    }
+
+    function bindCropCards() {
+        document.querySelectorAll('.crop-card').forEach(function(card) {
+            if (card.hasAttribute('data-bound')) return;
+            card.setAttribute('data-bound', 'true');
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const cropName = this.querySelector('.crop-name').innerText;
+                const cropEmoji = this.querySelector('.crop-emoji').innerText;
+                const cropId = this.getAttribute('data-crop-id');
+                const scriptTag = document.getElementById('crop-details-' + cropId);
+                let cropDetails = {};
+                if (scriptTag) {
+                    try { cropDetails = JSON.parse(scriptTag.textContent); } catch(e) {}
+                }
+                showCropAdvice(cropName, cropEmoji, cropDetails);
+            });
+        });
+    }
+
+    function getMoonPhase() {
+        const today = new Date();
+        const knownNewMoon = new Date(2026, 4, 8);
+        const daysSince = (today - knownNewMoon) / (24 * 60 * 60 * 1000);
+        const cyclePosition = daysSince % 29.53;
+        if (cyclePosition < 1.845) return { emoji: '🌑', name: 'Nouvelle lune', advice: 'Reposez-vous, préparez le sol' };
+        if (cyclePosition < 7.38) return { emoji: '🌒', name: 'Premier croissant', advice: 'Plantez les légumes-feuilles' };
+        if (cyclePosition < 8.845) return { emoji: '🌓', name: 'Premier quartier', advice: 'Plantez les légumes-fruits' };
+        if (cyclePosition < 14.76) return { emoji: '🌔', name: 'Gibbeuse croissante', advice: 'Fertilisez, arrosez' };
+        if (cyclePosition < 16.605) return { emoji: '🌕', name: 'Pleine lune', advice: 'Récoltez' };
+        if (cyclePosition < 22.14) return { emoji: '🌖', name: 'Gibbeuse décroissante', advice: 'Taillez, nettoyez' };
+        if (cyclePosition < 23.535) return { emoji: '🌗', name: 'Dernier quartier', advice: 'Plantez racines' };
+        return { emoji: '🌘', name: 'Dernier croissant', advice: 'Reposez la terre' };
+    }
+
+    function generatePopupContent() {
+        const moon = getMoonPhase();
+        const tips = ["🌱 Arrosez tôt le matin", "🐞 Les coccinelles sont vos alliées", "🍅 Retirez les gourmands des tomates", "🌿 Le paillage conserve l'humidité", "🪴 La rotation des cultures évite l'épuisement"];
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+        return `<div class="lunar-calendar"><div style="font-size: 3rem;">${moon.emoji}</div>
+                <div style="font-weight: bold;">${moon.name}</div>
+                <div style="margin-top: 8px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">${moon.advice}</div>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 10px;">
+                <strong>💡 Conseil du jour</strong><br>${randomTip}</div>`;
+    }
+
+    let popupInterval = null;
+    function showAutoPopup() {
+        const popup = document.getElementById('autoPopup');
+        const content = document.getElementById('autoPopupContent');
+        const lastClosed = localStorage.getItem('popupClosedDate');
+        const today = new Date().toDateString();
+        if (lastClosed === today) return;
+        content.innerHTML = generatePopupContent();
+        popup.style.display = 'block';
+        if (popupInterval) clearInterval(popupInterval);
+        popupInterval = setInterval(() => {
+            if (popup.style.display === 'none') {
+                content.innerHTML = generatePopupContent();
+                popup.style.display = 'block';
+            }
+        }, 60000);
+    }
+
+    function closeAutoPopup() { document.getElementById('autoPopup').style.display = 'none'; }
+    function minimizePopupForToday() {
+        localStorage.setItem('popupClosedDate', new Date().toDateString());
+        if (popupInterval) clearInterval(popupInterval);
+        closeAutoPopup();
+    }
+
+    function showNotification(message, type) {
+        const notif = document.createElement('div');
+        notif.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#28a745' : '#dc3545'}; color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999;`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    // ==================== TOGGLE CONSEILS (AJOUT) ====================
+    function toggleConseils(id) {
+        const conseils = document.getElementById('conseils-' + id);
+        const arrow = document.getElementById('arrow-conseils-' + id);
+
+        if (!conseils) return;
+
+        if (conseils.style.display === 'none' || conseils.style.display === '') {
+            conseils.style.display = 'block';
+            if (arrow) arrow.textContent = '▲';
+        } else {
+            conseils.style.display = 'none';
+            if (arrow) arrow.textContent = '▼';
+        }
+    }
+
+    // ==================== COMPATIBILITÉ DE PLANTATION ====================
+    function toggleCompatibilite() {
+        const container = document.getElementById('compatibilite-container');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function checkCompatibilite() {
+        const culture = document.getElementById('culture-verif').value;
+        const figureId = {{ figure.id }};
+        const resultatDiv = document.getElementById('compatibilite-resultat-detail');
+
+        if (!culture) {
+            resultatDiv.innerHTML = '<div class="alert alert-warning">⚠️ Veuillez sélectionner une culture.</div>';
+            return;
+        }
+
+        resultatDiv.innerHTML = '<div class="spinner" style="width:30px; height:30px;"></div><p>Vérification en cours...</p>';
+
+        // Récupérer la maladie active (si une alerte existe)
+        let maladie = '';
+        {% if alertes_actives %}
+            const alertes = {{ alertes_actives|safe }};
+            if (alertes && alertes.length > 0) {
+                maladie = alertes[0].maladie_nom || '';
+            }
+        {% endif %}
+
+        fetch(`/api/verifier-plantation/?culture=${encodeURIComponent(culture)}&figure_id=${figureId}&maladie=${encodeURIComponent(maladie)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const result = data.data;
+
+                    const couleurs = {
+                        'securise': '#d4edda',
+                        'a_risque': '#fff3cd',
+                        'deconseille': '#f8d7da',
+                        'dangereux': '#f8d7da',
+                    };
+
+                    const bordures = {
+                        'securise': '4px solid #28a745',
+                        'a_risque': '4px solid #ffc107',
+                        'deconseille': '4px solid #dc3545',
+                        'dangereux': '4px solid #dc3545',
+                    };
+
+                    const icones = {
+                        'securise': '✅',
+                        'a_risque': '⚠️',
+                        'deconseille': '❌',
+                        'dangereux': '🚨',
+                    };
+
+                    let html = `<div style="padding:15px; border-radius:8px; background:${couleurs[result.statut] || '#f8f9fa'}; border-left:${bordures[result.statut] || '4px solid #6c757d'};">`;
+                    html += `<strong>${icones[result.statut] || 'ℹ️'} ${result.message}</strong>`;
+                    html += `</div>`;
+                    html += `<div style="margin-top:10px; padding:12px; background:#f8f9fa; border-radius:8px; white-space:pre-line;">${result.conseils.replace(/\n/g, '<br>')}</div>`;
+
+                    if (result.cultures_voisines && result.cultures_voisines.length > 0) {
+                        html += `<div style="margin-top:8px; font-size:0.9rem; color:#6c757d;">🌿 Cultures voisines : ${result.cultures_voisines.join(', ')}</div>`;
+                    }
+
+                    resultatDiv.innerHTML = html;
+                } else {
+                    resultatDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur: ${data.error || 'Vérification impossible'}</div>`;
+                }
+            })
+            .catch(error => {
+                resultatDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur de communication: ${error}</div>`;
+                console.error('Erreur:', error);
+            });
+    }
+
+    // ==================== INITIALISATION ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. On crée la carte avec des coordonnées par défaut (Paris) pour qu'elle s'affiche
+        const map = L.map('detail-map').setView([48.813755, 2.794014], 13);
+
+        // 2. On ajoute le fond de carte
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_3ih6_1_4b54795fabf7d713823323fc', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd', maxZoom: 20
+        }).addTo(map);
+
+        // 3. On essaie d'ajouter le polygone de la figure si le JSON est valide
+        try {
+            {% if figure.geojson_data %}
+                const geojson = {{ geojson_string|safe }};
+                const layer = L.geoJSON(geojson);
+                layer.addTo(map);
+                // On centre la carte sur le polygone si possible
+                map.fitBounds(layer.getBounds());
+            {% endif %}
+        } catch (e) {
+            console.log("Erreur GeoJSON, on laisse la carte sur Paris");
+        }
+
+        loadWeatherDetails();
+        bindCropCards();
+
+        const btnPlanifier = document.getElementById('btn-planifier-tout');
+        if (btnPlanifier) {
+            btnPlanifier.addEventListener('click', async function() {
+                const cards = document.querySelectorAll('.planification-card');
+                let count = 0;
+                for (const card of cards) {
+                    if (card.querySelector('.date-semis').value || card.querySelector('.date-plantation').value) {
+                        await planifierAlertesCulture(card);
+                        count++;
+                    }
+                }
+                if (count === 0) showNotification('Aucune date renseignée', 'warning');
+                else showNotification(`${count} culture(s) planifiée(s) !`, 'success');
+            });
+        }
+
+        setTimeout(() => showAutoPopup(), 5000);
+    });
+</script>
+{% endblock %}

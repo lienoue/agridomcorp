@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}Politique de Confidentialité - Agriculture 2.0{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <!-- En-tête -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">🔒 Politique de Confidentialité</h1>
+                <p class="text-muted">Conforme au RGPD - Dernière mise à jour : Septembre 2026</p>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">1. Introduction</h4>
+                        <p>
+                            La protection de vos données personnelles est une priorité pour Agriculture 2.0.
+                            Cette politique détaille comment nous collectons, utilisons et protégeons
+                            vos informations, conformément au Règlement Général sur la Protection des Données (RGPD).
+                        </p>
+                        <div class="alert alert-success">
+                            <strong>🌱 Agriculture 2.0</strong> est une application de jardinage pédagogique
+                            destinée aux particuliers, aux enfants (mode Junior) et aux établissements scolaires.
+                            Nous accordons une attention particulière à la protection des données des mineurs.
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">2. Responsable de Traitement</h4>
+                        <p>
+                            <strong>AgridomCorp</strong><br>
+                            Représentée par : [Nom du fondateur]<br>
+                            Email : <a href="mailto:dpo@agriculture2-0.fr">dpo@agriculture2-0.fr</a><br>
+                            Adresse : [Adresse complète de l'entreprise]<br>
+                            Délégué à la Protection des Données (DPO) : [Nom du DPO]
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">3. Données Collectées</h4>
+
+                        <h5 class="mt-4">3.1 Données de compte</h5>
+                        <ul>
+                            <li>Adresse email</li>
+                            <li>Nom d'utilisateur</li>
+                            <li>Mot de passe (crypté)</li>
+                            <li>Prénom et nom (optionnel)</li>
+                            <li>Date de naissance</li>
+                            <li>Numéro de téléphone (optionnel)</li>
+                            <li>Localisation (pays/ville)</li>
+                        </ul>
+
+                        <h5 class="mt-4">3.2 Données d'utilisation</h5>
+                        <ul>
+                            <li>Parcelles créées et leurs caractéristiques</li>
+                            <li>Cultures placées et leur progression</li>
+                            <li>Progression dans le mode Junior (points, badges, niveau)</li>
+                            <li>Notes du journal de bord</li>
+                            <li>Photos publiées dans la galerie</li>
+                            <li>Messages postés sur le forum</li>
+                            <li>Données de géolocalisation (mode GPS, avec consentement explicite)</li>
+                        </ul>
+
+                        <h5 class="mt-4">3.3 Données de paiement</h5>
+                        <p>
+                            Les données bancaires sont collectées et traitées directement par
+                            notre prestataire de paiement <strong>Stripe</strong>.
+                            Agriculture 2.0 ne stocke aucune donnée bancaire sur ses serveurs.
+                        </p>
+
+                        <h5 class="mt-4">3.4 Données de connexion</h5>
+                        <ul>
+                            <li>Adresse IP</li>
+                            <li>User Agent (navigateur, système)</li>
+                            <li>Identifiant d'appareil (pour détecter les partages de compte)</li>
+                            <li>Date et heure de connexion</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">4. Finalités du Traitement</h4>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Finalité</th>
+                                    <th>Base légale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Gestion du compte utilisateur</td>
+                                    <td>Exécution du contrat</td>
+                                </tr>
+                                <tr>
+                                    <td>Fourniture des services</td>
+                                    <td>Exécution du contrat</td>
+                                </tr>
+                                <tr>
+                                    <td>Gestion des abonnements</td>
+                                    <td>Exécution du contrat</td>
+                                </tr>
+                                <tr>
+                                    <td>Communication et notifications</td>
+                                    <td>Intérêt légitime</td>
+                                </tr>
+                                <tr>
+                                    <td>Amélioration du service</td>
+                                    <td>Intérêt légitime</td>
+                                </tr>
+                                <tr>
+                                    <td>Détection des abus et sécurité</td>
+                                    <td>Intérêt légitime</td>
+                                </tr>
+                                <tr>
+                                    <td>Marketing (emails promotionnels)</td>
+                                    <td>Consentement explicite</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">5. Mineurs et Consentement Parental</h4>
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Protection renforcée des mineurs</strong>
+                        </div>
+                        <p>
+                            Conformément au RGPD et à la loi française, les utilisateurs de
+                            <strong>moins de 15 ans</strong> doivent fournir le consentement
+                            d'un représentant légal pour utiliser nos services.
+                        </p>
+                        <p>Ce consentement est :</p>
+                        <ul>
+                            <li>Collecté lors de l'inscription</li>
+                            <li>Vérifiable (nom et contact du représentant légal enregistrés)</li>
+                            <li>Révocable à tout moment sur demande</li>
+                        </ul>
+                        <p>
+                            <strong>Pour les établissements scolaires :</strong> les enseignants utilisant
+                            le plan Enseignant sont responsables d'obtenir les consentements parentaux
+                            nécessaires pour leurs élèves.
+                        </p>
+                        <p>
+                            <strong>Données des mineurs :</strong> elles sont traitées avec un niveau
+                            de protection renforcé et ne sont jamais utilisées à des fins publicitaires.
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">6. Durée de Conservation</h4>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type de données</th>
+                                    <th>Durée de conservation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Données de compte</td>
+                                    <td>Pendant la durée du compte + 3 ans après suppression</td>
+                                </tr>
+                                <tr>
+                                    <td>Données de paiement</td>
+                                    <td>10 ans (obligation légale comptable)</td>
+                                </tr>
+                                <tr>
+                                    <td>Consentements RGPD</td>
+                                    <td>Pendant la durée du compte + 5 ans</td>
+                                </tr>
+                                <tr>
+                                    <td>Logs de connexion</td>
+                                    <td>1 an</td>
+                                </tr>
+                                <tr>
+                                    <td>Photos de la galerie</td>
+                                    <td>Jusqu'à suppression par l'utilisateur</td>
+                                </tr>
+                                <tr>
+                                    <td>Messages du forum</td>
+                                    <td>Jusqu'à suppression par l'utilisateur ou modération</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">7. Vos Droits</h4>
+                        <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+<br>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>✅ Droit d'accès</h6>
+                                        <p class="small mb-0">Consulter vos données personnelles</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>✏️ Droit de rectification</h6>
+                                        <p class="small mb-0">Corriger des informations inexactes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>🗑️ Droit à l'effacement</h6>
+                                        <p class="small mb-0">Demander la suppression de vos données</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>📦 Droit à la portabilité</h6>
+                                        <p class="small mb-0">Récupérer vos données dans un format lisible</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>⏸️ Droit à la limitation</h6>
+                                        <p class="small mb-0">Limiter le traitement de vos données</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h6>🚫 Droit d'opposition</h6>
+                                        <p class="small mb-0">Vous opposer au traitement de vos données</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="mt-3">
+                            Pour exercer vos droits, contactez-nous à :
+                            <a href="mailto:dpo@agriculture2-0.fr">dpo@agriculture2-0.fr</a>
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">8. Sécurité</h4>
+                        <p>Nous mettons en œuvre des mesures techniques et organisationnelles :</p>
+                        <ul>
+                            <li>🔐 Chiffrement des données en transit (HTTPS/TLS)</li>
+                            <li>🔑 Hachage des mots de passe (PBKDF2 avec SHA256)</li>
+                            <li>🛡️ Protection contre les accès non autorisés</li>
+                            <li>💾 Sauvegardes régulières</li>
+                            <li>👥 Accès limité aux données par le personnel autorisé</li>
+                            <li>🔍 Détection des connexions suspectes (IP, appareil)</li>
+                            <li>🧱 En-têtes de sécurité (HSTS, X-Frame-Options, etc.)</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">9. Cookies</h4>
+                        <p>
+                            Nous utilisons des cookies techniques nécessaires au fonctionnement
+                            de la plateforme :
+                        </p>
+                        <ul>
+                            <li><strong>sessionid</strong> : maintien de la session utilisateur</li>
+                            <li><strong>csrftoken</strong> : protection contre les attaques CSRF</li>
+                            <li><strong>device_id</strong> : identification de l'appareil (détection des abus)</li>
+                        </ul>
+                        <p>
+                            Aucun cookie publicitaire n'est déposé sans votre consentement explicite.
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">10. Sous-traitants</h4>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sous-traitant</th>
+                                    <th>Finalité</th>
+                                    <th>Localisation des données</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Stripe</td>
+                                    <td>Paiement sécurisé</td>
+                                    <td>Union Européenne / États-Unis (Privacy Shield)</td>
+                                </tr>
+                                <tr>
+                                    <td>Brevo (Sendinblue)</td>
+                                    <td>Envoi d'emails transactionnels</td>
+                                    <td>France</td>
+                                </tr>
+                                <tr>
+                                    <td>Mapbox</td>
+                                    <td>Cartographie</td>
+                                    <td>États-Unis (Privacy Shield)</td>
+                                </tr>
+                                <tr>
+                                    <td>OpenWeatherMap</td>
+                                    <td>Données météo</td>
+                                    <td>Royaume-Uni</td>
+                                </tr>
+                                <tr>
+                                    <td>PythonAnywhere</td>
+                                    <td>Hébergement (à venir)</td>
+                                    <td>Union Européenne</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">11. Transferts hors UE</h4>
+                        <p>
+                            Certains de nos sous-traitants sont situés hors de l'Union Européenne.
+                            Dans ce cas, nous nous assurons que des garanties appropriées sont en place
+                            (clauses contractuelles types de la Commission Européenne).
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">12. Réclamation CNIL</h4>
+                        <p>
+                            Si vous estimez que vos droits ne sont pas respectés, vous pouvez
+                            déposer une réclamation auprès de la CNIL :
+                            <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a>
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">13. Modifications</h4>
+                        <p>
+                            Cette politique peut être mise à jour. Les utilisateurs seront
+                            informés des modifications substantielles par email,
+                            au moins 15 jours avant leur entrée en vigueur.
+                        </p>
+                    </section>
+
+                    <div class="alert alert-info mt-4">
+                        <strong>📅 Date d'entrée en vigueur :</strong> Septembre 2026
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 mb-5">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

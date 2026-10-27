@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block title %}Mon calendrier Junior - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Calendrier Junior</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .junior-cal-header {
+        background: linear-gradient(135deg, #ff6b35, #ffb347);
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .junior-cal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .junior-cal-header .points-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .junior-cal-header .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .junior-cal-header .nav-buttons .btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    .junior-cal-header .nav-buttons .btn:hover {
+        background: rgba(255,255,255,0.4);
+    }
+
+    table.calendrier-junior {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    table.calendrier-junior th {
+        background: #ff6b35;
+        color: white;
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: 600;
+    }
+    table.calendrier-junior td {
+        border: 1px solid #e9ecef;
+        padding: 6px;
+        vertical-align: top;
+        height: 80px;
+        width: 14.28%;
+        transition: 0.2s;
+        background: white;
+    }
+    table.calendrier-junior td:hover {
+        background: #fff8f0;
+    }
+    table.calendrier-junior td .date {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #343a40;
+        margin-bottom: 3px;
+    }
+    table.calendrier-junior td .date.today {
+        background: #ff6b35;
+        color: white;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    table.calendrier-junior td .event {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: none;
+        display: block;
+        border: none;
+        text-align: left;
+    }
+    table.calendrier-junior td .event:hover {
+        transform: scale(1.05);
+    }
+    table.calendrier-junior td .event.semis {
+        background: #d4edda;
+        color: #155724;
+        border-left: 3px solid #28a745;
+    }
+    table.calendrier-junior td .event.recolte {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left: 3px solid #17a2b8;
+    }
+    table.calendrier-junior td .event.mission {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 3px solid #ff6b35;
+    }
+    table.calendrier-junior td .event .points {
+        font-size: 0.6rem;
+        background: #ff6b35;
+        color: white;
+        padding: 0 6px;
+        border-radius: 10px;
+        margin-left: 4px;
+    }
+
+    .legend-junior {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+        padding: 15px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+    .legend-item .color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    .legend-item .color.semis { background: #d4edda; border-left: 3px solid #28a745; }
+    .legend-item .color.recolte { background: #d1ecf1; border-left: 3px solid #17a2b8; }
+    .legend-item .color.mission { background: #fff3cd; border-left: 3px solid #ff6b35; }
+
+    .empty-state-junior {
+        text-align: center;
+        padding: 40px 20px;
+        background: #fff8f0;
+        border-radius: 15px;
+        border: 2px dashed #ff6b35;
+    }
+    .empty-state-junior .icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    .empty-state-junior h4 {
+        color: #ff6b35;
+    }
+    .empty-state-junior p {
+        color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        table.calendrier-junior td {
+            height: 50px;
+            font-size: 0.65rem;
+            padding: 3px;
+        }
+        table.calendrier-junior td .event {
+            font-size: 0.55rem;
+            padding: 1px 4px;
+        }
+        .junior-cal-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .junior-cal-header h2 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="junior-cal-container">
+
+    <!-- Header Junior -->
+    <div class="junior-cal-header">
+        <h2>📅 {{ mois_nom }} {{ annee }}</h2>
+        <div class="points-badge">
+            ⭐ {{ points_totaux }} points
+        </div>
+        <div class="nav-buttons">
+            <a href="{% url 'vegetables_fruits:calendrier_agricole_junior' annee_precedente mois_precedent %}" class="btn">◀</a>
+            <a href="{% url 'vegetables_fruits:calendrier_agricole_junior' %}" class="btn">Aujourd'hui</a>
+            <a href="{% url 'vegetables_fruits:calendrier_agricole_junior' annee_suivante mois_suivant %}" class="btn">▶</a>
+        </div>
+    </div>
+
+    <!-- Légende Junior -->
+    <div class="legend-junior">
+        <span class="legend-item"><span class="color semis"></span> 🌱 Semis</span>
+        <span class="legend-item"><span class="color recolte"></span> 🍅 Récolte</span>
+        <span class="legend-item"><span class="color mission"></span> 🎯 Mission</span>
+    </div>
+
+    <!-- Calendrier -->
+    {% if total_evenements > 0 %}
+    <table class="calendrier-junior">
+        <thead>
+            <tr>
+                {% for jour in jours_semaine %}
+                <th>{{ jour }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for semaine in cal %}
+            <tr>
+                {% for jour in semaine %}
+                <td>
+                    {% if jour != 0 %}
+                        <div class="date {% if jour == aujourdhui %}today{% endif %}">
+                            {% if jour != aujourdhui %}{{ jour }}{% endif %}
+                        </div>
+                        <div class="events-container">
+                            {% for event in evenements_par_jour|get_item:jour %}
+                                {% if event.type == 'semis' %}
+                                <a href="{% url 'vegetables_fruits:mes_semis' %}" class="event semis" title="{{ event.titre }}">
+                                    <span class="emoji">🌱</span> {{ event.titre|truncatechars:10 }}
+                                </a>
+                                {% elif event.type == 'recolte' %}
+                                <a href="{% url 'vegetables_fruits:figure_detail' event.parcelle_id %}" class="event recolte" title="{{ event.titre }}">
+                                    <span class="emoji">🍅</span> {{ event.titre|truncatechars:10 }}
+                                    <span class="points">+{{ event.points }}pts</span>
+                                </a>
+                                {% elif event.type == 'mission' %}
+                                <a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}" class="event mission" title="{{ event.titre }}">
+                                    <span class="emoji">🎯</span> {{ event.titre|truncatechars:10 }}
+                                    <span class="points">+{{ event.points }}pts</span>
+                                </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-day">-</div>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state-junior">
+        <div class="icon">🌟</div>
+        <h4>Pas encore d'événement ce mois-ci</h4>
+        <p>Continue à jardiner pour remplir ton calendrier !</p>
+        <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-junior" style="display: inline-block; margin-top: 15px; padding: 10px 25px; background: #ff6b35; color: white; border-radius: 50px; text-decoration: none;">
+            🌱 Créer ma première parcelle
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

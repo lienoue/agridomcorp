@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Journal de bord</li>
+{% endblock %}
+
+{% block title %}📓 Mon journal de bord{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>📓 Mon journal de bord</h1>
+            <!-- ✅ AFFICHAGE DU QUOTA POUR BASIQUE -->
+            {% if user.abonnement.plan.nom == 'BASIQUE' %}
+                <div class="mt-2">
+                    <span class="badge {% if nb_notes >= 10 %}bg-danger{% else %}bg-info{% endif %}">
+                        📊 {{ nb_notes|default:0 }} / 10 notes utilisées
+                    </span>
+                    {% if nb_notes >= 10 %}
+                        <span class="badge bg-warning text-dark ms-2">⚠️ Limite atteinte</span>
+                    {% endif %}
+                    <small class="text-muted ms-2">
+                        {% if nb_notes >= 10 %}
+                            🔒 Passez à Premium pour des notes illimitées
+                        {% else %}
+                            💡 {{ nb_notes|default:0|add:"-10"|cut:"-" }} notes restantes
+                        {% endif %}
+                    </small>
+                </div>
+            {% endif %}
+        </div>
+        <div>
+            {% if user.abonnement.plan.nom == 'BASIQUE' and nb_notes >= 10 %}
+                <button class="btn btn-secondary" disabled title="Limite de notes atteinte">
+                    ✏️ Nouvelle note <span class="badge bg-danger ms-1">🔒</span>
+                </button>
+                <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-warning ms-2">
+                    💎 Passer à Premium
+                </a>
+            {% else %}
+                <a href="{% url 'vegetables_fruits:journal_ajouter_parcelle' %}" class="btn btn-success">
+                    ✏️ Nouvelle note
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Filtre -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Filtrer par culture</label>
+                    <select name="culture" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toutes les cultures</option>
+                        {% for id, nom, emoji in cultures_filtre %}
+                        <option value="{{ id }}" {% if culture_selectionnee == id|stringformat:"s" %}selected{% endif %}>
+                            {{ emoji|default:"🌱" }} {{ nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a href="{% url 'vegetables_fruits:journal_liste' %}" class="btn btn-secondary">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des notes -->
+    {% for note in notes %}
+    <div class="card mb-3 {% if user.mode_junior %}border-warning{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title">
+                        {% if note.culture and note.culture.nom %}
+                            {{ note.culture.emoji|default:"🌱" }} {{ note.culture.nom }} -
+                        {% endif %}
+                        {{ note.titre }}
+                    </h5>
+                    <h6 class="card-subtitle text-muted mb-2">
+                        📅 {{ note.date_note|date:"d/m/Y" }}
+                        {% if note.meteo %} • 🌡️ {{ note.temperature|default:"" }}°C ☁️ {{ note.meteo }}{% endif %}
+                    </h6>
+                    <p class="card-text">{{ note.note|truncatewords:30 }}</p>
+                    {% if note.tags %}
+                        <p class="text-muted small">🏷️ {{ note.tags }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'vegetables_fruits:journal_detail' note.id %}" class="btn btn-sm btn-outline-primary">Voir</a>
+                    <a href="{% url 'vegetables_fruits:journal_modifier' note.id %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ note.id }}">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal suppression -->
+    <div class="modal fade" id="deleteModal{{ note.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Supprimer la note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Voulez-vous vraiment supprimer "{{ note.titre }}" ?
+                </div>
+                <div class="modal-footer">
+                    <form method="post" action="{% url 'vegetables_fruits:journal_supprimer' note.id %}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <div class="alert alert-info">
+            Aucune note pour le moment.
+            <a href="{% url 'vegetables_fruits:journal_ajouter_parcelle' %}">Créez votre première note !</a>
+        </div>
+    {% endfor %}
+    
+    <!-- Pagination -->
+    {% include "vegetables_fruits/pagination.html" with page=notes %}
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+<div class="fertilisation-container">
+
+    {# ============================================================ #}
+    {# EN-TÊTE AVEC INFOS SAISON + TYPE DE SOL (de l'onglet) #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 1.5rem;">🌤️</span>
+                        <div>
+                            <small class="text-muted d-block">Saison</small>
+                            <strong>{{ saison|capfirst }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 1.5rem;">🌍</span>
+                        <div>
+                            <small class="text-muted d-block">Type de sol</small>
+                            <strong>{{ type_sol|capfirst|default:"Non défini" }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 1.5rem;">🧪</span>
+                        <div>
+                            <small class="text-muted d-block">Statut</small>
+                            <strong>{% if recommandations %}✅ Recommandations disponibles{% else %}⚠️ Aucune culture{% endif %}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# STATISTIQUES (du standalone) #}
+    {# ============================================================ #}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">🌱 Parcelles</h6>
+                    <h3 class="mb-0">{{ stats.nb_parcelles|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">📐 Surface totale</h6>
+                    <h3 class="mb-0">{{ stats.surface_totale|default:0 }} m²</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">🌿 Cultures</h6>
+                    <h3 class="mb-0">{{ stats.nb_cultures|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# RECOMMANDATIONS PAR CULTURE (du standalone) #}
+    {# ============================================================ #}
+    {% if recommandations %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-flower1"></i> Recommandations de fertilisation
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    💡 Recommandations pour la saison <strong>{{ saison|capfirst }}</strong>
+                    sur un sol <strong>{{ type_sol|capfirst|default:"non défini" }}</strong>
+                </p>
+                <br>
+
+                <div class="row g-3">
+                    {% for rec in recommandations %}
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">{{ rec.culture }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">🧪 {{ rec.engrais }}</span>
+                                    </div>
+                                    <p class="mb-1"><strong>📦 Quantité :</strong> {{ rec.quantite }}</p>
+                                    <p class="mb-1"><strong>📅 Fréquence :</strong> {{ rec.frequence }}</p>
+                                    {% if rec.conseils %}
+                                        <p class="mb-0 text-muted"><strong>💡 Conseil :</strong> {{ rec.conseils }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            {% if cultures_parcelle %}
+                Aucune recommandation disponible pour les cultures de cette parcelle.
+            {% else %}
+                Aucune culture détectée sur cette parcelle.
+                <a href="{% url 'vegetables_fruits:cultures' %}" class="alert-link">Ajoutez des cultures</a> pour obtenir des recommandations.
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# ============================================================ #}
+    {# CONSEILS GÉNÉRAUX (du standalone) #}
+    {# ============================================================ #}
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <i class="bi bi-lightbulb"></i> Conseils de fertilisation
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                        <h6>🌱 Printemps</h6>
+                        <p class="mb-0 small">Apportez un engrais riche en azote pour favoriser la croissance des jeunes plants.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-warning bg-opacity-10 rounded-3">
+                        <h6>☀️ Été</h6>
+                        <p class="mb-0 small">Privilégiez un engrais riche en potassium pour la floraison et la fructification.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-info bg-opacity-10 rounded-3">
+                        <h6>🍂 Automne</h6>
+                        <p class="mb-0 small">Apportez du compost ou du fumier pour préparer le sol pour l'hiver.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-secondary bg-opacity-10 rounded-3">
+                        <h6>❄️ Hiver</h6>
+                        <p class="mb-0 small">Évitez les engrais, laissez le sol se reposer. Apportez du paillage.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

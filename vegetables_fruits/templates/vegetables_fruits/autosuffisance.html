@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
+<li class="breadcrumb-item active">Autosuffisance</li>
+{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        text-align: center;
+        height: 100%;
+        transition: transform 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .progress-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#28a745 {{ pourcentage }}%, #e9ecef 0%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    .progress-inner {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1b4332;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌱 Mon autosuffisance
+            </div>
+            <div class="card-body">
+
+                <!-- En-tête -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <h5 class="mb-2">🌿 Évaluez votre autonomie alimentaire</h5>
+                        <p class="text-muted">
+                            <small>Besoin de base estimé à <strong>200 kg</strong> par an (référence nationale).</small>
+                        </p>
+                        <br>
+                    </div>
+                </div>
+
+                {# ============================================================ #}
+                {# SÉLECTEUR DE PARCELLE                                       #}
+                {# ============================================================ #}
+                <div class="mb-4">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <label for="parcelle-select" class="fw-bold mb-0" style="color: #2d6a4f;">
+                            📍 Parcelle :
+                        </label>
+                        <select id="parcelle-select" class="form-select" style="max-width: 300px; border-color: #d4c8bc; border-radius: 10px;" onchange="window.location.href='?parcelle_id='+this.value">
+                            <option value="">-- Toutes les parcelles --</option>
+                            {% for parcelle in parcelles %}
+                                <option value="{{ parcelle.id }}" {% if selected_parcelle and selected_parcelle.id == parcelle.id %}selected{% endif %}>
+                                    {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="text-muted ms-2" style="font-size: 0.9rem;">
+                            {{ parcelles|length }} parcelle(s)
+                        </span>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Cartes de résumé -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ total_kg|floatformat:1 }}</div>
+                            <div class="stat-label">Production estimée (kg)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ besoin }}</div>
+                            <div class="stat-label">Besoins annuels (kg)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="progress-circle">
+                                <div class="progress-inner">{{ pourcentage }}%</div>
+                            </div>
+                            <div class="stat-label" style="margin-top: 10px;">Taux d’autosuffisance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message personnalisé -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert
+                            {% if pourcentage >= 80 %}alert-success
+                            {% elif pourcentage >= 50 %}alert-info
+                            {% elif pourcentage >= 25 %}alert-warning
+                            {% else %}alert-secondary{% endif %}
+                        " style="border-left: 5px solid #2d6a4f;"><br>
+                            <h5 class="alert-heading">{{ niveau }}</h5>
+                            <p>{{ message }}</p>
+                            <hr>
+                            <p class="mb-0"><strong>Conseil :</strong> {{ conseil }}</p> <br><br>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphique par culture -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-3">📈 Production par culture</h5>
+                                <canvas id="cultureChart" width="400" height="200" style="max-height: 250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sélecteur de parcelle
+        const parcelleSelect = document.getElementById('parcelle-select');
+        if (parcelleSelect) {
+            parcelleSelect.addEventListener('change', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('parcelle_id', this.value);
+                window.location.href = url.toString();
+            });
+        }
+
+        // Graphique
+        const cultures = [{% for detail in details_recoltes %}'{{ detail.culture }}',{% endfor %}];
+        const productions = [{% for detail in details_recoltes %}{{ detail.poids }},{% endfor %}];
+
+        const ctx = document.getElementById('cultureChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: cultures,
+                datasets: [{
+                    label: 'Production (kg)',
+                    data: productions,
+                    backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'kg'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

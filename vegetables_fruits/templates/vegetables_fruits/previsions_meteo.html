@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}🌡️ Prévisions météo 7 jours - Agriculture 2.0{% endblock %}
+
+{% block breadcrumb %}
+
+<li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
+<li class="breadcrumb-item active">🌡️ Prévisions météo</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    {# ============================================================ #}
+    {# EN-TÊTE #}
+    {# ============================================================ #}
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1" style="color: #2d6a4f;">
+                🌡️ Prévisions météo 7 jours
+            </h1>
+            <p class="text-muted mb-0">
+                🌤️ Anticipez les conditions climatiques pour vos cultures
+                <span class="badge bg-success ms-2" style="font-weight: 400;">
+                    {% if user.abonnement.plan.nom == 'PREMIUM' %}💎 Premium{% else %}👩‍🏫 Enseignant{% endif %}
+                </span>
+            </p>
+        </div>
+        <div>
+            <span class="text-muted" style="font-size: 0.9rem;">
+                📅 {{ now|date:"d/m/Y" }}
+            </span>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# SÉLECTEUR DE PARCELLE #}
+    {# ============================================================ #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <label for="parcelle-select" class="fw-bold mb-0" style="color: #2d6a4f;">
+                    📍 Parcelle :
+                </label>
+                <select id="parcelle-select" class="form-select" style="max-width: 300px; border-color: #d4c8bc; border-radius: 10px;" onchange="window.location.href='?parcelle_id='+this.value">
+                    {% for parcelle in parcelles %}
+                        <option value="{{ parcelle.id }}" {% if selected_parcelle and selected_parcelle.id == parcelle.id %}selected{% endif %}>
+                            {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                        </option>
+                    {% endfor %}
+                </select>
+                <a href="{% url 'vegetables_fruits:dashboard_climat' %}{% if selected_parcelle %}?parcelle_id={{ selected_parcelle.id }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                    ← Retour au dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================ #}
+    {# PRÉVISIONS 7 JOURS #}
+    {# ============================================================ #}
+    {% if previsions %}
+        <div class="row g-3">
+            {% for jour in previsions %}
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="card h-100 text-center" style="border-radius: 16px; border: 1px solid rgba(109, 76, 42, 0.06);">
+                        <div class="card-body">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #2d6a4f;">
+                                {{ jour.date|date:"d/m" }}
+                            </div>
+                            <div style="font-size: 2.5rem; margin: 8px 0;">
+                                <img src="https://openweathermap.org/img/wn/{{ jour.icon }}@2x.png" alt="{{ jour.conditions }}" style="width: 48px;">
+                            </div>
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #2d6a4f;">
+                                {{ jour.temperature }}°C
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6c757d; margin-top: 4px;">
+                                {{ jour.conditions|capfirst }}
+                            </div>
+                            <hr style="margin: 10px 0;">
+                            <div style="font-size: 0.75rem; color: #999;">
+                                💧 {{ jour.humidity }}%
+                            </div>
+                            <div style="font-size: 0.75rem; color: #999;">
+                                💨 {{ jour.wind_speed }} km/h
+                            </div>
+                            {% if jour.rain > 0 %}
+                                <div style="font-size: 0.75rem; color: #0d6efd;">
+                                    🌧️ {{ jour.rain }} mm
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# ============================================================ #}
+        {# ALERTES MÉTÉO #}
+        #}
+        <div class="card mt-4" style="border-left: 4px solid #ffc107;">
+            <div class="card-body">
+                <h6 class="mb-2" style="color: #2d6a4f;">⚠️ Alertes potentielles</h6>
+                <div class="row g-2">
+                    {% for jour in previsions %}
+                        {% if jour.temperature > 35 %}
+                            <div class="col-md-4">
+                                <div class="alert alert-danger mb-0" style="padding: 8px 12px; border-radius: 8px;">
+                                    🔥 {{ jour.date|date:"d/m" }} : Canicule ({{ jour.temperature }}°C)
+                                </div>
+                            </div>
+                        {% elif jour.temperature < 0 %}
+                            <div class="col-md-4">
+                                <div class="alert alert-info mb-0" style="padding: 8px 12px; border-radius: 8px;">
+                                    ❄️ {{ jour.date|date:"d/m" }} : Gel ({{ jour.temperature }}°C)
+                                </div>
+                            </div>
+                        {% elif jour.rain > 15 %}
+                            <div class="col-md-4">
+                                <div class="alert alert-warning mb-0" style="padding: 8px 12px; border-radius: 8px;">
+                                    🌧️ {{ jour.date|date:"d/m" }} : Fortes pluies
+                                </div>
+                            </div>
+                        {% elif jour.wind_speed > 50 %}
+                            <div class="col-md-4">
+                                <div class="alert alert-warning mb-0" style="padding: 8px 12px; border-radius: 8px;">
+                                    💨 {{ jour.date|date:"d/m" }} : Vent fort
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-success mb-0" style="padding: 8px 12px; border-radius: 8px;">
+                                ✅ Aucune alerte météo pour les 7 prochains jours
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# ============================================================ #}
+        {# CONSEILS MÉTÉO #}
+        #}
+        <div class="card mt-3" style="border-left: 4px solid #17a2b8;">
+            <div class="card-body">
+                <h6 class="mb-2" style="color: #2d6a4f;">🌿 Conseils pour vos cultures</h6>
+                <ul style="padding-left: 20px; margin-bottom: 0;">
+                    {% if previsions.0.temperature > 30 %}
+                        <li>☀️ Arrosez vos plantes tôt le matin ou tard le soir pour limiter l'évaporation</li>
+                    {% endif %}
+                    {% if previsions.0.temperature < 5 %}
+                        <li>❄️ Protégez vos plantes sensibles au gel avec un voile d'hivernage</li>
+                    {% endif %}
+                    {% if previsions.0.rain > 10 %}
+                        <li>🌧️ Surveillez le drainage de vos parcelles pour éviter l'engorgement</li>
+                    {% endif %}
+                    {% if previsions.0.wind_speed > 40 %}
+                        <li>💨 Protégez vos cultures du vent avec des brise-vents ou des filets</li>
+                    {% endif %}
+                    <li>🌱 Adaptez vos semis en fonction des prévisions</li>
+                </ul>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <span style="font-size: 4rem;">🌤️</span>
+                <h5 class="mt-3">Aucune donnée météo disponible</h5>
+                <p class="text-muted">
+                    {% if selected_parcelle %}
+                        {% if selected_parcelle.figure %}
+                            Vérifiez que votre parcelle a des coordonnées valides.
+                        {% else %}
+                            Cette parcelle n'a pas de figure associée.
+                        {% endif %}
+                    {% else %}
+                        Créez une parcelle avec une adresse pour voir les prévisions.
+                    {% endif %}
+                </p>
+                {# ✅ CORRECTION : Vérification avant d'appeler edit_figure #}
+                {% if selected_parcelle and selected_parcelle.figure %}
+                    <a href="{% url 'vegetables_fruits:edit_figure' selected_parcelle.figure.id %}" class="btn btn-success">
+                        📍 Définir l'adresse de la parcelle
+                    </a>
+                {% else %}
+                    <a href="{% url 'vegetables_fruits:draw_figure' %}" class="btn btn-success">
+                        📍 Créer une parcelle avec une adresse
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh toutes les 30 minutes
+    setTimeout(function() {
+        if (document.querySelector('.card-body')) {
+            window.location.reload();
+        }
+    }, 1800000); // 30 minutes
+});
+</script>
+{% endblock %}

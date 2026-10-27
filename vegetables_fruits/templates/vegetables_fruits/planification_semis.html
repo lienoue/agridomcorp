@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">
+        {% if eleve %}
+            Planification des semis de {{ eleve.user.username }}
+        {% else %}
+            Planification des semis
+        {% endif %}
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                🌱 Planification des semis
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Consultez et planifiez vos semis et plantations. La date de fin est calculée automatiquement selon la durée de pousse de chaque culture.
+                </p>
+
+                <!-- Note explicative -->
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">🌍 Préconisations mondiales</h6>
+                    <p>
+                        Les périodes de semis et de plantation varient selon le climat de votre région.
+                        Certaines cultures, originaires de climats tropicaux ou méditerranéens, peuvent
+                        avoir du mal à pousser sous des climats tempérés ou continentaux.
+                    </p>
+                    <p class="mb-0">
+                        <strong>Statut "Non disponible" :</strong> Aucune préconisation n'a encore été définie
+                        pour cette culture dans votre région climatique. Consultez les conseils locaux ou
+                        expérimentez avec prudence.
+                    </p>
+                </div>
+
+                <!-- Sélecteur de parcelle -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex align-items-center gap-2">
+                            <label class="fw-bold me-2">Parcelle :</label>
+                            <select name="parcelle_id" class="form-select" onchange="this.form.submit()" style="max-width: 250px;">
+                                <option value="">Toutes les parcelles</option>
+                                {% for parcelle in parcelles %}
+                                    <option value="{{ parcelle.id }}"
+                                            {% if parcelle.id == selected_parcelle.id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Tableau des semis -->
+                {% if semis %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>🌱 Culture</th>
+                                    <th>📍 Parcelle</th>
+                                    <th>📅 Date de semis</th>
+                                    <th>📅 Date de plantation</th>
+                                    <th>📅 Date de fin</th>
+                                    <th>⏳ Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for semis_item in semis %}
+                                <tr>
+                                    <td><strong>{{ semis_item.culture }}</strong></td>
+                                    <td>
+                                        {% if semis_item.figure %}
+                                            {{ semis_item.figure.name }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if semis_item.date_semis %}
+                                            {{ semis_item.date_semis|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if semis_item.date_plantation %}
+                                            {{ semis_item.date_plantation|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if semis_item.date_fin %}
+                                            {{ semis_item.date_fin|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ semis_item.statut_couleur }}">
+                                            {{ semis_item.statut_semis }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Aucun semis enregistré pour 
+                        {% if selected_parcelle %}{{ selected_parcelle.nom }}{% else %}vos parcelles{% endif %}.
+                        <br>
+                        <small>Ajoutez des semis via le calendrier des semis.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

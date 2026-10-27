@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+        <li class="breadcrumb-item active" aria-current="page">Plan d'irrigation</li>
+{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .plan-card {
+        border-left: 5px solid #28a745;
+        margin-bottom: 20px;
+    }
+    .total-badge {
+        font-size: 1.2rem;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background-color: #e9ecef;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                💧 Plan d'irrigation hebdomadaire
+            </div>
+            <div class="card-body">
+                <!-- Filtre par parcelle -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex align-items-center gap-2">
+                            <label class="fw-bold me-2">Parcelle :</label>
+                            <select name="parcelle_id" class="form-select" onchange="this.form.submit()" style="max-width: 300px;">
+                                <option value="">Toutes les parcelles</option>
+                                {% for parcelle in toutes_parcelles %}
+                                    <option value="{{ parcelle.id }}"
+                                            {% if parcelle.id|stringformat:"s" == selected_parcelle_id %}selected{% endif %}>
+                                        {{ parcelle.nom }} ({{ parcelle.surface_m2 }} m²)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="total-badge">
+                            📊 Total : <strong>{{ total_litres_semaine }} L</strong> / semaine
+                        </span>
+                    </div>
+                </div>
+<br>
+                {% if plan_parcelles %}
+                    <!-- Graphique -->
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center mb-3">📊 Répartition des besoins en eau par parcelle</h5>
+                                    <canvas id="irrigationChart" width="400" height="200" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plans par parcelle -->
+                    {% for parcelle_plan in plan_parcelles %}
+                        <div class="card plan-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">🌱 {{ parcelle_plan.parcelle.nom }}</h5>
+                                    <small class="text-muted">{{ parcelle_plan.parcelle.surface_m2 }} m²</small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-info fs-6">
+                                        Total : {{ parcelle_plan.total_litres_semaine }} L/semaine
+                                    </span>
+                                    <a href="{% url 'vegetables_fruits:creer_rappel_arrosage' parcelle_plan.parcelle.id %}"
+                                       class="btn btn-sm btn-outline-primary ms-2">
+                                        🔔 Rappel arrosage
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 20%;">Culture</th>
+                                                <th style="width: 15%;">Besoins hebdo</th>
+                                                <th style="width: 15%;">Par arrosage</th>
+                                                <th style="width: 15%;">Fréquence</th>
+                                                <th style="width: 25%;">Jours recommandés</th>
+                                                <th style="width: 10%;">Période sensible</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for culture in parcelle_plan.cultures %}
+                                            <tr>
+                                                <td><strong>{{ culture.culture }}</strong></td>
+                                                <td>{{ culture.litres_semaine }} L</td>
+                                                <td>{{ culture.litres_par_arrosage }} L</td>
+                                                <td>Tous les {{ culture.frequence_jours }} jours</td>
+                                                <td>
+                                                    {% for jour in culture.jours_recommandes %}
+                                                        <span class="badge bg-success me-1 mb-1">{{ jour }}</span>
+                                                    {% endfor %}
+                                                </td>
+                                                <td>
+                                                    {% if culture.periode_sensible %}
+                                                        <span class="badge bg-warning text-dark">{{ culture.periode_sensible }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted">—</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Bouton d'export -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'vegetables_fruits:export_plan_irrigation_pdf' %}" class="btn btn-outline-success btn-lg">
+                            📄 Exporter en PDF
+                        </a>
+                    </div>
+
+                    <!-- Bouton Bilan carbone -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'vegetables_fruits:bilan_carbone' %}" class="btn btn-outline-primary">
+                            🌍 Bilan carbone
+                        </a>
+                    </div>
+
+                {% else %}
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">⚠️ Aucun plan d'irrigation disponible</h5>
+                        <p>Ajoutez des cultures à vos parcelles et renseignez leurs besoins en eau pour générer un plan d'arrosage personnalisé.</p>
+                        <hr>
+                        <p class="mb-0">
+                            <a href="{% url 'vegetables_fruits:view_figure' %}" class="btn btn-outline-success">
+                                ➕ Ajouter une culture
+                            </a>
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if plan_parcelles %}
+            const ctx = document.getElementById('irrigationChart').getContext('2d');
+            const labels = [{% for label in labels_graphique %}'{{ label }}',{% endfor %}];
+            const data = [{% for value in data_graphique %}{{ value }},{% endfor %}];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Besoins en eau (L/semaine)',
+                        data: data,
+                        backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Litres par semaine'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}
