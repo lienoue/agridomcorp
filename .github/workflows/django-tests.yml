@@ -33,16 +33,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         
-        # ✅ Installation de GDAL via un wheel Linux pré-compilé (beaucoup plus stable sur la CI)
+        # ✅ Installation de GDAL via un wheel Linux pré-compilé
         pip install --find-links=https://girder.github.io/large_image_wheels --no-cache GDAL
         
-        # Installation du reste des dépendances (sans le .whl Windows)
+        # Installation du reste des dépendances
         pip install -r requirements.txt
         pip install pytest pytest-django
 
     - name: Lancer les tests avec Pytest
       env:
-        # Variables d'environnement factices pour que la CI ne plante pas
+        # ✅ On utilise un fichier de settings spécial pour la CI
+        DJANGO_SETTINGS_MODULE: "vegetablesfruits.settings_ci"
+
+        # Variables d'environnement factices
         DJANGO_SECRET_KEY: "ci-test-secret-key-not-for-prod"
         DJANGO_DEBUG: "True"
         MAPBOX_TOKEN: "fake-token"
