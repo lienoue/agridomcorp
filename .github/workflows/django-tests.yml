@@ -23,22 +23,33 @@ jobs:
     - name: Installation des dépendances système (GDAL)
       run: |
         sudo apt-get update
-        sudo apt-get install -y binutils libproj-dev gdal-bin python3-gdal
+        sudo apt-get install -y binutils libproj-dev gdal-bin libgdal-dev python3-gdal
+        
+        # ✅ Vérification que gdal-config est bien accessible
+        which gdal-config
+        gdal-config --version
 
     - name: Installation des dépendances Python
       run: |
         python -m pip install --upgrade pip
-        # On installe GDAL en se basant sur la version système de Linux
-        pip install GDAL==`gdal-config --version`
-        # Ensuite on installe le reste des dépendances
+        
+        # ✅ Installation de GDAL via un wheel Linux pré-compilé (beaucoup plus stable sur la CI)
+        pip install --find-links=https://girder.github.io/large_image_wheels --no-cache GDAL
+        
+        # Installation du reste des dépendances (sans le .whl Windows)
         pip install -r requirements.txt
         pip install pytest pytest-django
 
     - name: Lancer les tests avec Pytest
       env:
+        # Variables d'environnement factices pour que la CI ne plante pas
         DJANGO_SECRET_KEY: "ci-test-secret-key-not-for-prod"
         DJANGO_DEBUG: "True"
         MAPBOX_TOKEN: "fake-token"
         OPENWEATHER_API_KEY: "fake-key"
+        SENDINBLUE_API_KEY: "fake-key"
+        STRIPE_PUBLIC_KEY: "fake-key"
+        STRIPE_SECRET_KEY: "fake-key"
+        STRIPE_WEBHOOK_SECRET: "fake-key"
       run: |
         pytest -v
