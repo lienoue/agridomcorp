@@ -23,27 +23,35 @@ class TestStripe:
         client.force_login(user)
         return user
 
+    # ✅ On mocke la création de session ET la création du client Stripe
+    @patch('stripe.Customer.create')
     @patch('stripe.checkout.Session.create')
-    def test_creation_session_paiement(self, mock_stripe_create, client, user_premium):
+    def test_creation_session_paiement(self, mock_stripe_create, mock_customer_create, client, user_premium):
         """Vérifie que la vue de paiement appelle bien Stripe et redirige l'utilisateur"""
-        # 1. On simule la réponse de Stripe
+
+        # 1. On simule la création du client Stripe
+        mock_customer = MagicMock()
+        mock_customer.id = "cus_fake_123"
+        mock_customer_create.return_value = mock_customer
+
+        # 2. On simule la réponse de Stripe Checkout
         mock_session = MagicMock()
         mock_session.url = "https://checkout.stripe.com/fake-session"
         mock_stripe_create.return_value = mock_session
 
         url = reverse('vegetables_fruits:create_checkout_session')
 
-        # 2. On simule le clic sur le bouton "S'abonner"
+        # 3. On simule le clic sur le bouton "S'abonner"
         response = client.post(url, {
             'plan': 'PREMIUM',
             'frequence': 'MENSUEL'
         })
 
-        # 3. On vérifie que l'utilisateur est redirigé vers Stripe
+        # 4. On vérifie que l'utilisateur est redirigé vers Stripe
         assert response.status_code == 302
         assert response.url == "https://checkout.stripe.com/fake-session"
 
-        # 4. On vérifie que Stripe a bien été appelé avec les bons paramètres
+        # 5. On vérifie que Stripe a bien été appelé avec les bons paramètres
         mock_stripe_create.assert_called_once()
         kwargs = mock_stripe_create.call_args.kwargs
         assert kwargs['mode'] == 'subscription'
