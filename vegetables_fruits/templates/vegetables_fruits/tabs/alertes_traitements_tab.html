@@ -3,70 +3,44 @@
         <h5 class="mb-0">
             <i class="bi bi-droplet text-success"></i> Alertes traitements
         </h5>
-        <div>
+        <div class="d-flex align-items-center gap-2">
             <span class="badge bg-danger rounded-pill">{{ total_alertes }} actives</span>
             <span class="badge bg-success rounded-pill">{{ alertes_traitees }} traitées</span>
+            {% if total_alertes > 0 %}
+                <button class="btn btn-sm btn-outline-success" onclick="toutAcquitter('traitements')">
+                    <i class="bi bi-check2-all"></i> Tout acquitter
+                </button>
+            {% endif %}
         </div>
     </div>
 <br>
-    <!-- Statistiques par gravité -->
-    <div class="row g-2 mb-4">
-        <div class="col-3">
-            <div class="card text-center bg-danger text-white">
-                <div class="card-body py-2">
-                    <h6>{{ alertes_par_gravite.critique }}</h6>
-                    <small>Critique</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="card text-center bg-warning text-dark">
-                <div class="card-body py-2">
-                    <h6>{{ alertes_par_gravite.elevee }}</h6>
-                    <small>Élevée</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="card text-center bg-info text-white">
-                <div class="card-body py-2">
-                    <h6>{{ alertes_par_gravite.moyenne }}</h6>
-                    <small>Moyenne</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="card text-center bg-secondary text-white">
-                <div class="card-body py-2">
-                    <h6>{{ alertes_par_gravite.faible }}</h6>
-                    <small>Faible</small>
-                </div>
-            </div>
-        </div>
+    <!-- Statistiques par gravité (design compact) -->
+    <div class="row row-cols-4 g-2 mb-4">
+        <div class="col"><div class="card text-center bg-danger text-white border-0 shadow-sm"><div class="card-body py-2"><h6 class="mb-0">{{ alertes_par_gravite.critique }}</h6><small>Critique</small></div></div></div>
+        <div class="col"><div class="card text-center bg-warning text-dark border-0 shadow-sm"><div class="card-body py-2"><h6 class="mb-0">{{ alertes_par_gravite.elevee }}</h6><small>Élevée</small></div></div></div>
+        <div class="col"><div class="card text-center bg-info text-white border-0 shadow-sm"><div class="card-body py-2"><h6 class="mb-0">{{ alertes_par_gravite.moyenne }}</h6><small>Moyenne</small></div></div></div>
+        <div class="col"><div class="card text-center bg-secondary text-white border-0 shadow-sm"><div class="card-body py-2"><h6 class="mb-0">{{ alertes_par_gravite.faible }}</h6><small>Faible</small></div></div></div>
     </div>
 
     {% if alertes_actives %}
-        <div class="list-group">
+        <div class="list-group shadow-sm">
             {% for alerte in alertes_actives %}
-                <div class="list-group-item list-group-item-{% if alerte.niveau_risque == 'critique' %}danger{% elif alerte.niveau_risque == 'elevee' %}warning{% else %}info{% endif %}">
+                <div class="list-group-item list-group-item-action border-start border-4 border-{% if alerte.niveau_risque == 'critique' %}danger{% elif alerte.niveau_risque == 'elevee' %}warning{% else %}info{% endif %} mb-2 rounded">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ alerte.culture.nom }}</strong>
-                            <span class="badge bg-danger">⚠️ {{ alerte.maladie.nom }}</span>
-                            <br>
+                            <h6 class="mb-1">{{ alerte.culture.nom }} <span class="badge bg-danger ms-1">⚠️ {{ alerte.maladie.nom }}</span></h6>
                             <small class="text-muted">
-                                {{ alerte.date_creation|date:"d/m/Y H:i" }}
-                                {% if alerte.figure %}
-                                    - {{ alerte.figure.name }}
-                                {% endif %}
+                                <i class="bi bi-calendar"></i> {{ alerte.date_creation|date:"d/m/Y H:i" }}
+                                {% if alerte.figure %} - <i class="bi bi-geo-alt"></i> {{ alerte.figure.name }}{% endif %}
                             </small>
                         </div>
-                        <div>
-                            <a href="{% url 'vegetables_fruits:traiter_alerte' alerte.id %}" class="btn btn-sm btn-success">
-                                ✅ Traiter
+                        <div class="d-flex gap-2">
+                            <!-- ✅ On va vers la page autonome, filtrée sur la parcelle de l'alerte -->
+                            <a href="{% url 'vegetables_fruits:alertes_traitements' %}?parcelle_id={{ alerte.figure.id }}" class="btn btn-sm btn-success shadow-sm">
+                                <i class="bi bi-check-lg"></i> Traiter
                             </a>
-                            <a href="{% url 'vegetables_fruits:ignorer_alerte_traitement' alerte.id %}" class="btn btn-sm btn-secondary">
-                                ⏭️ Ignorer
+                            <a href="{% url 'vegetables_fruits:alertes_traitements' %}?parcelle_id={{ alerte.figure.id }}" class="btn btn-sm btn-outline-secondary shadow-sm">
+                                <i class="bi bi-x-lg"></i> Ignorer
                             </a>
                         </div>
                     </div>
@@ -74,7 +48,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="alert alert-success">
+        <div class="alert alert-success border-0 shadow-sm">
             <i class="bi bi-check-circle"></i> Aucune alerte traitement active. Tout va bien !
         </div>
     {% endif %}

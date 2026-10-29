@@ -12891,36 +12891,50 @@ def alertes_traitements(request):
     """Page des alertes traitements"""
     user = request.user
 
-    alertes_actives = AlerteTraitement.objects.filter(
+    # ✅ On récupère l'ID de la parcelle depuis l'URL
+    parcelle_id = request.GET.get('parcelle_id')
+
+    # 1. On prépare les requêtes de base
+    qs_actives = AlerteTraitement.objects.filter(
         utilisateur=user,
         statut__in=['en_attente', 'envoyee']
-    ).select_related('culture', 'maladie', 'figure').order_by('-date_creation')
+    )
+    qs_traitees = AlerteTraitement.objects.filter(utilisateur=user, statut='traitee')
+    qs_ignorees = AlerteTraitement.objects.filter(utilisateur=user, statut='ignoree')
 
-    alertes_traitees = AlerteTraitement.objects.filter(
-        utilisateur=user,
-        statut='traitee'
-    ).count()
+    # 2. ✅ On applique le filtre si une parcelle est sélectionnée
+    if parcelle_id:
+        qs_actives = qs_actives.filter(figure_id=parcelle_id)
+        qs_traitees = qs_traitees.filter(figure_id=parcelle_id)
+        qs_ignorees = qs_ignorees.filter(figure_id=parcelle_id)
 
-    alertes_ignorees = AlerteTraitement.objects.filter(
-        utilisateur=user,
-        statut='ignoree'
-    ).count()
+    # 3. On prépare les alertes actives pour l'affichage
+    alertes_actives = qs_actives.select_related('culture', 'maladie', 'figure').order_by('-date_creation')
 
-    # Statistiques par gravité
+    # 4. Calcul des gravités
     alertes_par_gravite = {
-        'critique': alertes_actives.filter(niveau_risque='critique').count(),
-        'elevee': alertes_actives.filter(niveau_risque='elevee').count(),
-        'moyenne': alertes_actives.filter(niveau_risque='moyenne').count(),
-        'faible': alertes_actives.filter(niveau_risque='faible').count(),
+        'critique': qs_actives.filter(niveau_risque='critique').count(),
+        'elevee': qs_actives.filter(niveau_risque='elevee').count(),
+        'moyenne': qs_actives.filter(niveau_risque='moyenne').count(),
+        'faible': qs_actives.filter(niveau_risque='faible').count(),
+        'contamination': qs_actives.filter(est_contamination=True).count(),  # ✅ Ajouté car présent dans ton template
     }
 
-    return render(request, 'vegetables_fruits/alertes_traitements.html', {
+    # 5. On récupère la liste des parcelles pour un éventuel sélecteur (optionnel)
+    from .models import GeometricFigure
+    figures = GeometricFigure.objects.filter(user=user)
+
+    context = {
         'alertes_actives': alertes_actives,
-        'alertes_traitees': alertes_traitees,
-        'alertes_ignorees': alertes_ignorees,
+        'alertes_traitees': qs_traitees.count(),
+        'alertes_ignorees': qs_ignorees.count(),
         'alertes_par_gravite': alertes_par_gravite,
-        'total_alertes': alertes_actives.count(),
-    })
+        'total_alertes': qs_actives.count(),
+        'figures': figures,  # Si tu veux ajouter le sélecteur dans ce template
+        'selected_figure_id': int(parcelle_id) if parcelle_id else None,
+    }
+
+    return render(request, 'vegetables_fruits/alertes_traitements.html', context)
 
 
 @login_required
@@ -12928,6 +12942,11 @@ def traiter_alerte(request, alerte_id):
     alerte = get_object_or_404(AlerteTraitement, id=alerte_id, utilisateur=request.user)
     alerte.marquer_traitee()
     messages.success(request, f"✅ Traitement marqué comme effectué pour {alerte.culture.nom}")
+
+    # ✅ On conserve l'ID de la parcelle dans l'URL de retour
+    parcelle_id = request.GET.get('parcelle_id') or request.POST.get('parcelle_id')
+    if parcelle_id:
+        return redirect(f"{reverse('vegetables_fruits:alertes_traitements')}?parcelle_id={parcelle_id}")
     return redirect('vegetables_fruits:alertes_traitements')
 
 @login_required
@@ -12935,7 +12954,34 @@ def ignorer_alerte_traitement(request, alerte_id):
     alerte = get_object_or_404(AlerteTraitement, id=alerte_id, utilisateur=request.user)
     alerte.marquer_ignoree()
     messages.info(request, f"⏭️ Alerte ignorée pour {alerte.culture.nom}")
+
+    # ✅ On conserve l'ID de la parcelle dans l'URL de retour
+    parcelle_id = request.GET.get('parcelle_id') or request.POST.get('parcelle_id')
+    if parcelle_id:
+        return redirect(f"{reverse('vegetables_fruits:alertes_traitements')}?parcelle_id={parcelle_id}")
     return redirect('vegetables_fruits:alertes_traitements')
+
+
+from django.views.decorators.http import require_POST
+
+
+@login_required
+@require_POST
+def api_marquer_meteo_lue(request, alerte_id):
+    """Marque une alerte météo spécifique comme lue (ignorée/traitée)."""
+    try:
+        alerte = AlerteMeteo.objects.get(id=alerte_id, utilisateur=request.user)
+
+        # On la marque comme ignorée (ou 'envoyee' selon ta logique métier)
+        alerte.statut = 'ignoree'
+        alerte.save()
+
+        return JsonResponse({'success': True})
+    except AlerteMeteo.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Alerte introuvable'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 
 def verifier_compatibilite_plantation(culture_nom, figure_id, maladie_nom=None):
@@ -15282,6 +15328,12 @@ def alertes_tabs(request, tab_name):
     if tab_name == 'meteo':
         alertes = AlerteMeteo.objects.filter(utilisateur=user).order_by('-date_declenchement')
 
+        parcelle_id = request.GET.get('parcelle_id')
+        if parcelle_id:
+            alertes = alertes.filter(figure_id=parcelle_id)
+
+        alertes = alertes.order_by('-date_declenchement')
+
         stats = {
             'total': alertes.count(),
             'gel': alertes.filter(type_alerte='gel').count(),
@@ -15299,6 +15351,10 @@ def alertes_tabs(request, tab_name):
     # 🔹 Onglet "avancees"
     elif tab_name == 'avancees':
         parcelles = Parcelle.objects.filter(utilisateur=user, est_active=True).select_related('figure')
+
+        parcelle_id = request.GET.get('parcelle_id')
+        if parcelle_id:
+            parcelles = parcelles.filter(id=parcelle_id)
         SEUILS_DEFAUT = {'gel': 0, 'canicule': 35, 'pluie': 20, 'vent': 50}
 
         parcelles_meteo = []
@@ -15410,15 +15466,27 @@ def alertes_tabs(request, tab_name):
             statut='en_attente'
         ).select_related('figure').order_by('date_declenchement')
 
+        if parcelle_id:
+            alertes_en_attente = alertes_en_attente.filter(figure_id=parcelle_id)
+        alertes_en_attente = alertes_en_attente.select_related('figure').order_by('date_declenchement')
+
         alertes_envoyees = AlerteSemis.objects.filter(
             figure__user=user,
             statut='envoyee'
         ).select_related('figure').order_by('-date_envoi')
 
+        if parcelle_id:
+            alertes_envoyees = alertes_envoyees.filter(figure_id=parcelle_id)
+        alertes_envoyees = alertes_envoyees.select_related('figure').order_by('date_declenchement')
+
         alertes_ignorees = AlerteSemis.objects.filter(
             figure__user=user,
             statut='ignoree'
         ).select_related('figure').order_by('-date_declenchement')
+
+        if parcelle_id:
+            alertes_ignorees = alertes_ignorees.filter(figure_id=parcelle_id)
+        alertes_ignorees = alertes_ignorees.select_related('figure').order_by('date_declenchement')
 
         # Marquer urgente / proche pour l'affichage
         maintenant = timezone.now()
@@ -15448,33 +15516,88 @@ def alertes_tabs(request, tab_name):
 
     # 🔹 Onglet "traitements"
     elif tab_name == 'traitements':
-        alertes_actives = AlerteTraitement.objects.filter(
+        # 1. On prépare les requêtes de base
+        qs_actives = AlerteTraitement.objects.filter(
             utilisateur=user,
             statut__in=['en_attente', 'envoyee']
-        ).select_related('culture', 'maladie', 'figure').order_by('-date_creation')
+        )
+        qs_traitees = AlerteTraitement.objects.filter(utilisateur=user, statut='traitee')
+        qs_ignorees = AlerteTraitement.objects.filter(utilisateur=user, statut='ignoree')
 
-        alertes_traitees = AlerteTraitement.objects.filter(utilisateur=user, statut='traitee').count()
-        alertes_ignorees = AlerteTraitement.objects.filter(utilisateur=user, statut='ignoree').count()
+        # 2. ✅ ON FILTRE PAR PARCELLE AVANT DE COMPTER
+        if parcelle_id:
+            qs_actives = qs_actives.filter(figure_id=parcelle_id)
+            qs_traitees = qs_traitees.filter(figure_id=parcelle_id)
+            qs_ignorees = qs_ignorees.filter(figure_id=parcelle_id)
 
+        # 3. Pour l'affichage, on a besoin des objets complets
+        alertes_actives = qs_actives.select_related('culture', 'maladie', 'figure').order_by('-date_creation')
+
+        # 4. On prépare le dictionnaire des gravités (on utilise qs_actives qui est déjà filtré)
         alertes_par_gravite = {
-            'critique': alertes_actives.filter(niveau_risque='critique').count(),
-            'elevee': alertes_actives.filter(niveau_risque='elevee').count(),
-            'moyenne': alertes_actives.filter(niveau_risque='moyenne').count(),
-            'faible': alertes_actives.filter(niveau_risque='faible').count(),
+            'critique': qs_actives.filter(niveau_risque='critique').count(),
+            'elevee': qs_actives.filter(niveau_risque='elevee').count(),
+            'moyenne': qs_actives.filter(niveau_risque='moyenne').count(),
+            'faible': qs_actives.filter(niveau_risque='faible').count(),
         }
 
+        # 5. On renvoie les entiers pour les compteurs, et le QuerySet pour la liste
         context = {
             'alertes_actives': alertes_actives,
-            'alertes_traitees': alertes_traitees,
-            'alertes_ignorees': alertes_ignorees,
+            'alertes_traitees': qs_traitees.count(),  # <-- Le fameux .count() conservé !
+            'alertes_ignorees': qs_ignorees.count(),  # <-- Le fameux .count() conservé !
             'alertes_par_gravite': alertes_par_gravite,
-            'total_alertes': alertes_actives.count(),
+            'total_alertes': qs_actives.count(),
             'selected_figure': selected_figure,
+            'parcelle_id': parcelle_id,
         }
         return render(request, 'vegetables_fruits/tabs/alertes_traitements_tab.html', context)
 
     return HttpResponse('<div class="alert alert-danger">Onglet non trouvé</div>', status=404)
 
+
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+
+@login_required
+@require_POST
+def api_acquitter_alertes(request, type_onglet):
+    """
+    Marque toutes les alertes d'un certain type comme traitées/lues.
+    """
+    user = request.user
+    parcelle_id = request.GET.get('parcelle_id')
+
+    try:
+        if type_onglet == 'meteo':
+            qs = AlerteMeteo.objects.filter(utilisateur=user, statut='en_attente')
+            if parcelle_id: qs = qs.filter(figure_id=parcelle_id)
+            qs.update(statut='ignoree') # Ou 'envoyee' selon ta logique
+
+        elif type_onglet == 'avancees':
+            # Pour les alertes avancées, on acquitte tout ce qui est "en_attente" sur ces parcelles
+            qs = AlerteMeteo.objects.filter(utilisateur=user, statut='en_attente')
+            if parcelle_id: qs = qs.filter(figure_id=parcelle_id)
+            qs.update(statut='ignoree')
+
+        elif type_onglet == 'traitements':
+            qs = AlerteTraitement.objects.filter(utilisateur=user, statut__in=['en_attente', 'envoyee'])
+            if parcelle_id: qs = qs.filter(figure_id=parcelle_id)
+            qs.update(statut='traitee')
+
+        elif type_onglet == 'semis':
+            qs = AlerteSemis.objects.filter(figure__user=user, statut='en_attente')
+            if parcelle_id: qs = qs.filter(figure_id=parcelle_id)
+            qs.update(statut='ignoree') # On ignore celles qu'on n'a pas traitées
+
+        else:
+            return JsonResponse({'success': False, 'error': 'Onglet inconnu'}, status=400)
+
+        return JsonResponse({'success': True, 'message': 'Alertes mises à jour'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # ============================================================
 # IMPORTS NÉCESSAIRES
@@ -17253,10 +17376,11 @@ def previsions_meteo(request):
                     jours_vus = set()
                     for item in data['list']:
                         date_str = item['dt_txt'].split(' ')[0]
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
                         if date_str not in jours_vus and len(previsions) < 7:
                             jours_vus.add(date_str)
                             previsions.append({
-                                'date': date_str,
+                                'date': date_obj,
                                 'temperature': round(item['main']['temp'], 1),
                                 'conditions': item['weather'][0]['description'],
                                 'icon': item['weather'][0]['icon'],

@@ -3,36 +3,51 @@
         <h5 class="mb-0">
             <i class="bi bi-cloud-sun text-success"></i> Alertes météo
         </h5>
-        <div>
+        <div class="d-flex align-items-center gap-2">
             <span class="badge bg-info rounded-pill">Total : {{ stats.total }}</span>
             <span class="badge bg-danger rounded-pill">Non lues : {{ stats.non_lues }}</span>
+            {% if stats.non_lues > 0 %}
+                <button class="btn btn-sm btn-outline-success" onclick="toutAcquitter('meteo')">
+                    <i class="bi bi-check2-all"></i> Tout marquer comme lu
+                </button>
+            {% endif %}
         </div>
     </div>
-
+<br>
     {% if alertes %}
-        <div class="list-group">
+        <div class="row g-3">
             {% for alerte in alertes %}
-                <div class="list-group-item list-group-item-{% if alerte.type_alerte == 'gel' %}danger{% elif alerte.type_alerte == 'canicule' %}warning{% else %}info{% endif %}">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ alerte.message }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ alerte.date_declenchement|date:"d/m/Y H:i" }}
-                                {% if alerte.temperature %}
-                                    - 🌡️ {{ alerte.temperature }}°C
+                <!-- ✅ On ajoute un ID unique pour pouvoir cibler la carte en JS -->
+                <div class="col-md-6" id="alerte-meteo-{{ alerte.id }}">
+                    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid {% if alerte.type_alerte == 'gel' %}#0dcaf0{% elif alerte.type_alerte == 'canicule' %}#ffc107{% else %}#6c757d{% endif %} !important;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ alerte.message }}</h6>
+                                <span class="badge bg-{% if alerte.statut == 'en_attente' %}warning text-dark{% else %}secondary{% endif %}">
+                                    {{ alerte.get_statut_display }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ alerte.date_declenchement|date:"d/m/Y H:i" }}
+                                    {% if alerte.temperature %} - 🌡️ {{ alerte.temperature }}°C{% endif %}
+                                </small>
+
+                                <!-- ✅ LE NOUVEAU BOUTON LU -->
+                                {% if alerte.statut == 'en_attente' %}
+                                <button class="btn btn-sm btn-outline-success" onclick="marquerMeteoLue({{ alerte.id }})">
+                                    <i class="bi bi-check2"></i> Lu
+                                </button>
                                 {% endif %}
-                            </small>
+
+                            </div>
                         </div>
-                        <span class="badge bg-{% if alerte.statut == 'en_attente' %}warning{% else %}secondary{% endif %}">
-                            {{ alerte.get_statut_display }}
-                        </span>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="alert alert-info">
+        <div class="alert alert-info border-0 shadow-sm">
             <i class="bi bi-info-circle"></i> Aucune alerte météo pour le moment.
         </div>
     {% endif %}

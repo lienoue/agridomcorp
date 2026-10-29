@@ -351,6 +351,22 @@
         </a>
     </div>
 
+
+    <!-- ✅ Sélecteur de parcelle -->
+    <div class="mb-4">
+        <form method="GET" action="{% url 'vegetables_fruits:alertes_traitements' %}">
+            <label class="fw-bold me-2">📍 Filtrer par parcelle :</label>
+            <select name="parcelle_id" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="">Toutes mes parcelles</option>
+                {% for fig in figures %}
+                    <option value="{{ fig.id }}" {% if fig.id == selected_figure_id %}selected{% endif %}>
+                        {{ fig.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+<br>
     <!-- Statistiques -->
     <div class="stats-grid">
         <div class="stat-card">
@@ -469,11 +485,11 @@
                 {% endif %}
             </div>
             <div class="alerte-actions">
-                <form method="POST" action="{% url 'vegetables_fruits:traiter_alerte' alerte.id %}">
+                <form method="POST" action="{% url 'vegetables_fruits:traiter_alerte' alerte.id %}?parcelle_id={{ selected_figure_id|default:'' }}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-traiter">✅ Traité</button>
                 </form>
-                <form method="POST" action="{% url 'vegetables_fruits:ignorer_alerte_traitement' alerte.id %}">
+                <form method="POST" action="{% url 'vegetables_fruits:ignorer_alerte_traitement' alerte.id %}?parcelle_id={{ selected_figure_id|default:'' }}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-ignorer">⏭️ Ignorer</button>
                 </form>

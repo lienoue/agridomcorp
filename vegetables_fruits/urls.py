@@ -23,10 +23,13 @@ urlpatterns = [
 
     # 4. Page Alertes (3 onglets)
     path('alertes/', views.alertes, name='alertes'),
+    path('api/alertes/acquitter/<str:type_onglet>/', views.api_acquitter_alertes, name='api_acquitter_alertes'),
     path('api/tab/alertes/<str:tab_name>/', views.alertes_tabs, name='alertes_tabs'),
     path('ignorer-alerte-semis/<int:alerte_id>/', views.ignorer_alerte_semis, name='ignorer_alerte_semis'),
     path('ignorer-alerte-traitement/<int:alerte_id>/', views.ignorer_alerte_traitement, name='ignorer_alerte_traitement'),
     path('mes-alertes-semis/', views.mes_alertes, name='mes_alertes'),
+    path('api/alertes/meteo/lire/<int:alerte_id>/', views.api_marquer_meteo_lue, name='api_marquer_meteo_lue'),
+
 
     # =========================================================
     # AUTRES ROUTES

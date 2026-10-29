@@ -4,7 +4,6 @@
 {% block title %}🌡️ Prévisions météo 7 jours - Agriculture 2.0{% endblock %}
 
 {% block breadcrumb %}
-
 <li class="breadcrumb-item"><a href="{% url 'vegetables_fruits:ecologie' %}">🌍 Écologie & Climat</a></li>
 <li class="breadcrumb-item active">🌡️ Prévisions météo</li>
 {% endblock %}
@@ -66,31 +65,45 @@
             {% for jour in previsions %}
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="card h-100 text-center" style="border-radius: 16px; border: 1px solid rgba(109, 76, 42, 0.06);">
-                        <div class="card-body">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: #2d6a4f;">
-                                {{ jour.date|date:"d/m" }}
+                        <div class="card-body d-flex flex-column justify-content-between">
+
+                            <!-- ✅ LE JOUR ET LA DATE ICI -->
+                            <div>
+                                <div style="font-weight: 700; font-size: 1rem; color: #2d6a4f; text-transform: capitalize;">
+                                    {{ jour.date|date:"l" }}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #6c757d;">
+                                    {{ jour.date|date:"d/m" }}
+                                </div>
                             </div>
-                            <div style="font-size: 2.5rem; margin: 8px 0;">
+
+                            <!-- L'ICÔNE -->
+                            <div style="font-size: 2.5rem; margin: 4px 0;">
                                 <img src="https://openweathermap.org/img/wn/{{ jour.icon }}@2x.png" alt="{{ jour.conditions }}" style="width: 48px;">
                             </div>
-                            <div style="font-size: 1.8rem; font-weight: 700; color: #2d6a4f;">
-                                {{ jour.temperature }}°C
-                            </div>
-                            <div style="font-size: 0.8rem; color: #6c757d; margin-top: 4px;">
-                                {{ jour.conditions|capfirst }}
-                            </div>
-                            <hr style="margin: 10px 0;">
-                            <div style="font-size: 0.75rem; color: #999;">
-                                💧 {{ jour.humidity }}%
-                            </div>
-                            <div style="font-size: 0.75rem; color: #999;">
-                                💨 {{ jour.wind_speed }} km/h
-                            </div>
-                            {% if jour.rain > 0 %}
-                                <div style="font-size: 0.75rem; color: #0d6efd;">
-                                    🌧️ {{ jour.rain }} mm
+
+                            <!-- LA TEMPÉRATURE ET LES INFOS -->
+                            <div>
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #2d6a4f;">
+                                    {{ jour.temperature }}°C
                                 </div>
-                            {% endif %}
+                                <div style="font-size: 0.8rem; color: #6c757d; margin-top: 4px;">
+                                    {{ jour.conditions|capfirst }}
+                                </div>
+                                <hr style="margin: 10px 0;">
+                                <div style="font-size: 0.75rem; color: #999;">
+                                    💧 {{ jour.humidity }}%
+                                </div>
+                                <div style="font-size: 0.75rem; color: #999;">
+                                    💨 {{ jour.wind_speed }} km/h
+                                </div>
+                                {% if jour.rain > 0 %}
+                                    <div style="font-size: 0.75rem; color: #0d6efd;">
+                                        🌧️ {{ jour.rain }} mm
+                                    </div>
+                                {% endif %}
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -99,7 +112,7 @@
 
         {# ============================================================ #}
         {# ALERTES MÉTÉO #}
-        #}
+        {# ============================================================ #}
         <div class="card mt-4" style="border-left: 4px solid #ffc107;">
             <div class="card-body">
                 <h6 class="mb-2" style="color: #2d6a4f;">⚠️ Alertes potentielles</h6>
@@ -143,7 +156,7 @@
 
         {# ============================================================ #}
         {# CONSEILS MÉTÉO #}
-        #}
+        {# ============================================================ #}
         <div class="card mt-3" style="border-left: 4px solid #17a2b8;">
             <div class="card-body">
                 <h6 class="mb-2" style="color: #2d6a4f;">🌿 Conseils pour vos cultures</h6>

@@ -132,7 +132,11 @@
 // CHARGEMENT DES ONGLETS VIA AJAX
 // ============================================================
 function chargerOnglet(tabName) {
-    const parcelleId = document.getElementById('parcelle-select')?.value || '';
+    const parcelleSelect = document.getElementById('parcelle-select');
+    const parcelleId = parcelleSelect ? parcelleSelect.value : '';
+
+    // ✅ CORRECTION : On s'assure que l'URL correspond exactement à ce qu'attend urls.py
+    // (Si ton urls.py attend /alertes/ajax/<str:tab_name>/, adapte l'URL ci-dessous)
     const url = `/api/tab/alertes/${tabName}/?parcelle_id=${parcelleId}`;
 
     let contentId = '';
@@ -160,7 +164,6 @@ function chargerOnglet(tabName) {
 
 // ============================================================
 // ACTIONS SUR LES ALERTES SEMIS
-// (placées ici car le HTML injecté via innerHTML n'exécute pas les <script>)
 // ============================================================
 function ignorerAlerteSemis(alerteId) {
     if (!confirm('Marquer cette alerte comme ignorée ?')) return;
@@ -177,6 +180,39 @@ function ignorerAlerteSemis(alerteId) {
         if (data.success) {
             showNotif('✅ Alerte ignorée', 'success');
             chargerOnglet('semis');
+        } else {
+            showNotif('❌ ' + (data.error || 'Erreur'), 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotif('❌ Erreur de communication', 'error');
+    });
+}
+
+function marquerMeteoLue(alerteId) {
+    fetch(`/api/alertes/meteo/lire/${alerteId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotif('✅ Alerte marquée comme lue', 'success');
+
+            // On fait disparaître la carte en douceur
+            const card = document.getElementById(`alerte-meteo-${alerteId}`);
+            if (card) {
+                card.style.transition = 'opacity 0.3s';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            }
+
+            // Optionnel : recharger l'onglet pour mettre à jour les compteurs en haut
+            // chargerOnglet('meteo');
         } else {
             showNotif('❌ ' + (data.error || 'Erreur'), 'error');
         }
@@ -251,7 +287,7 @@ function getCookie(name) {
 // INITIALISATION
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion des onglets
+    // 1. Gestion des onglets
     const tabs = document.querySelectorAll('#alertesTabs button');
     tabs.forEach(tab => {
         tab.addEventListener('click', function(e) {
@@ -279,20 +315,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Changement de parcelle
+    // 2. Changement de parcelle
     const parcelleSelect = document.getElementById('parcelle-select');
     if (parcelleSelect) {
         parcelleSelect.addEventListener('change', function() {
+            // On récupère l'onglet actif pour recharger le bon
             const activeTab = document.querySelector('#alertesTabs .nav-link.active');
             if (activeTab) {
                 const tabName = activeTab.id.replace('-tab', '');
+                // ✅ CORRECTION : On recharge l'onglet avec la NOUVELLE valeur de la parcelle
                 chargerOnglet(tabName);
             }
         });
     }
 
-    // Charger le premier onglet
-    chargerOnglet('meteo');
+    // 3. Charger le premier onglet au démarrage
+    // On attend un petit peu que le DOM soit prêt
+    setTimeout(() => {
+        chargerOnglet('meteo');
+    }, 100);
+
+    function toutAcquitter(typeOnglet) {
+        if (!confirm("Voulez-vous vraiment marquer toutes les alertes de cet onglet comme lues/acquittées ?")) return;
+
+        const parcelleId = document.getElementById('parcelle-select')?.value || '';
+
+        // On envoie la requête au serveur
+        fetch(`/api/alertes/acquitter/${typeOnglet}/?parcelle_id=${parcelleId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotif('✅ Alertes acquittées avec succès', 'success');
+                chargerOnglet(typeOnglet); // On recharge l'onglet actif
+            } else {
+                showNotif('❌ Erreur : ' + (data.error || 'Inconnue'), 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotif('❌ Erreur de communication', 'error');
+        });
+    }
 });
 </script>
 {% endblock %}
