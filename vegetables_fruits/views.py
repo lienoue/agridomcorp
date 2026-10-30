@@ -4604,8 +4604,8 @@ def stripe_webhook(request):
                 abonnement.resiliation_programmee = resiliation_programmee
 
                 if resiliation_programmee and date_fin_prevue_ts:
-                    from datetime import datetime
-                    abonnement.date_fin_prevue = datetime.fromtimestamp(date_fin_prevue_ts, tz=timezone.utc)
+                    from datetime import timezone as dt_timezone
+                    abonnement.date_fin_prevue = datetime.fromtimestamp(date_fin_prevue_ts, tz=dt_timezone.utc)
                     logger.info(f" ⏸️ Résiliation programmée pour le {abonnement.date_fin_prevue.strftime('%d/%m/%Y')}")
                 else:
                     abonnement.date_fin_prevue = None
@@ -5643,6 +5643,15 @@ def quiz(request):
 
         # ✅ GET : Sélectionner 5 questions aléatoires
         toutes_questions = QuestionQuiz.objects.all()
+
+        # ✅ NOUVEAU : Filtrage par âge / mode junior
+        est_mineur = request.user.mode_junior or (
+                request.user.birth_date and (date.today() - request.user.birth_date).days // 365 < 18
+        )
+
+        if est_mineur:
+            toutes_questions = toutes_questions.filter(difficulte=1)  # Uniquement facile
+
         questions = toutes_questions.order_by('?')[:5]
 
         # Transformer chaque question en format avec options
@@ -15757,7 +15766,7 @@ def forum_adulte_index(request):
     # ✅ 3. Vérifier que ce n'est pas un élève
     if hasattr(request.user, 'profil_eleve') and request.user.profil_eleve:
         messages.info(request, "Vous avez accès au forum école.")
-        return redirect('vegetables_fruits:forum_ecole_index')
+        return redirect('vegetables_fruits:forum_index')
 
     # ✅ 4. Vérifier que l'utilisateur n'est pas suspendu
     if hasattr(request.user, 'est_suspendu') and request.user.est_suspendu:
