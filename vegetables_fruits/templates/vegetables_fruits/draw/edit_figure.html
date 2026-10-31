@@ -340,6 +340,12 @@ let appState = {
     appState.crops = {{ enriched_crops|safe }};
 {% endif %}
 
+// ✅ On garde en mémoire les cultures de départ
+let culturesOrigine = [];
+if (appState.crops) {
+    culturesOrigine = appState.crops.map(c => c.name);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
     initCrops();
@@ -603,6 +609,15 @@ document.getElementById('edit-form').addEventListener('submit', async function(e
         return;
     }
 
+    // ✅ FILTRE : On ne garde que les cultures qui ne sont PAS dans l'origine
+    const nouvellesCultures = appState.crops.filter(crop => !culturesOrigine.includes(crop.name));
+
+    // ✅ S'il n'y a pas de nouvelles cultures, on enregistre sans vérifier
+    if (nouvellesCultures.length === 0) {
+        HTMLFormElement.prototype.submit.call(this);
+        return;
+    }
+
     try {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const figureId = {{ figure.id }};
@@ -614,7 +629,7 @@ document.getElementById('edit-form').addEventListener('submit', async function(e
                 'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({
-                crops: appState.crops,
+                crops: nouvellesCultures, // <-- On n'envoie QUE les nouvelles
                 figure_id: figureId,
             }),
         });
