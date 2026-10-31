@@ -8422,7 +8422,10 @@ def api_supprimer_semis(request, semis_id):
 
 @login_required
 def besoins_eau(request):
-    """Calcul des besoins en eau pour une parcelle sélectionnée"""
+    """Calcul des besoins en eau pour une parcelle sélectionnée (Version intelligente)"""
+    from .models import Parcelle, BesoinsEau
+    from datetime import date
+
     user = request.user
 
     # Récupérer toutes les parcelles de l'utilisateur
@@ -8437,17 +8440,19 @@ def besoins_eau(request):
         except GeometricFigure.DoesNotExist:
             figure = None
 
-    # Récupérer l'unité choisie
+    # Unité choisie
     unite = request.GET.get('unite', 'm2')
 
-    # Récupérer la région
+    # Récupérer la région et la météo
+    meteo = None
     if figure:
         region_info = get_region_utilisateur(user, figure)
+        if figure.adresse_lat:
+            meteo = get_meteo_for_figure(figure)
     else:
         region_info = get_region_utilisateur(user)
     region = region_info['region']
 
-    # Calculer les besoins pour la parcelle sélectionnée
     besoins_cultures = []
     total_besoins = 0
     cultures = []
@@ -8470,25 +8475,46 @@ def besoins_eau(request):
             else:
                 surface_affichee = surface_m2
                 unite_affichee = 'm²'
-            surface_calcul = surface_m2 # Toujours en m² pour les calculs
-        else:
-            surface_calcul = 0
+            surface_calcul = surface_m2
 
         # Calculer les besoins pour chaque culture
-        for culture in cultures:
-            besoin_data = BesoinsEau.objects.filter(culture__icontains=culture).first()
+        # Calculer les besoins pour chaque culture
+        for culture_nom in cultures:
+            besoin_data = None
+            culture_lower = culture_nom.lower()
+
+            # 1. Recherche exacte
+            besoin_data = BesoinsEau.objects.filter(culture__iexact=culture_nom).first()
+
+            # 2. Recherche partielle
+            if not besoin_data:
+                besoin_data = BesoinsEau.objects.filter(culture__icontains=culture_nom).first()
+
+            # 3. Recherche par mots-clés (le plus important)
+            if not besoin_data:
+                mots = culture_lower.split()
+                for mot in mots:
+                    if len(mot) > 3:  # On ignore les mots de moins de 4 lettres
+                        # On cherche si ce mot est contenu dans une culture de la base
+                        match = BesoinsEau.objects.filter(culture__icontains=mot).first()
+                        if match:
+                            besoin_data = match
+                            break
+
+            # 4. Recherche inversée (est-ce que la culture de la base est dans le nom ?)
+            if not besoin_data:
+                for b in BesoinsEau.objects.all():
+                    if b.culture.lower() in culture_lower:
+                        besoin_data = b
+                        break
             if besoin_data:
-                # ✅ SÉCURISATION TOTALE DU COEFFICIENT
                 coeffs = besoin_data.coefficient_region
-                coefficient = 1.0  # Par défaut
+                coefficient = 1.0
 
                 if isinstance(coeffs, dict):
-                    # On cherche la région (ex: 'japon')
                     val = coeffs.get(region, 1.0)
-                    # Si la valeur trouvée est un nombre, on l'utilise
                     if isinstance(val, (int, float)):
                         coefficient = float(val)
-                    # Si c'est encore un dict (nested), on prend la première valeur numérique
                     elif isinstance(val, dict):
                         numeric_vals = [v for v in val.values() if isinstance(v, (int, float))]
                         if numeric_vals:
@@ -8496,28 +8522,36 @@ def besoins_eau(request):
                 elif isinstance(coeffs, (int, float)):
                     coefficient = float(coeffs)
 
-                # Maintenant on est sûr que coefficient est un float
                 besoin_ajuste = besoin_data.besoin_litres_par_m2 * coefficient
 
-                if surface_calcul > 0:
-                    besoin_total = besoin_ajuste * surface_calcul
-                    total_besoins += besoin_total
-                else:
-                    besoin_total = 0
+                # ✅ Influence de la météo sur le besoin
+                impact_meteo = ""
+                if meteo:
+                    if meteo.get('rain', 0) > 5:
+                        besoin_ajuste = besoin_ajuste * 0.3  # Réduction de 70% s'il pleut
+                        impact_meteo = "🌧️ Réduit grâce à la pluie récente."
+                    elif meteo['temperature'] > 30:
+                        besoin_ajuste = besoin_ajuste * 1.2  # +20% s'il fait chaud
+                        impact_meteo = "🔥 Augmenté à cause de la chaleur."
+                    else:
+                        impact_meteo = "☀️ Besoins normaux pour la saison."
+
+                besoin_total = besoin_ajuste * surface_calcul if surface_calcul > 0 else 0
+                total_besoins += besoin_total
 
                 besoins_cultures.append({
-                    'culture': culture,
+                    'culture': culture_nom,
                     'besoin_base': besoin_data.besoin_litres_par_m2,
                     'coefficient': coefficient,
                     'besoin_ajuste': round(besoin_ajuste, 1),
                     'frequence': besoin_data.frequence_arrosage_jours,
                     'periode_sensible': besoin_data.periode_sensible,
                     'besoin_total': round(besoin_total, 1),
+                    'impact_meteo': impact_meteo,
                 })
 
-    # Message si aucune parcelle sélectionnée
     if not figure and figures.exists():
-        message = "Veuillez sélectionner une parcelle."
+        message = "Veuillez sélectionner une parcelle pour voir ses besoins en eau."
     elif not figures.exists():
         message = "Vous n'avez pas encore de parcelle. Créez-en une !"
     else:
@@ -8535,8 +8569,8 @@ def besoins_eau(request):
         'message': message,
         'surface_affichee': round(surface_affichee, 1),
         'unite_affichee': unite_affichee,
+        'meteo': meteo,  # ✅ On passe la météo au template
     })
-
 
 
 @login_required
@@ -8702,18 +8736,20 @@ def companion_planting(request, figure_id=None):
 
 @login_required
 def plan_irrigation(request):
-    """Génère un plan d'arrosage hebdomadaire personnalisé avec graphique et rappels"""
+    """Génère un plan d'arrosage intelligent basé sur la météo et le système d'irrigation."""
+    from .models import Parcelle, BesoinsEau
+    from datetime import date, timedelta
+
     user = request.user
     parcelles = Parcelle.objects.filter(utilisateur=user, est_active=True).prefetch_related('besoins_eau')
 
-    # Récupérer la parcelle sélectionnée (optionnel)
     selected_parcelle_id = request.GET.get('parcelle_id')
     if selected_parcelle_id:
         parcelles = parcelles.filter(id=selected_parcelle_id)
 
-    # Calculer le plan pour chaque parcelle
     plan_parcelles = []
     total_litres_semaine = 0
+    economie_totale = 0
     labels_graphique = []
     data_graphique = []
 
@@ -8722,44 +8758,109 @@ def plan_irrigation(request):
         parcelle_plan = {
             'parcelle': parcelle,
             'cultures': [],
-            'total_litres_semaine': 0
+            'total_litres_semaine': 0,
+            'meteo_pluie': False,
+            'conseil_meteo': None,
         }
 
-        for besoin in besoins:
-            # Calcul des besoins hebdomadaires
-            litres_semaine = besoin.besoin_litres_par_m2 * parcelle.surface_m2 * 7
-            parcelle_plan['total_litres_semaine'] += litres_semaine
-            total_litres_semaine += litres_semaine
+        # 1. Récupérer la météo (si la parcelle a des coordonnées)
+        meteo_pluie = False
+        meteo_temp = None
+        if parcelle.figure and parcelle.figure.adresse_lat:
+            meteo = get_meteo_for_figure(parcelle.figure)
+            if meteo:
+                meteo_temp = meteo['temperature']
+                parcelle_plan['temperature'] = meteo['temperature']
+                parcelle_plan['conditions'] = meteo['temperature']
+                # S'il pleut plus de 5mm, on considère que c'est assez arrosé
+                if meteo.get('rain', 0) > 5:
+                    meteo_pluie = True
+                    parcelle_plan[
+                        'conseil_meteo'] = f"🌧️ Il a plu récemment ({meteo['rain']}mm). Vous pouvez suspendre l'arrosage aujourd'hui."
+                elif meteo['temperature'] > 30:
+                    parcelle_plan[
+                        'conseil_meteo'] = f"🔥 Il fait très chaud ({meteo['temperature']}°C). Pensez à arroser tôt le matin ou tard le soir."
+                elif meteo['temperature'] < 10:
+                    parcelle_plan[
+                        'conseil_meteo'] = f"❄️ Il fait frais ({meteo['temperature']}°C). Les besoins en eau sont réduits."
 
-            # Fréquence d'arrosage
+        parcelle_plan['meteo_pluie'] = meteo_pluie
+
+        # 2. Calculer les besoins par culture (VERSION INTELLIGENTE)
+        for besoin in besoins:
+            # A. Calcul de base
+            litres_semaine_base = besoin.besoin_litres_par_m2 * parcelle.surface_m2 * 7
+
+            # B. On prépare les conseils spécifiques à cette culture
+            conseil_culture = None
+            litres_semaine_finale = litres_semaine_base
+            culture_lower = besoin.culture.lower()
+
+            # C. Application de la logique météo selon la culture
+            if meteo_pluie:
+                # Les plantes fragiles (salades, fraises) retiennent plus l'eau de pluie
+                if any(mot in culture_lower for mot in ['salade', 'laitue', 'fraise', 'épinard']):
+                    litres_semaine_finale = litres_semaine_base * 0.2  # -80% (elles boivent l'eau de pluie direct)
+                    conseil_culture = "🌧️ Pluie récente : ces plantes à racines superficielles n'ont pas besoin d'être arrosées aujourd'hui."
+                # Les arbres/plantes profondes (tomates, courgettes) en profitent moins
+                elif any(mot in culture_lower for mot in ['tomate', 'courgette', 'aubergine', 'poivron']):
+                    litres_semaine_finale = litres_semaine_base * 0.6  # -40%
+                    conseil_culture = "🌧️ Pluie récente : surveillez l'humidité du sol, mais l'arrosage peut être réduit."
+                else:
+                    litres_semaine_finale = litres_semaine_base * 0.5
+                    conseil_culture = "🌧️ La pluie a apporté un peu d'eau, mais vérifiez le sol avant d'arroser."
+
+            elif meteo_temp is not None and meteo_temp > 32:
+                # Canicule
+                if any(mot in culture_lower for mot in ['salade', 'épinard']):
+                    litres_semaine_finale = litres_semaine_base * 0.5  # Ces plantes "brûlent" au soleil, on n'augmente pas
+                    conseil_culture = "🔥 Canicule : ces plantes craignent le soleil. Arrosez le soir et ombrez-les."
+                else:
+                    litres_semaine_finale = litres_semaine_base * 1.3  # +30%
+                    conseil_culture = "🔥 Forte chaleur : cette culture aura besoin de 30% d'eau en plus cette semaine."
+
+            # D. On ajoute au plan
+            parcelle_plan['total_litres_semaine'] += litres_semaine_finale
+            total_litres_semaine += litres_semaine_finale
+
             intervalle = besoin.frequence_arrosage_jours
             if intervalle > 0:
-                litres_par_arrosage = litres_semaine / (7 / intervalle)
+                litres_par_arrosage = litres_semaine_finale / (7 / intervalle)
             else:
-                litres_par_arrosage = litres_semaine / 7
+                litres_par_arrosage = litres_semaine_finale / 7
 
-            # Jours recommandés
-            from datetime import date, timedelta
             aujourdhui = date.today()
             jours_recommandes = []
-            for i in range(0, 7, intervalle):
+            for i in range(0, 7, max(1, intervalle)):
                 jours_recommandes.append((aujourdhui + timedelta(days=i)).strftime('%A %d/%m'))
 
             parcelle_plan['cultures'].append({
                 'culture': besoin.culture,
-                'litres_semaine': round(litres_semaine, 1),
+                'litres_semaine': round(litres_semaine_finale, 1),
                 'litres_par_arrosage': round(litres_par_arrosage, 1),
                 'frequence_jours': intervalle,
                 'jours_recommandes': jours_recommandes,
                 'periode_sensible': besoin.periode_sensible,
+                'conseil_specifique': conseil_culture,  # ✅ Nouveau champ
             })
+
+        # 3. Calcul de l'économie d'eau selon l'irrigation
+        if parcelle.irrigation_type == 'goutte_a_goutte':
+            economie_parcelle = parcelle_plan['total_litres_semaine'] * 0.30
+            parcelle_plan[
+                'economie_type'] = f"💧 Goutte-à-goutte : vous économisez environ {round(economie_parcelle, 1)} L/semaine (vs arrosage manuel)."
+            economie_totale += economie_parcelle
+        elif parcelle.irrigation_type == 'aspersion':
+            parcelle_plan[
+                'economie_type'] = "🌧️ Aspersion : perte d'eau par évaporation estimée à 20%. Privilégiez le matin."
+        elif parcelle.irrigation_type == 'manuel':
+            parcelle_plan['economie_type'] = "🚿 Arrosage manuel : pensez à pailler pour conserver l'humidité."
 
         if parcelle_plan['cultures']:
             plan_parcelles.append(parcelle_plan)
             labels_graphique.append(parcelle.nom)
             data_graphique.append(round(parcelle_plan['total_litres_semaine'], 1))
 
-    # Récupérer toutes les parcelles pour le filtre
     toutes_parcelles = Parcelle.objects.filter(utilisateur=user, est_active=True)
 
     return render(request, 'vegetables_fruits/plan_irrigation.html', {
@@ -8767,10 +8868,10 @@ def plan_irrigation(request):
         'toutes_parcelles': toutes_parcelles,
         'selected_parcelle_id': selected_parcelle_id,
         'total_litres_semaine': round(total_litres_semaine, 1),
+        'economie_totale': round(economie_totale, 1),
         'labels_graphique': labels_graphique,
         'data_graphique': data_graphique,
     })
-
 
 @login_required
 def export_plan_irrigation_pdf(request):
