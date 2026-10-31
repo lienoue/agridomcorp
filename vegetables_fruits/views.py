@@ -18325,3 +18325,100 @@ def supprimer_mon_compte(request):
 
 def offline(request):
     return render(request, 'vegetables_fruits/offline.html')
+
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from django.http import HttpResponse
+from datetime import datetime
+
+
+@login_required
+def demander_devis_ecole(request):
+    if request.method == 'POST':
+        etablissement = request.POST.get('etablissement')
+        email = request.POST.get('email')
+        nb_classes = int(request.POST.get('nb_classes', 1))
+        nb_eleves = int(request.POST.get('nb_eleves', 25))
+
+        # 1. Calcul du prix (Ex: 150€ par classe + 2€ par élève)
+        prix_par_classe = 150
+        prix_par_eleve = 2
+        montant_total = (nb_classes * prix_par_classe) + (nb_classes * nb_eleves * prix_par_eleve)
+
+        # 2. Création du numéro de devis unique (Ex: DEV-2026-001)
+        annee = datetime.now().year
+        count = DevisEcole.objects.filter(date_creation__year=annee).count() + 1
+        numero_devis = f"DEV-{annee}-{count:03d}"
+
+        # 3. Sauvegarde en base
+        devis = DevisEcole.objects.create(
+            numero_devis=numero_devis,
+            etablissement=etablissement,
+            email_contact=email,
+            nombre_classes=nb_classes,
+            nombre_eleves=nb_classes * nb_eleves,
+            montant_total=montant_total,
+        )
+
+        # 4. Génération du PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Devis_{numero_devis}.pdf"'
+
+        doc = SimpleDocTemplate(response, pagesize=A4)
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Style du titre
+        title_style = ParagraphStyle(
+            'CustomTitle', parent=styles['Heading1'],
+            fontSize=20, textColor=colors.HexColor('#28a745'), alignment=1
+        )
+
+        # En-tête
+        elements.append(Paragraph("🌱 Agriculture 2.0", title_style))
+        elements.append(Paragraph(f"<b>Devis N° :</b> {numero_devis}", styles['Normal']))
+        elements.append(Paragraph(f"<b>Date :</b> {datetime.now().strftime('%d/%m/%Y')}", styles['Normal']))
+        elements.append(Spacer(1, 1 * cm))
+
+        # Infos client
+        elements.append(Paragraph("<b>Destinataire :</b>", styles['Heading3']))
+        elements.append(Paragraph(f"{etablissement}<br/>{email}", styles['Normal']))
+        elements.append(Spacer(1, 1 * cm))
+
+        # Tableau des prix
+        data = [
+            ['Description', 'Quantité', 'Prix Unitaire', 'Total HT'],
+            [f'Abonnement Enseignant (Classes)', nb_classes, f'{prix_par_classe} €',
+             f'{nb_classes * prix_par_classe} €'],
+            [f'Accès élèves', nb_classes * nb_eleves, f'{prix_par_eleve} €',
+             f'{nb_classes * nb_eleves * prix_par_eleve} €'],
+            ['', '', '', ''],
+            ['', '', '<b>TOTAL TTC</b>', f'<b>{montant_total} €</b>']
+        ]
+
+        table = Table(data, colWidths=[8 * cm, 3 * cm, 3 * cm, 3 * cm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28a745')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+            ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 2 * cm))
+
+        # Footer
+        elements.append(
+            Paragraph("Ce devis est valable 30 jours. Pour toute question : contact@agridomcorp.com", styles['Italic']))
+
+        doc.build(elements)
+        return response
+
+    return redirect('vegetables_fruits:tarification')

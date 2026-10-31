@@ -626,12 +626,13 @@
                     <small style="color:#28a745;">💡 Premium complet inclus !</small>
                 </div>
             {% else %}
-                <a href="#" class="btn-cta btn-disabled" onclick="alert('🔒 Cette offre est réservée aux enseignants. Veuillez vous inscrire avec un email académique (ex: nom@universite.fr, nom@ac-ville.fr)')">
-                    🔒 Réservé aux enseignants
-                </a>
+                <!-- ✅ LE NOUVEAU BOUTON DEVIS ICI -->
+                <button type="button" class="btn-cta btn-primary" onclick="ouvrirModaleDevis()">
+                    📄 Demander un devis
+                </button>
                 <div class="note-enseignant">
                     <a href="{% url 'vegetables_fruits:signup' %}?role=enseignant">
-                        🎓 Inscription enseignant →
+                        🎓 Pas encore inscrit ? S'inscrire →
                     </a>
                 </div>
             {% endif %}
@@ -639,7 +640,53 @@
         </div>
 
     </div>
+</div>
 
+<!-- ✅ MODALE DEVIS ÉCOLES (Cachée par défaut) -->
+<div id="modalDevis" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; overflow-y: auto;">
+    <div style="background: white; max-width: 500px; margin: 50px auto; border-radius: 12px; padding: 0; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+
+        <!-- En-tête -->
+        <div style="background: #2d6a4f; color: white; padding: 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h5 style="margin: 0; font-size: 1.2rem;">🏫 Demande de devis - Écoles</h5>
+            <button type="button" onclick="fermerModaleDevis()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <!-- Formulaire -->
+        <form method="POST" action="{% url 'vegetables_fruits:demander_devis_ecole' %}">
+            {% csrf_token %}
+            <div style="padding: 20px;">
+                <p class="text-muted small mb-4">Générez un devis officiel pour votre établissement. Le PDF sera téléchargé immédiatement.</p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nom de l'établissement</label>
+                    <input type="text" name="etablissement" class="form-control" required placeholder="Ex: Collège Victor Hugo">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email de contact</label>
+                    <input type="email" name="email" class="form-control" required value="{{ user.email }}">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Nombre de classes</label>
+                        <input type="number" name="nb_classes" class="form-control" required min="1" value="1">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Élèves par classe</label>
+                        <input type="number" name="nb_eleves" class="form-control" required min="1" value="25">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pied de page -->
+            <div style="padding: 15px 20px; background: #f8f9fa; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="fermerModaleDevis()">Annuler</button>
+                <button type="submit" class="btn btn-success">📄 Générer le devis PDF</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -670,6 +717,13 @@
             document.getElementById('price-enseignant').innerHTML = '9,99€ <small>/mois</small>';
             document.getElementById('price-annuel-enseignant').innerHTML = '<strong>99,90€</strong> <small>/an (soit 8,32€/mois)</small>';
         }
+    }
+
+    function ouvrirModaleDevis() {
+        document.getElementById('modalDevis').style.display = 'block';
+    }
+    function fermerModaleDevis() {
+        document.getElementById('modalDevis').style.display = 'none';
     }
 </script>
 {% endblock %}

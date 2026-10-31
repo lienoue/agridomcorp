@@ -193,7 +193,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Whitenoise pour compression et cache
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -245,7 +252,6 @@ CELERY_TIMEZONE = TIME_ZONE
 INSTALLED_APPS += [
     'django_celery_beat',
     'silk',
-    'django_cron',
 ]
 
 MEDIA_URL = '/media/'
@@ -295,10 +301,3 @@ CACHES = {
     }
 }
 
-# ============================================================
-# PATCH : django_cron migration 0004 cassée sur SQLite
-# On utilise notre propre version dans vegetablesfruits/patched_migrations/
-# ============================================================
-MIGRATION_MODULES = {
-    'django_cron': 'vegetablesfruits.patched_migrations.django_cron',
-}

@@ -162,6 +162,7 @@ urlpatterns = [
     path('autorisation-achat/demande/', views.demander_autorisation_achat, name='demander_autorisation_achat'),
     path('autorisation-achat/valider/<str:token>/', views.valider_autorisation_achat, name='valider_autorisation_achat'),
     path('abonnement/reactiver/', views.reactiver_abonnement, name='reactiver_abonnement'),
+    path('devis-ecole/', views.demander_devis_ecole, name='demander_devis_ecole'),
 
     # Gamification
     path('quiz/', views.quiz, name='quiz'),

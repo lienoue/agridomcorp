@@ -3640,3 +3640,23 @@ class DigestMeteo(models.Model):
     def a_des_critiques(self):
         """Le digest contient au moins une alerte critique."""
         return any(a.get('est_critique', False) for a in self.alertes)
+
+
+class DevisEcole(models.Model):
+    STATUT_CHOICES = [
+        ('en_attente', 'En attente'),
+        ('accepte', 'Accepté'),
+        ('refuse', 'Refusé'),
+    ]
+
+    numero_devis = models.CharField(max_length=50, unique=True)
+    etablissement = models.CharField(max_length=200)
+    email_contact = models.EmailField()
+    nombre_eleves = models.IntegerField()
+    nombre_classes = models.IntegerField()
+    montant_total = models.DecimalField(max_digits=10, decimal_places=2)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.numero_devis} - {self.etablissement}"
