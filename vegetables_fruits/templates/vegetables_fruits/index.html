@@ -607,6 +607,23 @@
         </div>
     </section>
 
+    <!-- ✅ NOUVELLE BANNIÈRE ÉCOLES -->
+    <section style="background: #2d3e2f; color: #f5f0eb; padding: 40px 20px; text-align: center; border-top: 4px solid #c9a96e; border-bottom: 4px solid #c9a96e;">
+        <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="text-align: left; flex: 1; min-width: 300px;">
+                <h2 style="color: #c9a96e; margin-bottom: 10px; font-size: 1.8rem;">🏫 Vous êtes une école ?</h2>
+                <p style="color: #b5aea0; font-size: 1.1rem; margin: 0;">
+                    Agriculture 2.0 est un outil pédagogique clé en main. Créez des classes, lancez des défis et suivez la progression de vos élèves.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'vegetables_fruits:entreprises_ecoles' %}" style="background: #c9a96e; color: #2d3e2f; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-weight: 700; display: inline-block; transition: 0.2s;">
+                    Découvrir l'offre Écoles →
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- ÉCOLOGIE & CLIMAT (Pilier central) -->
     <section class="ecologie-section">
         <h2>🌍 <span>Écologie & Climat</span></h2>
@@ -708,12 +725,13 @@
 
     <!-- FOOTER -->
     <footer>
-        <p>&copy; 2025 AgriDomCorp — Cultivez votre passion</p>
+        <p>&copy; 2026 AgriDomCorp — Cultivez votre passion</p>
         <p>
             <a href="{% url 'vegetables_fruits:cgu' %}">CGU</a> •
             <a href="{% url 'vegetables_fruits:confidentialite' %}">Confidentialité</a> •
             <a href="{% url 'vegetables_fruits:tarification' %}">Tarifs</a> •
-            <a href="#">Contact</a>
+            <a href="{% url 'vegetables_fruits:entreprises_ecoles' %}">Écoles</a> •
+            <a href="mailto:contact@agridomcorp.com">Contact</a>
         </p>
     </footer>
 

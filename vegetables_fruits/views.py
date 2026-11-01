@@ -1626,6 +1626,11 @@ class SignUpView(CreateView):
 
 
 def index(request):
+
+    if request.user.is_authenticated:
+        logout(request)
+        messages.info(request, "vous avez été déconnecté.")
+
     legumes = Vegetable.objects.all()
     fruits = Fruit.objects.all()
     return render(request, 'vegetables_fruits/index.html', {'legumes': legumes, 'fruits': fruits})
@@ -18523,3 +18528,8 @@ def demander_devis_ecole(request):
         return response
 
     return redirect('vegetables_fruits:tarification')
+
+
+def entreprises_ecoles(request):
+    """Page dédiée aux établissements scolaires et enseignants."""
+    return render(request, 'vegetables_fruits/entreprises_ecoles.html')

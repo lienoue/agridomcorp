@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agriculture 2.0 pour les Écoles{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-school {
+        background: linear-gradient(135deg, #1b4332, #2d6a4f);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+        margin-bottom: 50px;
+    }
+    .hero-school h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+    .hero-school p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 800px;
+        margin: 0 auto 30px;
+    }
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+        border-top: 5px solid #28a745;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    .pricing-school {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        border: 2px solid #28a745;
+        margin-top: 50px;
+    }
+    .pricing-school .price {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #2d6a4f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<div class="hero-school">
+    <div class="container">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2" style="font-size: 1rem;">🚀 L'outil pédagogique clé en main</span>
+        <h1>Faites pousser des graines et des vocations 🌱</h1>
+        <p>Agriculture 2.0 accompagne les enseignants et les élèves dans la création d'un jardin pédagogique connecté. Suivi des cultures, défis de classe, apprentissage ludique : tout est inclus.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="#offre" class="btn btn-warning btn-lg px-5 py-3 fw-bold rounded-pill">Voir l'offre École</a>
+            <a href="{% url 'vegetables_fruits:signup' %}?role=enseignant" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill">Créer un compte Enseignant</a>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- FEATURES -->
+    <div class="row text-center mb-5">
+        <div class="col-12 mb-4">
+            <h2 style="color: #1b4332; font-weight: 700;">Pourquoi choisir Agriculture 2.0 ?</h2>
+        </div>
+    </div>
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">🎓</div>
+                <h4>Pédagogie active</h4>
+                <p class="text-muted">Les élèves apprennent en faisant. Ils dessinent leurs parcelles sur une carte interactive, plantent virtuellement puis dans la vraie vie, et suivent la croissance de leurs plantes.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h4>Défis et Gamification</h4>
+                <p class="text-muted">Créez des défis pour votre classe (ex: "Planter 10 fleurs"). Suivez le classement des élèves, débloquez des badges et motivez-les grâce au système de points.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h4>Suivi & Évaluation</h4>
+                <p class="text-muted">Accédez aux statistiques de chaque élève (bilan carbone de leur jardin, cultures plantées, progression). Exportez les données en PDF ou CSV pour vos bilans scolaires.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION OFFRE -->
+    <div id="offre" class="pricing-school">
+        <h2 style="color: #1b4332; font-weight: 800;">L'offre École</h2>
+        <p class="text-muted mb-4">Un abonnement unique pour toute votre classe, avec toutes les fonctionnalités Premium.</p>
+        
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <ul class="list-unstyled text-start fs-5" style="line-height: 2.5;">
+                    <li>✅ <strong>Parcelles illimitées</strong> pour vos élèves</li>
+                    <li>✅ <strong>Gestion de classes</strong> (codes d'invitation)</li>
+                    <li>✅ <strong>Défis de groupe</strong> et classements</li>
+                    <li>✅ <strong>Forum sécurisé</strong> (élèves et enseignants)</li>
+                    <li>✅ <strong>Accès Premium</strong> complet pour l'enseignant</li>
+                </ul>
+            </div>
+            <div class="col-md-5">
+                <div style="background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div class="text-muted text-uppercase fw-bold small mb-2">Tarif Enseignant</div>
+                    <div class="price mb-1">9,99€ <span style="font-size: 1rem; font-weight: 400; color: #6c757d;">/ mois</span></div>
+                    <div class="text-muted mb-4">ou 99,90€ / an</div>
+                    
+                    <button class="btn btn-success w-100 btn-lg rounded-pill" data-bs-toggle="modal" data-bs-target="#modalDevis">
+                        📄 Demander un devis
+                    </button>
+                    <div class="mt-3 text-muted small">Devis gratuit et sans engagement.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA FINAL -->
+    <div class="text-center mt-5 pt-5">
+        <h3 style="color: #1b4332;">Prêt à faire pousser des idées ?</h3>
+        <p class="text-muted mb-4">Rejoignez les établissements qui utilisent déjà Agriculture 2.0 pour sensibiliser à l'écologie.</p>
+        <a href="{% url 'vegetables_fruits:signup' %}?role=enseignant" class="btn btn-outline-success btn-lg rounded-pill px-5">Créer mon compte Enseignant</a>
+    </div>
+
+</div>
+
+<!-- MODALE DEVIS (réutilisée) -->
+<div class="modal fade" id="modalDevis" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #2d6a4f; color: white;">
+                <h5 class="modal-title">🏫 Demande de devis - Écoles</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'vegetables_fruits:demander_devis_ecole' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nom de l'établissement</label>
+                        <input type="text" name="etablissement" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email de contact</label>
+                        <input type="email" name="email" class="form-control" required value="{{ user.email }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre de classes</label>
+                            <input type="number" name="nb_classes" class="form-control" required min="1" value="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Élèves par classe</label>
+                            <input type="number" name="nb_eleves" class="form-control" required min="1" value="25">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">📄 Générer le devis PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
