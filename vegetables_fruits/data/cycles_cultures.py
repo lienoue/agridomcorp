@@ -404,6 +404,78 @@ CYCLES_CULTURES = {
     'shiitake': {'type': 'annuelle', 'duree_jours': 90, 'duree_jours_min': 60, 'duree_jours_max': 120, 'emoji': '🍄'},
 
 
+    # ============================================================
+    # 🍅 VARIÉTÉS SPÉCIFIQUES (Surcharge du parent pour précision)
+    # ============================================================
+
+    # --- TOMATES ---
+    'tomate cerise': {'type': 'annuelle', 'duree_jours': 75, 'emoji': '🍅'},
+    'cherry': {'type': 'annuelle', 'duree_jours': 75, 'emoji': '🍅'},
+    'roma': {'type': 'annuelle', 'duree_jours': 85, 'emoji': '🍅'},
+    'san marzano': {'type': 'annuelle', 'duree_jours': 85, 'emoji': '🍅'},
+    'andine cornue': {'type': 'annuelle', 'duree_jours': 95, 'emoji': '🍅'},
+    'coeur de boeuf': {'type': 'annuelle', 'duree_jours': 100, 'emoji': '🍅'},
+    'green zebra': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🍅'},
+    'noire de crimee': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🍅'},
+
+    # --- PIMENTS & POIVRONS ---
+    'poivron': {'type': 'annuelle', 'duree_jours': 100, 'emoji': '🫑'},
+    'bell pepper': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🫑'},
+    'poblano': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🫑'},
+    'shishito': {'type': 'annuelle', 'duree_jours': 80, 'emoji': '🫑'},
+    'jalapeno': {'type': 'annuelle', 'duree_jours': 80, 'emoji': '🌶️'},
+    'habanero': {'type': 'annuelle', 'duree_jours': 110, 'emoji': '🌶️'},
+
+    # --- SALADES ---
+    'batavia': {'type': 'annuelle', 'duree_jours': 50, 'emoji': '🥬'},
+    'iceberg': {'type': 'annuelle', 'duree_jours': 75, 'emoji': '🥬'},
+    'romaine': {'type': 'annuelle', 'duree_jours': 65, 'emoji': '🥬'},
+    'feuille de chene': {'type': 'annuelle', 'duree_jours': 50, 'emoji': '🥬'},
+
+    # --- POMMES DE TERRE ---
+    'charlotte': {'type': 'annuelle', 'duree_jours': 75, 'emoji': '🥔'},
+    'charlott': {'type': 'annuelle', 'duree_jours': 75, 'emoji': '🥔'},
+    'ratte': {'type': 'annuelle', 'duree_jours': 110, 'emoji': '🥔'},
+    'bintje': {'type': 'annuelle', 'duree_jours': 100, 'emoji': '🥔'},
+    'yukon gold': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🥔'},
+    'russet': {'type': 'annuelle', 'duree_jours': 110, 'emoji': '🥔'},
+
+    # --- FRAISES ---
+    'gariguette': {'type': 'perenne', 'debut_production_annees': 1, 'emoji': '🍓'},
+    'ciflorette': {'type': 'perenne', 'debut_production_annees': 1, 'emoji': '🍓'},
+    'mara des bois': {'type': 'perenne', 'debut_production_annees': 1, 'emoji': '🍓'},
+    'albion': {'type': 'perenne', 'debut_production_annees': 1, 'emoji': '🍓'},
+    'chandler': {'type': 'perenne', 'debut_production_annees': 1, 'emoji': '🍓'},
+
+    # --- MAÏS ---
+    'sweet corn': {'type': 'annuelle', 'duree_jours': 80, 'emoji': '🌽'},
+    'silver queen': {'type': 'annuelle', 'duree_jours': 85, 'emoji': '🌽'},
+
+    # --- SOJA / EDAMAME ---
+    'edamame': {'type': 'annuelle', 'duree_jours': 80, 'emoji': '🫛'},
+    'enrei': {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🫛'},
+
+    # --- AGRUMES ---
+    'eureka': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍋'},
+    'meyer': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍋'},
+    'lisbon': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍋'},
+    'hamlin': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍊'},
+    'valencia': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍊'},
+    'washington navel': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍊'},
+    'pineapple': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍊'},
+
+    # --- POMMES ---
+    'golden delicious': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'granny smith': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'gala': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'fuji': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'pink lady': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'reinette': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'cox orange': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+    'jonagold': {'type': 'perenne', 'debut_production_annees': 3, 'emoji': '🍎'},
+
+
+
 }
 
 
@@ -411,66 +483,56 @@ CYCLES_CULTURES = {
 # HELPER DE RÉSOLUTION
 # ============================================================
 
+import unicodedata
+
+def _nettoyer_nom(nom):
+    """Retire les accents, les caractères spéciaux (œ, æ) et met en minuscule."""
+    if not nom:
+        return ""
+    # Remplace les ligatures manuelles
+    nom = nom.replace('œ', 'oe').replace('Œ', 'OE').replace('æ', 'ae').replace('Æ', 'AE')
+    # Normalise et retire les accents
+    nom = ''.join(c for c in unicodedata.normalize('NFD', nom) if unicodedata.category(c) != 'Mn')
+    return nom.lower().strip()
+
 def get_cycle(culture_nom, _depth=0):
     """
-    Retourne le dict de cycle pour une culture.
-
-    Règle métier (proposition Kamdem) :
-    - Si `culture_nom` est dans CYCLES_CULTURES → on le prend.
-    - Sinon, si c'est une Variete → on prend le cycle de sa Culture parente.
-    - Sinon, correspondance partielle par clé la plus longue.
-    - Sinon, correspondance sur le premier mot.
-    - Sinon, None.
-
-    `_depth` protège contre les boucles infinies (Variete → Culture → Variete).
+    Retourne le dict de cycle pour une culture (recherche exacte, variété, floue).
     """
     if not culture_nom or _depth > 3:
         return None
 
-    cle = culture_nom.lower().strip()
+    cle = _nettoyer_nom(culture_nom)
 
-    # ============================================================
-    # 1. Correspondance exacte
-    # ============================================================
-    if cle in CYCLES_CULTURES:
-        return CYCLES_CULTURES[cle]
+    # 1. Correspondance exacte (nettoyée)
+    for k, v in CYCLES_CULTURES.items():
+        if _nettoyer_nom(k) == cle:
+            return v
 
-    # ============================================================
-    # 2. Résolution via Variete → Culture (règle simple)
-    # Toutes les variétés de la base ont une Culture parente (FK obligatoire
-    # côté modèle, 100% des 118 variétés vérifiées en prod).
-    # ============================================================
+    # 2. Résolution via Variete → Culture
     if _depth == 0:
         try:
             from vegetables_fruits.models import Variete
-            variete = (
-                Variete.objects
-                .select_related('culture')
-                .filter(nom__iexact=culture_nom.strip())
-                .first()
-            )
+            # On utilise __iexact qui est en général insensible à la casse dans SQLite
+            variete = Variete.objects.select_related('culture').filter(nom__iexact=culture_nom.strip()).first()
             if variete and variete.culture:
-                # Remonter à la culture parente (récursion protégée par _depth)
                 return get_cycle(variete.culture.nom, _depth=_depth + 1)
         except Exception:
-            # DB pas prête (migrations) → on continue silencieusement
             pass
 
-    # ============================================================
     # 3. Correspondance partielle par clé la plus longue
-    # (évite que 'groseille' matche avant 'groseille à maquereau')
-    # ============================================================
     cles_triees = sorted(CYCLES_CULTURES.keys(), key=len, reverse=True)
     for cycle_cle in cles_triees:
-        if cycle_cle in cle or cle in cycle_cle:
+        cle_nettoyee = _nettoyer_nom(cycle_cle)
+        if cle_nettoyee in cle or cle in cle_nettoyee:
             return CYCLES_CULTURES[cycle_cle]
 
-    # ============================================================
     # 4. Correspondance sur le premier mot
-    # (ex: 'pomme golden' → 'pomme')
-    # ============================================================
     premier_mot = cle.split()[0] if cle.split() else ''
-    if premier_mot in CYCLES_CULTURES:
-        return CYCLES_CULTURES[premier_mot]
+    if premier_mot:
+        for k, v in CYCLES_CULTURES.items():
+            if _nettoyer_nom(k).split()[0] == premier_mot:
+                return v
 
     return None
+
