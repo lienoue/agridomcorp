@@ -50,6 +50,7 @@ from .models import (
     ModerateurForum,
     SanctionUtilisateur,
 )
+from .services_dates import calculer_date_recolte, est_perenne
 
 # ✅ Mapping des départements/régions Mapbox vers les régions de la base
 REGION_MAPPING = {
@@ -2320,54 +2321,66 @@ def view_figure(request):
 
 @login_required
 def ajouter_chronologie(request):
-    """Ajoute une chronologie pour une culture"""
+    """Ajoute une chronologie pour une culture (annuelle ou pérenne)."""
     if request.method == 'POST':
         figure_id = request.POST.get('figure_id')
         culture_nom = request.POST.get('culture_nom')
         culture_emoji = request.POST.get('culture_emoji', '🌱')
         date_semis = request.POST.get('date_semis')
-        jours_recolte = int(request.POST.get('jours_recolte', 0))
+        jours_recolte_override = request.POST.get('jours_recolte')
 
-        # ✅ Si pas fourni par le formulaire, chercher la vraie durée
-        if jours_recolte <= 0:
-            from .models import Fruit, Vegetable, Culture as CultureModel
-            fruit = Fruit.objects.filter(nom__iexact=culture_nom).first()
-            if fruit and fruit.jours_recolte:
-                jours_recolte = fruit.jours_recolte
-            else:
-                veg = Vegetable.objects.filter(nom__iexact=culture_nom).first()
-                if veg and veg.jours_recolte:
-                    jours_recolte = veg.jours_recolte
-                else:
-                    cult = CultureModel.objects.filter(nom__iexact=culture_nom).first()
-                    if cult:
-                        if cult.jours_pousse:
-                            jours_recolte = cult.jours_pousse
-                        elif cult.duree_culture_max_jours:
-                            jours_recolte = cult.duree_culture_max_jours
-                    if jours_recolte <= 0:
-                        jours_recolte = 90
-
-        from datetime import date, timedelta
+        if not date_semis:
+            messages.error(request, "Date de semis requise.")
+            return redirect('vegetables_fruits:view_figure')
 
         figure = get_object_or_404(GeometricFigure, id=figure_id, user=request.user)
         date_semis_date = date.fromisoformat(date_semis)
-        date_recolte = date_semis_date + timedelta(days=jours_recolte)
 
+        # ✅ Calcul centralisé de la date de récolte
+        override = None
+        if jours_recolte_override:
+            try:
+                override = int(jours_recolte_override)
+            except ValueError:
+                override = None
+
+        calc = calculer_date_recolte(
+            culture_nom,
+            date_semis_date,
+            jours_override=override,
+        )
+
+        type_cycle_chrono = 'semis' if calc['type_cycle'] != 'perenne' else 'plantation'
 
         chrono = ChronologieCulture.objects.create(
             figure=figure,
             culture_nom=culture_nom,
             culture_emoji=culture_emoji,
+            type_cycle=type_cycle_chrono,
             date_semis=date_semis_date,
-            date_recolte_prevue=date_recolte,
+            date_recolte_prevue=calc['date_recolte'],
         )
         chrono.calculer_progression()
 
-        messages.success(request, f"Chronologie créée pour {culture_emoji} {culture_nom} !")
+        # Message adapté au type
+        if calc['type_cycle'] == 'perenne':
+            messages.success(
+                request,
+                f"🌳 {culture_emoji} {culture_nom} planté ! "
+                f"Première récolte prévue le {calc['date_recolte'].strftime('%d/%m/%Y')} "
+                f"({calc.get('annees_avant_production', '?')} ans)."
+            )
+        else:
+            messages.success(
+                request,
+                f"🌱 {culture_emoji} {culture_nom} semé ! "
+                f"Récolte prévue le {calc['date_recolte'].strftime('%d/%m/%Y')}."
+            )
+
         return redirect('vegetables_fruits:figure_detail', figure_id=figure.id)
 
     return redirect('vegetables_fruits:view_figure')
+
 
 
 from django.contrib.auth.decorators import login_required
@@ -8316,30 +8329,27 @@ def api_enregistrer_calendrier(request):
             )
             logger.info(f"📅 Calendrier: {'créé' if created else 'existant'}")
 
-            # ✅ Récupérer la durée réelle de la culture (Fruit > Vegetable > Culture)
-            from .models import Fruit, Vegetable, Culture as CultureModel
+            # ✅ Calcul centralisé de la date de récolte
+            calc = calculer_date_recolte(culture, date_semis)
 
-            jours_recolte_reel = 90  # fallback
+            # ✅ Récupérer l'emoji (si disponible sur Fruit/Vegetable/Culture)
             emoji_reel = '🌱'
+            try:
+                fruit = Fruit.objects.filter(nom__iexact=culture).first()
+                if fruit and hasattr(fruit, 'get_emoji'):
+                    emoji_reel = fruit.get_emoji()
+                else:
+                    vegetable = Vegetable.objects.filter(nom__iexact=culture).first()
+                    if vegetable and hasattr(vegetable, 'get_emoji'):
+                        emoji_reel = vegetable.get_emoji()
+                    else:
+                        culture_obj = Culture.objects.filter(nom__iexact=culture).first()
+                        if culture_obj and hasattr(culture_obj, 'get_emoji'):
+                            emoji_reel = culture_obj.get_emoji()
+            except Exception:
+                pass
 
-            fruit = Fruit.objects.filter(nom__iexact=culture).first()
-            vegetable = Vegetable.objects.filter(nom__iexact=culture).first()
-            culture_obj = CultureModel.objects.filter(nom__iexact=culture).first()
-
-            if fruit and fruit.jours_recolte and fruit.jours_recolte > 0:
-                jours_recolte_reel = fruit.jours_recolte
-                emoji_reel = fruit.get_emoji()
-            elif vegetable and vegetable.jours_recolte and vegetable.jours_recolte > 0:
-                jours_recolte_reel = vegetable.jours_recolte
-                emoji_reel = vegetable.get_emoji()
-            elif culture_obj:
-                if culture_obj.jours_pousse and culture_obj.jours_pousse > 0:
-                    jours_recolte_reel = culture_obj.jours_pousse
-                elif culture_obj.duree_culture_max_jours and culture_obj.duree_culture_max_jours > 0:
-                    jours_recolte_reel = culture_obj.duree_culture_max_jours
-                emoji_reel = culture_obj.get_emoji() if hasattr(culture_obj, 'get_emoji') else '🌱'
-
-            logger.info(f"🌱 {culture} → {jours_recolte_reel} jours (emoji: {emoji_reel})")
+            type_cycle_chrono = 'semis' if calc['type_cycle'] != 'perenne' else 'plantation'
 
             chrono, chrono_created = ChronologieCulture.objects.get_or_create(
                 figure=figure,
@@ -8347,23 +8357,34 @@ def api_enregistrer_calendrier(request):
                 defaults={
                     'culture_nom': culture,
                     'culture_emoji': emoji_reel,
+                    'type_cycle': type_cycle_chrono,
                     'date_semis': date_semis,
-                    'date_recolte_prevue': date_semis + timedelta(days=jours_recolte_reel) if date_semis else None,
+                    'date_recolte_prevue': calc['date_recolte'],
                     'statut': 'seme',
                     'progression': 0,
                 }
             )
 
-            # ✅ Si la chrono existait déjà, recalculer avec la bonne durée
+            # ✅ Si la chrono existait déjà, recalculer proprement
             if not chrono_created and chrono.date_semis:
-                chrono.date_recolte_prevue = chrono.date_semis + timedelta(days=jours_recolte_reel)
+                chrono.date_recolte_prevue = calc['date_recolte']
+                chrono.type_cycle = type_cycle_chrono
                 if not chrono.culture_emoji or chrono.culture_emoji == '🌱':
                     chrono.culture_emoji = emoji_reel
                 chrono.calculer_progression()
-                logger.info(f"🔄 Chrono {chrono.id} recalculée → récolte prévue le {chrono.date_recolte_prevue}")
+                logger.info(
+                    f"🔄 Chrono {chrono.id} recalculée → récolte prévue le {chrono.date_recolte_prevue} "
+                    f"(type={type_cycle_chrono}, source={calc['source']})"
+                )
 
+            return JsonResponse({
+                'success': True,
+                'chrono_created': chrono_created,
+                'type_cycle': type_cycle_chrono,
+                'date_recolte': calc['date_recolte'].isoformat(),
+                'source': calc['source'],
+            })
 
-            return JsonResponse({'success': True, 'chrono_created': chrono_created})
 
         except Exception as e:
             logger.error(f"❌ Erreur: {e}")
@@ -12595,14 +12616,15 @@ def planification_semis(request):
     today = date.today()
 
     for semis_item in semis:
-        culture = Culture.objects.filter(nom__icontains=semis_item.culture).first()
-        jours_pousse = culture.jours_pousse if culture else 60
-
-        # Calculer la date de fin
-        if semis_item.date_semis:
-            semis_item.date_fin = semis_item.date_semis + timedelta(days=jours_pousse)
-        elif semis_item.date_plantation:
-            semis_item.date_fin = semis_item.date_plantation + timedelta(days=jours_pousse)
+        # ✅ Date de fin calculée via le service centralisé
+        date_debut = semis_item.date_semis or semis_item.date_plantation
+        if date_debut:
+            calc = calculer_date_recolte(semis_item.culture, date_debut)
+            semis_item.date_fin = calc['date_recolte']
+            semis_item.type_cycle_reel = calc['type_cycle']
+        else:
+            semis_item.date_fin = None
+            semis_item.type_cycle_reel = 'inconnu'
 
         # Vérifier la préconisation mondiale
         preconisation = PreconisationMondiale.objects.filter(
@@ -12790,13 +12812,15 @@ def planification_semis_eleve(request, eleve_id):
     today = date.today()
 
     for semis_item in semis:
-        culture = Culture.objects.filter(nom__icontains=semis_item.culture).first()
-        jours_pousse = culture.jours_pousse if culture else 60
-
-        if semis_item.date_semis:
-            semis_item.date_fin = semis_item.date_semis + timedelta(days=jours_pousse)
-        elif semis_item.date_plantation:
-            semis_item.date_fin = semis_item.date_plantation + timedelta(days=jours_pousse)
+        # ✅ Date de fin calculée via le service centralisé
+        date_debut = semis_item.date_semis or semis_item.date_plantation
+        if date_debut:
+            calc = calculer_date_recolte(semis_item.culture, date_debut)
+            semis_item.date_fin = calc['date_recolte']
+            semis_item.type_cycle_reel = calc['type_cycle']
+        else:
+            semis_item.date_fin = None
+            semis_item.type_cycle_reel = 'inconnu'
 
         # Pour l'instant, pas de comparaison avec préconisations
         semis_item.statut_semis = "Non disponible"
@@ -13547,11 +13571,9 @@ def dashboard_particulier(request):
 def planifier_culture(request, figure_id):
     """
     Crée une ChronologieCulture pour un crop existant d'une figure.
-    Utilise la durée de cycle depuis Culture/Fruit/Vegetable si dispo,
-    sinon fallback 90 jours.
+    Utilise le service centralisé calculer_date_recolte().
     """
-    from datetime import datetime, timedelta
-    from .models import Culture, Fruit, Vegetable
+    from datetime import datetime
 
     if request.method != 'POST':
         return redirect('vegetables_fruits:figure_detail', figure_id=figure_id)
@@ -13594,51 +13616,42 @@ def planifier_culture(request, figure_id):
             emoji = c.get('emoji', '🌱')
             break
 
-    # ✅ Déterminer la durée de cycle (jours_recolte)
-    jours_recolte = None
+    # ✅ Calcul centralisé de la date de récolte
+    calc = calculer_date_recolte(crop_name, date_semis)
 
-    # 1. Depuis Culture (le plus fiable)
-    culture_obj = Culture.objects.filter(nom__iexact=crop_name).first()
-    if culture_obj and culture_obj.jours_pousse:
-        jours_recolte = culture_obj.jours_pousse
+    type_cycle_chrono = 'semis' if calc['type_cycle'] != 'perenne' else 'plantation'
 
-    # 2. Depuis Fruit
-    if not jours_recolte:
-        fruit_obj = Fruit.objects.filter(nom__iexact=crop_name).first()
-        if fruit_obj and fruit_obj.jours_recolte:
-            jours_recolte = fruit_obj.jours_recolte
-
-    # 3. Depuis Vegetable
-    if not jours_recolte:
-        veg_obj = Vegetable.objects.filter(nom__iexact=crop_name).first()
-        if veg_obj and veg_obj.jours_recolte:
-            jours_recolte = veg_obj.jours_recolte
-
-    # 4. Fallback
-    if not jours_recolte:
-        jours_recolte = 90
-
-    # ✅ Créer la chronologie
     chrono = ChronologieCulture.objects.create(
         figure=figure,
         culture_nom=crop_name,
         culture_emoji=emoji,
+        type_cycle=type_cycle_chrono,
         date_semis=date_semis,
-        date_recolte_prevue=date_semis + timedelta(days=jours_recolte),
+        date_recolte_prevue=calc['date_recolte'],
     )
     chrono.calculer_progression()
 
-    messages.success(
-        request,
-        f"🌱 {emoji} {crop_name} planifiée ! Récolte prévue le "
-        f"{chrono.date_recolte_prevue.strftime('%d/%m/%Y')}."
-    )
+    # ✅ Message adapté
+    if calc['type_cycle'] == 'perenne':
+        messages.success(
+            request,
+            f"🌳 {emoji} {crop_name} planté ! Récolte prévue le "
+            f"{calc['date_recolte'].strftime('%d/%m/%Y')} "
+            f"({calc.get('annees_avant_production', '?')} ans)."
+        )
+    else:
+        messages.success(
+            request,
+            f"🌱 {emoji} {crop_name} planifiée ! Récolte prévue le "
+            f"{calc['date_recolte'].strftime('%d/%m/%Y')}."
+        )
 
     # ✅ Redirection intelligente : d'où vient-on ?
     referer = request.META.get('HTTP_REFERER', '')
     if 'dashboard' in referer:
         return redirect('vegetables_fruits:dashboard_particulier')
     return redirect('vegetables_fruits:figure_detail', figure_id=figure.id)
+
 
 @login_required
 def dashboard_eleve(request):
@@ -14277,28 +14290,25 @@ def cultures_tabs(request, tab_name):
                 # ✅ Récupérer les dates
                 date_semis = calendrier.date_semis if calendrier else None
                 date_plantation = calendrier.date_plantation if calendrier else None
-                jours_pousse = culture_obj.jours_pousse if culture_obj else 60
 
-                # ✅ Calcul de la date de récolte prévue
+                # ✅ Calcul centralisé de la date de récolte prévue
                 date_recolte_prevue = None
-                if date_plantation:
-                    date_recolte_prevue = date_plantation + timedelta(days=jours_pousse)
-                elif date_semis:
-                    date_recolte_prevue = date_semis + timedelta(days=jours_pousse)
+                calc = None
+                if date_plantation or date_semis:
+                    date_debut = date_plantation if date_plantation else date_semis
+                    calc = calculer_date_recolte(nom_culture, date_debut)
+                    date_recolte_prevue = calc['date_recolte']
 
                 # ✅ Calcul de la progression
                 if chrono:
                     progression = chrono.calculer_progression()
                     statut = chrono.get_statut_display()
                     date_recolte_prevue = chrono.date_recolte_prevue
-                elif date_semis or date_plantation:
+                elif calc and calc.get('duree_jours', 0) > 0 and (date_semis or date_plantation):
                     date_debut = date_plantation if date_plantation else date_semis
                     jours_ecoules = (today - date_debut).days
-
-                    if jours_pousse > 0:
-                        progression = min(95, max(0, int((jours_ecoules / jours_pousse) * 100)))
-                    else:
-                        progression = 0
+                    duree = calc['duree_jours']
+                    progression = min(95, max(0, int((jours_ecoules / duree) * 100)))
 
                     if progression >= 95:
                         statut = 'Prêt à récolter'
@@ -14312,11 +14322,13 @@ def cultures_tabs(request, tab_name):
                     progression = 0
                     statut = 'Non planifié'
 
+                # ✅ Construire culture_data
                 culture_data = {
                     'nom': culture_obj.nom if culture_obj else nom_culture,
                     'emoji': crop.get('emoji', '🌱'),
                     'statut': statut,
-                    'jours_pousse': jours_pousse,
+                    'jours_pousse': calc['duree_jours'] if calc else None,  # ← injecté depuis calc
+                    'type_cycle': calc['type_cycle'] if calc else None,  # ← bonus informatif
                     'date_semis': date_semis,
                     'date_plantation': date_plantation,
                     'date_recolte_prevue': date_recolte_prevue,

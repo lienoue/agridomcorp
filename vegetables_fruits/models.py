@@ -716,6 +716,16 @@ class ChronologieCulture(models.Model):
     figure = models.ForeignKey(GeometricFigure, on_delete=models.CASCADE, related_name='chronologies', db_index=True)
     culture_nom = models.CharField(max_length=200)
     culture_emoji = models.CharField(max_length=10)
+    # ✅ NOUVEAU : distingue semis (annuelle) de plantation (pérenne)
+    type_cycle = models.CharField(
+        max_length=20,
+        choices=[
+            ('semis', '🌱 Semis (annuelle)'),
+            ('plantation', '🌳 Plantation (pérenne)'),
+        ],
+        default='semis',
+        help_text="Type de cycle : semis pour les annuelles, plantation pour les arbres/arbustes"
+    )
     date_semis = models.DateField()
     date_recolte_prevue = models.DateField()
     # ✅ Dates prévues pour chaque étape (calculées automatiquement)

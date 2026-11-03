@@ -11,6 +11,48 @@ from .models import CalendrierSemis, Variete, Culture, Fruit, Vegetable
 logger = logging.getLogger(__name__)
 
 
+# ============================================================
+# HELPERS MOIS (déplacés AVANT les fonctions qui les utilisent)
+# ============================================================
+
+_MOIS_FR = [
+    '', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+]
+
+
+def _nom_mois(numero):
+    """Retourne le nom français d'un mois (1-12)."""
+    if 1 <= numero <= 12:
+        return _MOIS_FR[numero]
+    return str(numero)
+
+
+def _mois_intervalle(debut, fin):
+    """
+    Retourne la liste des mois (1-12) couverts par l'intervalle [debut, fin].
+    Gère le wrap d'année : 11→2 = [11, 12, 1, 2].
+
+    >>> _mois_intervalle(3, 6)
+    [3, 4, 5, 6]
+    >>> _mois_intervalle(11, 2)
+    [11, 12, 1, 2]
+    >>> _mois_intervalle(12, 1)
+    [12, 1]
+    >>> _mois_intervalle(5, 5)
+    [5]
+    """
+    if not (1 <= debut <= 12 and 1 <= fin <= 12):
+        return []
+    if debut <= fin:
+        return list(range(debut, fin + 1))
+    return list(range(debut, 13)) + list(range(1, fin + 1))
+
+
+# ============================================================
+# RÉSOLUTION DU NOM DE CULTURE
+# ============================================================
+
 def _resoudre_nom_culture(crop):
     """
     À partir d'un item de crops_data, retourne le nom de la culture parente.
@@ -46,6 +88,10 @@ def _resoudre_nom_culture(crop):
     return crop.get('name')
 
 
+# ============================================================
+# VÉRIFICATION SAISON (unitaire)
+# ============================================================
+
 def verifier_saison_culture(crop, region, date_ref=None):
     """
     Vérifie si une culture est dans sa fenêtre de semis/plantation pour la région.
@@ -63,7 +109,7 @@ def verifier_saison_culture(crop, region, date_ref=None):
             'fenetre': str, # ex: "Mars - Juin"
             'mois_actuel': str, # ex: "Octobre"
             'message': str,
-            'raison': str, # 'hors_saison' | 'ok' | 'region_inconnue' | 'culture_inconnue'
+            'raison': str, # 'hors_saison' | 'ok' | 'region_inconnue' | 'culture_inconnue' | 'arbre_pas_de_verif'
         }
     """
     if date_ref is None:
@@ -84,6 +130,24 @@ def verifier_saison_culture(crop, region, date_ref=None):
 
     if not nom_culture:
         resultat['raison'] = 'culture_inconnue'
+        return resultat
+
+    # ✅ On ignore la vérification pour les arbres/arbustes
+    # NOTE : cette heuristique sera remplacée par CYCLES_CULTURES à l'étape 5
+    nom_lower = nom_culture.lower()
+    arbres_mots_cles = [
+        'ier', 'er', 'olivier', 'pommier', 'poirier', 'cerisier', 'vigne',
+        'figuier', 'kiwi', 'noyer', 'noisetier', 'amandier', 'châtaignier',
+        'prunier', 'abricotier', 'pêcher', 'pêcher', 'cognassier', 'grenadier',
+        'oranger', 'citronnier', 'pamplemoussier', 'mandarinier'
+    ]
+
+    if any(mot in nom_lower for mot in arbres_mots_cles):
+        resultat['raison'] = 'arbre_pas_de_verif'
+        resultat['message'] = (
+            f"🌳 {nom_culture} est un arbre/arbuste. "
+            f"Vous pouvez le planter en dehors de la période de semis classique."
+        )
         return resultat
 
     # Recherche du calendrier : d'abord la région exacte, puis 'tous'
@@ -133,131 +197,48 @@ def verifier_saison_culture(crop, region, date_ref=None):
     return resultat
 
 
-def verifier_saison_culture(crop, region, date_ref=None):
-    """
-    Vérifie si une culture est dans sa fenêtre de semis/plantation pour la région.
-    """
-    if date_ref is None:
-        date_ref = date.today()
+# ============================================================
+# VÉRIFICATION SAISON (batch — utilisée par api_verifier_saison)
+# ============================================================
 
-    nom_culture = _resoudre_nom_culture(crop)
-    emoji = crop.get('emoji', '🌱')
+def verifier_saison_cultures(crops, user, figure=None):
+    """
+    Vérifie en batch la saison de toutes les cultures d'une parcelle.
 
-    resultat = {
-        'ok': True,
-        'name': nom_culture or crop.get('name', 'Culture inconnue'),
-        'emoji': emoji,
-        'fenetre': '',
-        'mois_actuel': _nom_mois(date_ref.month),
-        'message': '',
-        'raison': 'ok',
+    Args:
+        crops (list[dict]): liste des items crops_data (figure.crops)
+        user (CustomUser): utilisateur (pour résoudre la région)
+        figure (GeometricFigure|None): parcelle d'où viennent les crops
+
+    Returns:
+        dict {
+            'hors_saison': list[dict], # cultures en alerte
+            'region': str, # région utilisée
+            'total_verifiees': int,
+        }
+    """
+    # Import local pour éviter un import circulaire (views importe services)
+    from .views import get_region_utilisateur
+
+    region_info = get_region_utilisateur(user, figure)
+    region = region_info.get('region', 'iledefrance')
+
+    hors_saison = []
+    for crop in crops or []:
+        resultat = verifier_saison_culture(crop, region)
+        if not resultat['ok']:
+            hors_saison.append(resultat)
+
+    return {
+        'hors_saison': hors_saison,
+        'region': region,
+        'total_verifiees': len(crops or []),
     }
 
-    if not nom_culture:
-        resultat['raison'] = 'culture_inconnue'
-        return resultat
-
-    # ✅ NOUVEAU : On ignore la vérification pour les arbres/arbustes
-    nom_lower = nom_culture.lower()
-    arbres_mots_cles = [
-        'ier', 'er', 'olivier', 'pommier', 'poirier', 'cerisier', 'vigne',
-        'figuier', 'kiwi', 'noyer', 'noisetier', 'amandier', 'châtaignier',
-        'prunier', 'abricotier', 'pêcher', 'pêcher', 'cognassier', 'grenadier',
-        'oranger', 'citronnier', 'pamplemoussier', 'mandarinier'
-    ]
-
-    # On vérifie si un des mots-clés est dans le nom
-    if any(mot in nom_lower for mot in arbres_mots_cles):
-        resultat['raison'] = 'arbre_pas_de_verif'
-        resultat[
-            'message'] = f"🌳 {nom_culture} est un arbre/arbuste. Vous pouvez le planter en dehors de la période de semis classique."
-        return resultat
-
-    # Recherche du calendrier : d'abord la région exacte, puis 'tous'
-    calendrier = (
-            CalendrierSemis.objects.filter(culture__iexact=nom_culture, region=region).first()
-            or CalendrierSemis.objects.filter(culture__iexact=nom_culture, region='tous').first()
-    )
-
-    # Recherche floue si pas trouvé (ex: "Tomate cerise" → "Tomate")
-    if not calendrier:
-        calendrier = (
-                CalendrierSemis.objects.filter(culture__icontains=nom_culture, region=region).first()
-                or CalendrierSemis.objects.filter(culture__icontains=nom_culture, region='tous').first()
-                or CalendrierSemis.objects.filter(
-            culture__icontains=nom_culture.split()[0], region=region
-        ).first()
-        )
-
-    if not calendrier:
-        # Pas de données : on ne bloque pas
-        resultat['raison'] = 'culture_inconnue'
-        return resultat
-
-    # Vérification de la fenêtre
-    mois = date_ref.month
-    mois_debut = calendrier.mois_debut_semis
-    mois_fin = calendrier.mois_fin_semis
-
-    # Gestion des fenêtres à cheval (ex: nov-fév)
-    if mois_debut <= mois_fin:
-        dans_fenetre = mois_debut <= mois <= mois_fin
-    else:
-        dans_fenetre = mois >= mois_debut or mois <= mois_fin
-
-    resultat['fenetre'] = f"{_nom_mois(mois_debut)} - {_nom_mois(mois_fin)}"
-
-    if not dans_fenetre:
-        resultat['ok'] = False
-        resultat['raison'] = 'hors_saison'
-        resultat['message'] = (
-            f"La période recommandée pour planter {nom_culture} "
-            f"dans ta région est : {resultat['fenetre']}."
-        )
-    else:
-        resultat['message'] = f"✅ {nom_culture} est dans sa période de plantation."
-
-    return resultat
-
 
 # ============================================================
-# HELPERS
+# ORGANISATION DU CALENDRIER PAR MOIS
 # ============================================================
-
-_MOIS_FR = [
-    '', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
-]
-
-
-def _nom_mois(numero):
-    """Retourne le nom français d'un mois (1-12)."""
-    if 1 <= numero <= 12:
-        return _MOIS_FR[numero]
-    return str(numero)
-
-
-
-def _mois_intervalle(debut, fin):
-    """
-    Retourne la liste des mois (1-12) couverts par l'intervalle [debut, fin].
-    Gère le wrap d'année : 11→2 = [11, 12, 1, 2].
-
-    >>> _mois_intervalle(3, 6)
-    [3, 4, 5, 6]
-    >>> _mois_intervalle(11, 2)
-    [11, 12, 1, 2]
-    >>> _mois_intervalle(12, 1)
-    [12, 1]
-    >>> _mois_intervalle(5, 5)
-    [5]
-    """
-    if not (1 <= debut <= 12 and 1 <= fin <= 12):
-        return []
-    if debut <= fin:
-        return list(range(debut, fin + 1))
-    return list(range(debut, 13)) + list(range(1, fin + 1))
-
 
 def organiser_calendrier_par_mois(entries):
     """
@@ -273,9 +254,9 @@ def organiser_calendrier_par_mois(entries):
     return mois_data
 
 
-from .models import CalendrierSemis
-from .views import get_region_utilisateur, REGION_MAPPING
-
+# ============================================================
+# RÉSOLUTION DE LA RÉGION POUR LE CALENDRIER
+# ============================================================
 
 def resoudre_calendrier_semis(user, figure=None):
     """
@@ -283,6 +264,9 @@ def resoudre_calendrier_semis(user, figure=None):
     Région exacte → Pays (via REGION_MAPPING) → Continent → Tous.
     Retourne (queryset, region_finale, source_debug).
     """
+    # Import local pour éviter un import circulaire
+    from .views import get_region_utilisateur, REGION_MAPPING
+
     region_info = get_region_utilisateur(user, figure)
     region = region_info.get('region')
     pays = (region_info.get('pays') or '').lower()

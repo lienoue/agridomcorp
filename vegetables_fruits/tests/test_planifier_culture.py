@@ -32,13 +32,19 @@ def test_planifier_culture_cree_chrono(client_darkmaul, user_darkmaul, figure_si
 
 
 @pytest.mark.integration
-def test_planifier_culture_utilise_jours_pousse(client_darkmaul, figure_simple, db):
-    """Si Culture.jours_pousse existe, il est utilisé."""
+def test_planifier_culture_utilise_referentiel_cycles(client_darkmaul, figure_simple, db):
+    """
+    planifier_culture utilise CYCLES_CULTURES (source de vérité).
+
+    ⚠️ Ancien comportement (obsolète) : cascade Culture.jours_pousse
+    → Fruit.jours_recolte → Vegetable.jours_recolte → 90.
+    Le référentiel centralisé prime désormais sur les champs modèle.
+    """
     Culture.objects.create(
         nom='Tomate',
         type_culture='legume',
         emoji='🍅',
-        jours_pousse=80,
+        jours_pousse=80, # Volontairement différent du référentiel (90j)
     )
     figure_simple.crops = [{'name': 'Tomate', 'emoji': '🍅'}]
     figure_simple.save()
@@ -49,8 +55,10 @@ def test_planifier_culture_utilise_jours_pousse(client_darkmaul, figure_simple, 
     )
 
     chrono = ChronologieCulture.objects.get(figure=figure_simple)
-    # 1er avril + 80 jours = 20 juin
-    assert chrono.date_recolte_prevue == date(2026, 6, 20)
+
+    # ✅ Le référentiel prime : Tomate = 90 jours, PAS les 80j de Culture
+    assert chrono.date_recolte_prevue == date(2026, 6, 30)
+    assert chrono.type_cycle == 'semis'
 
 
 @pytest.mark.integration
