@@ -133,29 +133,91 @@ def verifier_saison_culture(crop, region, date_ref=None):
     return resultat
 
 
-def verifier_saison_cultures(crops, user, figure=None):
+def verifier_saison_culture(crop, region, date_ref=None):
     """
-    Vérifie toutes les cultures d'un coup.
-    Utilise la cascade géographique (Région → Pays → Continent) pour éviter
-    les faux positifs liés aux calendriers européens sur d'autres continents.
+    Vérifie si une culture est dans sa fenêtre de semis/plantation pour la région.
     """
-    # 1. On résout la bonne région via la cascade (créée précédemment)
-    _, region_finale, source = resoudre_calendrier_semis(user, figure)
+    if date_ref is None:
+        date_ref = date.today()
 
-    logger.debug(f"🌍 Vérif saison — cascade résolue : region={region_finale} (via {source})")
+    nom_culture = _resoudre_nom_culture(crop)
+    emoji = crop.get('emoji', '🌱')
 
-    hors_saison = []
-    for crop in crops:
-        # 2. On passe la région résolue à la fonction de vérification
-        res = verifier_saison_culture(crop, region=region_finale)
-        if not res['ok'] and res['raison'] == 'hors_saison':
-            hors_saison.append(res)
-
-    return {
-        'region': region_finale,
-        'hors_saison': hors_saison,
-        'total_verifiees': len(crops),
+    resultat = {
+        'ok': True,
+        'name': nom_culture or crop.get('name', 'Culture inconnue'),
+        'emoji': emoji,
+        'fenetre': '',
+        'mois_actuel': _nom_mois(date_ref.month),
+        'message': '',
+        'raison': 'ok',
     }
+
+    if not nom_culture:
+        resultat['raison'] = 'culture_inconnue'
+        return resultat
+
+    # ✅ NOUVEAU : On ignore la vérification pour les arbres/arbustes
+    nom_lower = nom_culture.lower()
+    arbres_mots_cles = [
+        'ier', 'er', 'olivier', 'pommier', 'poirier', 'cerisier', 'vigne',
+        'figuier', 'kiwi', 'noyer', 'noisetier', 'amandier', 'châtaignier',
+        'prunier', 'abricotier', 'pêcher', 'pêcher', 'cognassier', 'grenadier',
+        'oranger', 'citronnier', 'pamplemoussier', 'mandarinier'
+    ]
+
+    # On vérifie si un des mots-clés est dans le nom
+    if any(mot in nom_lower for mot in arbres_mots_cles):
+        resultat['raison'] = 'arbre_pas_de_verif'
+        resultat[
+            'message'] = f"🌳 {nom_culture} est un arbre/arbuste. Vous pouvez le planter en dehors de la période de semis classique."
+        return resultat
+
+    # Recherche du calendrier : d'abord la région exacte, puis 'tous'
+    calendrier = (
+            CalendrierSemis.objects.filter(culture__iexact=nom_culture, region=region).first()
+            or CalendrierSemis.objects.filter(culture__iexact=nom_culture, region='tous').first()
+    )
+
+    # Recherche floue si pas trouvé (ex: "Tomate cerise" → "Tomate")
+    if not calendrier:
+        calendrier = (
+                CalendrierSemis.objects.filter(culture__icontains=nom_culture, region=region).first()
+                or CalendrierSemis.objects.filter(culture__icontains=nom_culture, region='tous').first()
+                or CalendrierSemis.objects.filter(
+            culture__icontains=nom_culture.split()[0], region=region
+        ).first()
+        )
+
+    if not calendrier:
+        # Pas de données : on ne bloque pas
+        resultat['raison'] = 'culture_inconnue'
+        return resultat
+
+    # Vérification de la fenêtre
+    mois = date_ref.month
+    mois_debut = calendrier.mois_debut_semis
+    mois_fin = calendrier.mois_fin_semis
+
+    # Gestion des fenêtres à cheval (ex: nov-fév)
+    if mois_debut <= mois_fin:
+        dans_fenetre = mois_debut <= mois <= mois_fin
+    else:
+        dans_fenetre = mois >= mois_debut or mois <= mois_fin
+
+    resultat['fenetre'] = f"{_nom_mois(mois_debut)} - {_nom_mois(mois_fin)}"
+
+    if not dans_fenetre:
+        resultat['ok'] = False
+        resultat['raison'] = 'hors_saison'
+        resultat['message'] = (
+            f"La période recommandée pour planter {nom_culture} "
+            f"dans ta région est : {resultat['fenetre']}."
+        )
+    else:
+        resultat['message'] = f"✅ {nom_culture} est dans sa période de plantation."
+
+    return resultat
 
 
 # ============================================================
