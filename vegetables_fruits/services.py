@@ -95,22 +95,6 @@ def _resoudre_nom_culture(crop):
 def verifier_saison_culture(crop, region, date_ref=None):
     """
     Vérifie si une culture est dans sa fenêtre de semis/plantation pour la région.
-
-    Args:
-        crop (dict): item de crops_data (avec fruit_id/vegetable_id/variete_id + name)
-        region (str): région normalisée (ex: 'iledefrance', 'provence')
-        date_ref (date): date de référence (défaut: aujourd'hui)
-
-    Returns:
-        dict {
-            'ok': bool,
-            'name': str,
-            'emoji': str,
-            'fenetre': str, # ex: "Mars - Juin"
-            'mois_actuel': str, # ex: "Octobre"
-            'message': str,
-            'raison': str, # 'hors_saison' | 'ok' | 'region_inconnue' | 'culture_inconnue' | 'arbre_pas_de_verif'
-        }
     """
     if date_ref is None:
         date_ref = date.today()
@@ -132,17 +116,10 @@ def verifier_saison_culture(crop, region, date_ref=None):
         resultat['raison'] = 'culture_inconnue'
         return resultat
 
-    # ✅ On ignore la vérification pour les arbres/arbustes
-    # NOTE : cette heuristique sera remplacée par CYCLES_CULTURES à l'étape 5
-    nom_lower = nom_culture.lower()
-    arbres_mots_cles = [
-        'ier', 'er', 'olivier', 'pommier', 'poirier', 'cerisier', 'vigne',
-        'figuier', 'kiwi', 'noyer', 'noisetier', 'amandier', 'châtaignier',
-        'prunier', 'abricotier', 'pêcher', 'pêcher', 'cognassier', 'grenadier',
-        'oranger', 'citronnier', 'pamplemoussier', 'mandarinier'
-    ]
+    # ✅ NOUVEAU : On utilise notre service centralisé au lieu des mots-clés
+    from .services_dates import est_perenne
 
-    if any(mot in nom_lower for mot in arbres_mots_cles):
+    if est_perenne(nom_culture):
         resultat['raison'] = 'arbre_pas_de_verif'
         resultat['message'] = (
             f"🌳 {nom_culture} est un arbre/arbuste. "
@@ -152,18 +129,18 @@ def verifier_saison_culture(crop, region, date_ref=None):
 
     # Recherche du calendrier : d'abord la région exacte, puis 'tous'
     calendrier = (
-        CalendrierSemis.objects.filter(culture__iexact=nom_culture, region=region).first()
-        or CalendrierSemis.objects.filter(culture__iexact=nom_culture, region='tous').first()
+            CalendrierSemis.objects.filter(culture__iexact=nom_culture, region=region).first()
+            or CalendrierSemis.objects.filter(culture__iexact=nom_culture, region='tous').first()
     )
 
     # Recherche floue si pas trouvé (ex: "Tomate cerise" → "Tomate")
     if not calendrier:
         calendrier = (
-            CalendrierSemis.objects.filter(culture__icontains=nom_culture, region=region).first()
-            or CalendrierSemis.objects.filter(culture__icontains=nom_culture, region='tous').first()
-            or CalendrierSemis.objects.filter(
-                culture__icontains=nom_culture.split()[0], region=region
-            ).first()
+                CalendrierSemis.objects.filter(culture__icontains=nom_culture, region=region).first()
+                or CalendrierSemis.objects.filter(culture__icontains=nom_culture, region='tous').first()
+                or CalendrierSemis.objects.filter(
+            culture__icontains=nom_culture.split()[0], region=region
+        ).first()
         )
 
     if not calendrier:
