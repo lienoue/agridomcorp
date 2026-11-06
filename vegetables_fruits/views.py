@@ -4979,6 +4979,21 @@ def recolter_culture(request):
     if request.method == 'POST':
         chrono_id = request.POST.get('chrono_id')
         from datetime import date
+        from .services_dates import est_perenne
+
+        chrono = get_object_or_404(ChronologieCulture, id=chrono_id, figure__user=request.user)
+
+        # ✅ NOUVEAU : Sécurité pour les arbres
+        if est_perenne(chrono.culture_nom):
+            if chrono.date_recolte_prevue and chrono.date_recolte_prevue > date.today():
+                messages.error(
+                    request,
+                    f"🌳 Impossible de récolter {chrono.culture_nom} ! "
+                    f"La première récolte n'est prévue que pour le "
+                    f"{chrono.date_recolte_prevue.strftime('%d/%m/%Y')}. "
+                    f"Laissez-lui le temps de grandir."
+                )
+                return redirect('vegetables_fruits:figure_detail', figure_id=chrono.figure.id)
 
         chrono = get_object_or_404(ChronologieCulture, id=chrono_id, figure__user=request.user)
         chrono.date_recolte_effective = date.today()
@@ -12051,35 +12066,73 @@ def get_conseils_personnalises(user, figure):
     }
 
     # 1️⃣1️⃣ CONSTRUCTION DES CONSEILS PAR CULTURE AVEC FALLBACK
+    from difflib import get_close_matches
+    import unicodedata
+
+    def normaliser(texte):
+        if not texte: return ""
+        return ''.join(
+            c for c in unicodedata.normalize('NFD', texte) if unicodedata.category(c) != 'Mn').lower().strip()
+
     conseils_par_culture = []
 
     for culture_nom in cultures_list:
-        culture_lower = culture_nom.lower()
+        culture_lower = normaliser(culture_nom)
         culture_conseils = None
         culture_key = None
 
         # 1. Correspondance exacte
-        if culture_lower in conseils_cultures:
-            culture_key = culture_lower
-            culture_conseils = conseils_cultures[culture_lower]
+        for key, value in conseils_cultures.items():
+            if normaliser(key) == culture_lower:
+                culture_key = key
+                culture_conseils = value
+                break
 
-        # 2. Correspondance partielle
+        # 2. Correspondance partielle (ex: "Cerise" dans "Cerisier")
         if not culture_conseils:
             for key, value in conseils_cultures.items():
-                if key in culture_lower or culture_lower in key:
+                key_norm = normaliser(key)
+                if key_norm in culture_lower or culture_lower in key_norm:
                     culture_key = key
                     culture_conseils = value
                     break
 
-        # 3. Correspondance floue
+        # ✅ 3. NOUVEAU : Si c'est un fruit, on cherche l'arbre (et vice-versa)
         if not culture_conseils:
-            matches = get_close_matches(culture_lower, list(conseils_cultures.keys()), n=1, cutoff=0.6)
+            from .data.cycles_cultures import get_cycle
+            cycle_data = get_cycle(culture_nom)
+
+            # Si on a trouvé un cycle pour cette culture (même par héritage de variété)
+            # On essaie de trouver une correspondance avec le nom du parent (ex: 'cerisier' pour 'cerise')
+            if cycle_data:
+                # On cherche dans le dico des conseils si une clé matche le parent
+                for key, value in conseils_cultures.items():
+                    key_norm = normaliser(key)
+                    # Si le parent est "cerisier" et la clé est "cerisier"
+                    if key_norm == 'cerisier' and 'cerise' in culture_lower:
+                        culture_key = key
+                        culture_conseils = value
+                        break
+                    if key_norm == 'olivier' and 'olive' in culture_lower:
+                        culture_key = key
+                        culture_conseils = value
+                        break
+                    if key_norm == 'pommier' and 'pomme' in culture_lower:
+                        culture_key = key
+                        culture_conseils = value
+                        break
+
+        # 4. Correspondance floue
+        if not culture_conseils:
+            dict_normalise = {normaliser(k): k for k in conseils_cultures.keys()}
+            matches = get_close_matches(culture_lower, list(dict_normalise.keys()), n=1, cutoff=0.6)
             if matches:
-                culture_key = matches[0]
+                culture_key = dict_normalise[matches[0]]
                 culture_conseils = conseils_cultures[culture_key]
 
-        # 4. FALLBACK INTELLIGENT
+        # 5. FALLBACK INTELLIGENT
         if not culture_conseils:
+            print(f"⚠️ PAS DE CONSEILS TROUVÉS POUR : {culture_nom}")  # Aide au débogage
             culture_conseils = get_fallback_conseils(culture_nom, climat, meteo)
 
         # 5. Adaptation au climat
