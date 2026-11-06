@@ -2139,7 +2139,7 @@ class CalendrierUser(models.Model):
     date_modification = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('utilisateur', 'culture')
+        unique_together = ('utilisateur', 'culture', 'figure')
         ordering = ['mois_semis', 'culture']
 
     def __str__(self):
