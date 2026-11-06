@@ -187,5 +187,33 @@ def determiner_type_cycle(culture_nom):
 
 
 def est_perenne(culture_nom):
-    """Retourne True si la culture est pérenne."""
-    return determiner_type_cycle(culture_nom) == 'perenne'
+    """
+    Retourne True si la culture doit être affichée comme un arbre/arbuste (Plantation)
+    dans l'interface utilisateur.
+
+    Logique :
+    1. Si le dictionnaire force 'est_arbre_ui': True → True (ex: bananier)
+    2. Si c'est de type 'annuelle' → False
+    3. Si c'est de type 'perenne' ET que ça met >= 2 ans à produire → True
+    4. Sinon → False (ex: thym, fraise)
+    """
+    from .data.cycles_cultures import get_cycle
+
+    cycle = get_cycle(culture_nom)
+    if not cycle:
+        return False
+
+    # 1. Force l'affichage en arbre (pour les arbres tropicaux rapides comme la banane)
+    if cycle.get('est_arbre_ui') is True:
+        return True
+
+    # 2. Si c'est explicitement annuel, c'est un semis
+    if cycle.get('type') == 'annuelle':
+        return False
+
+    # 3. Pérenne "classique" (arbres fruitiers, vignes)
+    if cycle.get('type') == 'perenne':
+        annees = cycle.get('debut_production_annees', 3)
+        return annees >= 2
+
+    return False
