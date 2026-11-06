@@ -573,9 +573,17 @@
                 <div class="chrono-card">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                         <div>
-                            <span style="font-size: 1.5rem;">{{ chrono.culture_emoji }}</span>
+                            <span style="font-size: 1.5rem;">
+                                {% if chrono.type_cycle == 'plantation' %}🌳{% else %}{{ chrono.culture_emoji }}{% endif %}
+                            </span>
                             <strong class="ms-2">{{ chrono.culture_nom }}</strong>
-                            <span class="badge bg-info ms-2">{{ chrono.get_statut_display }}</span>
+                            <span class="badge bg-info ms-2">
+                                {% if chrono.type_cycle == 'plantation' %}
+                                    {{ chrono.progression }}% - Planté
+                                {% else %}
+                                    {{ chrono.get_statut_display }}
+                                {% endif %}
+                            </span>
                         </div>
                         {% if chrono.statut == 'pret' or chrono.statut == 'fructification' %}
                         <form method="post" action="{% url 'vegetables_fruits:recolter_culture' %}">
@@ -593,7 +601,17 @@
                             <div class="timeline-step step-{{ etape.etat }}">
                                 <div class="step-dot">{% if etape.etat == 'passee' %}✅{% elif etape.etat == 'actuelle' %}🔵{% else %}⚪{% endif %}</div>
                                 <div class="step-label">{{ etape.emoji }} {{ etape.label }}</div>
-                                <div class="step-date">{% if etape.date %}{{ etape.date|date:"d/m" }}{% else %}—{% endif %}</div>
+                                <div class="step-date">
+                                    {% if etape.date %}
+                                        {% if chrono.type_cycle == 'plantation' %}
+                                            {{ etape.date|date:"d/m/Y" }}
+                                        {% else %}
+                                            {{ etape.date|date:"d/m" }}
+                                        {% endif %}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </div>
                             </div>
                         {% endfor %}
                     </div>

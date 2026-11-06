@@ -773,27 +773,32 @@ class ChronologieCulture(models.Model):
         aujourdhui = date.today()
 
         # ============================================================
-        # 1. Calcul des dates prévues pour chaque étape
+        # 1. Sécurité : on sauvegarde la date de récolte prévue
+        # ============================================================
+        date_recolte_sauvee = self.date_recolte_prevue
+
+        # ============================================================
+        # 2. Calcul des dates prévues pour chaque étape
         # ============================================================
         if self.date_semis and self.date_recolte_prevue:
             duree_totale = (self.date_recolte_prevue - self.date_semis).days
 
-            # Pourcentages indicatifs du cycle
-            self.date_levee_prevue = self.date_semis + timedelta(
-                days=int(duree_totale * 0.10)
-            )
-            self.date_croissance_prevue = self.date_semis + timedelta(
-                days=int(duree_totale * 0.30)
-            )
-            self.date_floraison_prevue = self.date_semis + timedelta(
-                days=int(duree_totale * 0.60)
-            )
-            self.date_fructification_prevue = self.date_semis + timedelta(
-                days=int(duree_totale * 0.85)
-            )
+            if self.type_cycle == 'plantation':
+                self.date_levee_prevue = self.date_semis
+                self.date_croissance_prevue = self.date_semis + timedelta(days=30)  # 1 mois après plantation
+                self.date_floraison_prevue = self.date_recolte_prevue - timedelta(days=60)
+                self.date_fructification_prevue = self.date_recolte_prevue - timedelta(days=30)
+            else:
+                self.date_levee_prevue = self.date_semis + timedelta(days=int(duree_totale * 0.10))
+                self.date_croissance_prevue = self.date_semis + timedelta(days=int(duree_totale * 0.30))
+                self.date_floraison_prevue = self.date_semis + timedelta(days=int(duree_totale * 0.60))
+                self.date_fructification_prevue = self.date_semis + timedelta(days=int(duree_totale * 0.85))
+
+        # ✅ ON RESTAURE LA DATE POUR ÊTRE SÛR QU'ELLE N'A PAS BOUGÉ
+        self.date_recolte_prevue = date_recolte_sauvee
 
         # ============================================================
-        # 2. Calcul de la progression
+        # 3. Calcul de la progression
         # ============================================================
         if self.date_recolte_effective:
             self.progression = 100
@@ -807,61 +812,72 @@ class ChronologieCulture(models.Model):
             jours_total = (self.date_recolte_prevue - self.date_semis).days
             jours_ecoules = (aujourdhui - self.date_semis).days
             if jours_total > 0:
-                self.progression = min(95, int((jours_ecoules / jours_total) * 100))
+                self.progression = min(95, max(1, int((jours_ecoules / jours_total) * 100)))
 
-            # Mise à jour du stade selon la progression
-            if self.progression < 10:
-                self.statut = 'seme'
-                self.stade_actuel = 'seme'
-            elif self.progression < 30:
-                self.statut = 'levee'
-                self.stade_actuel = 'levee'
-            elif self.progression < 60:
-                self.statut = 'croissance'
-                self.stade_actuel = 'croissance'
-            elif self.progression < 85:
-                self.statut = 'floraison'
-                self.stade_actuel = 'floraison'
+            # ✅ Logique des statuts
+            if self.type_cycle == 'plantation':
+                # Si c'est le jour même de la plantation
+                if jours_ecoules <= 1:
+                    self.statut = 'seme'
+                    self.stade_actuel = 'seme'
+                elif self.progression < 95:
+                    self.statut = 'croissance'
+                    self.stade_actuel = 'croissance'
+                else:
+                    self.statut = 'pret'
+                    self.stade_actuel = 'pret'
             else:
-                self.statut = 'fructification'
-                self.stade_actuel = 'fructification'
+                if self.progression < 10:
+                    self.statut = 'seme'
+                    self.stade_actuel = 'seme'
+                elif self.progression < 30:
+                    self.statut = 'levee'
+                    self.stade_actuel = 'levee'
+                elif self.progression < 60:
+                    self.statut = 'croissance'
+                    self.stade_actuel = 'croissance'
+                elif self.progression < 85:
+                    self.statut = 'floraison'
+                    self.stade_actuel = 'floraison'
+                else:
+                    self.statut = 'fructification'
+                    self.stade_actuel = 'fructification'
 
         self.save()
         return self.progression
 
     @property
     def get_etapes_timeline(self):
-        """
-        Retourne la liste des étapes de la timeline avec leur état :
-        - 'passee' : ✅ l'étape est derrière nous
-        - 'actuelle' : 🔵 c'est l'étape en cours
-        - 'future' : ⚪ l'étape est à venir
-        """
         from datetime import date
-
         aujourdhui = date.today()
 
-        etapes_def = [
-            ('seme', '🌱', 'Semé', self.date_semis),
-            ('levee', '🌿', 'Levée', self.date_levee_prevue),
-            ('croissance', '🌳', 'Croissance', self.date_croissance_prevue),
-            ('floraison', '🌸', 'Floraison', self.date_floraison_prevue),
-            ('fructification', '🍅', 'Fructification', self.date_fructification_prevue),
-            ('pret', '✅', 'Récolte', self.date_recolte_prevue),
-        ]
+        # ✅ Gestion de la différence Arbre / Légume
+        if self.type_cycle == 'plantation':
+            etapes_def = [
+                ('seme', '🌳', 'Planté', self.date_semis),
+                ('croissance', '🌿', 'Croissance', self.date_croissance_prevue or self.date_semis),
+                ('floraison', '🌸', 'Floraison', self.date_floraison_prevue),
+                ('fructification', '🍎', 'Fructification', self.date_fructification_prevue),
+                ('pret', '✅', 'Récolte', self.date_recolte_prevue),
+            ]
+            ordre_statuts = ['seme', 'croissance', 'floraison', 'fructification', 'pret']
+        else:
+            etapes_def = [
+                ('seme', '🌱', 'Semé', self.date_semis),
+                ('levee', '🌿', 'Levée', self.date_levee_prevue),
+                ('croissance', '🌳', 'Croissance', self.date_croissance_prevue),
+                ('floraison', '🌸', 'Floraison', self.date_floraison_prevue),
+                ('fructification', '🍅', 'Fructification', self.date_fructification_prevue),
+                ('pret', '✅', 'Récolte', self.date_recolte_prevue),
+            ]
+            ordre_statuts = ['seme', 'levee', 'croissance', 'floraison', 'fructification', 'pret']
 
-        # Si déjà récolté, tout est "passé"
         if self.statut == 'recolte' or self.date_recolte_effective:
             return [
-                {
-                    'code': code, 'emoji': emoji, 'label': label,
-                    'date': dt, 'etat': 'passee',
-                }
-                for code, emoji, label, dt in etapes_def
+                {'code': c, 'emoji': e, 'label': l, 'date': d, 'etat': 'passee'}
+                for c, e, l, d in etapes_def
             ]
 
-        # Trouver l'index de l'étape actuelle selon le statut
-        ordre_statuts = ['seme', 'levee', 'croissance', 'floraison', 'fructification', 'pret']
         try:
             index_actuel = ordre_statuts.index(self.statut)
         except ValueError:

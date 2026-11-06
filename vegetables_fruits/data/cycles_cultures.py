@@ -235,6 +235,8 @@ CYCLES_CULTURES = {
     'clématite': {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (10, 3)},
     'clematite': {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (10, 3)},
     'buddleia': {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (10, 3)},
+    'plumeria': {'type': 'perenne', 'est_arbre_ui': True, 'debut_production_annees': 3, 'pleine_production_annees': 5, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'frangipanier': {'type': 'perenne', 'est_arbre_ui': True, 'debut_production_annees': 3, 'pleine_production_annees': 5, 'emoji': '🌸', 'mois_plantation': (3, 6)},
 
     # ============================================================
     # 🥬 LÉGUMES-FRUITS (ANNUELLES)
