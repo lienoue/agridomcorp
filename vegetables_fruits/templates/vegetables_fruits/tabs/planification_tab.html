@@ -2,109 +2,70 @@
 
 <div class="planification-container">
     <!-- En-tête -->
-    <div class="planification-header d-flex justify-content-between align-items-center mb-4">
+    <div class="planification-header d-flex justify-content-between align-items-center mb-4 p-4" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(40, 167, 69, 0.2);">
         <div>
-            <h5 class="mb-0">
-                <i class="bi bi-calendar-week text-success"></i>
-                Suivi des cultures
-            </h5>
+            <h4 class="mb-0 fw-bold" style="color: #1b4332;">
+                <i class="bi bi-columns-gap text-success me-2"></i>Suivi des cultures
+            </h4>
             <small class="text-muted">
                 {% if selected_figure %}
-                    Parcelle : <strong>{{ selected_figure.name }}</strong>
+                    Parcelle : <strong class="text-success">{{ selected_figure.name }}</strong>
                 {% else %}
                     Aucune parcelle sélectionnée
                 {% endif %}
             </small>
         </div>
-        <span class="badge bg-success rounded-pill">{{ cultures|length }} culture(s)</span>
+        <span class="badge bg-success rounded-pill px-3 py-2">{{ cultures|length }} culture(s)</span>
     </div>
-    <br>
 
-    <!-- Grille des cultures -->
+    <!-- BENTO GRID -->
     {% if cultures %}
-        <div class="row g-3">
+        <div class="bento-grid">
             {% for culture in cultures %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="card culture-card h-100 border-success">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="culture-info">
-                                    <div class="culture-emoji" style="font-size: 2rem; line-height: 1;">
-                                        {{ culture.emoji }}
-                                    </div>
-                                    <h6 class="card-title mt-2 mb-1">{{ culture.nom }}</h6>
-                                    <span class="badge
-                                        {% if culture.statut == 'Planté' or culture.statut == 'Prêt à récolter' or culture.statut == 'Fructification' %}bg-success
+                <!-- Logique de taille : Si c'est prêt ou presque prêt, la carte est plus grande -->
+                <div class="bento-item {% if culture.progression >= 85 or culture.date_recolte_prevue <= today %}bento-wide{% endif %}">
+                    <div class="bento-card">
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bento-emoji">{{ culture.emoji }}</div>
+                                <div>
+                                    <h5 class="mb-0 fw-bold">{{ culture.nom }}</h5>
+                                    {% if not selected_figure %}
+                                        <div class="small text-muted mt-1"><i class="bi bi-geo-alt-fill"></i> {{ culture.parcelle_nom }}</div>
+                                    {% endif %}
+                                    <span class="bento-badge
+                                        {% if culture.statut == 'Planté' or culture.statut == 'Prêt à récolter' or culture.statut == 'Fructification' %}bg-success text-white
                                         {% elif culture.statut == 'Semé' or culture.statut == 'Levée' %}bg-warning text-dark
-                                        {% elif culture.statut == 'Planifié' %}bg-info
-                                        {% else %}bg-secondary{% endif %} rounded-pill">
+                                        {% else %}bg-secondary text-white{% endif %}">
                                         {{ culture.statut }}
                                     </span>
                                 </div>
-                                <div class="text-end">
-                                    <span class="badge bg-info rounded-pill">
-                                        {{ culture.progression }}%
-                                    </span>
-                                </div>
+                            </div>
+                            <!-- Jauge circulaire (simulée avec du CSS) -->
+                            <div class="progress-circle" style="--percent: {{ culture.progression }};">
+                                <span>{{ culture.progression }}%</span>
+                            </div>
+                        </div>
+
+                        <!-- Détails -->
+                        <div class="bento-details mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted"><i class="bi bi-calendar-check"></i> Planté le</span>
+                                <strong>{% if culture.date_semis %}{{ culture.date_semis|date:"d/m/Y" }}{% else %}-{% endif %}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted"><i class="bi bi-basket"></i> Récolte prévue</span>
+                                <strong class="{% if culture.date_recolte_prevue <= today %}text-danger{% endif %}">
+                                    {% if culture.date_recolte_prevue %}{{ culture.date_recolte_prevue|date:"d/m/Y" }}{% else %}-{% endif %}
+                                </strong>
                             </div>
 
-                            <!-- Barre de progression -->
-                            <div class="progress mt-2" style="height: 6px;">
-                                <div class="progress-bar
-                                            {% if culture.progression >= 85 %}bg-success
-                                            {% elif culture.progression >= 60 %}bg-info
-                                            {% elif culture.progression >= 30 %}bg-warning
-                                            {% else %}bg-secondary{% endif %}"
-                                     style="width: {{ culture.progression }}%;
-                                            border-radius: 10px;">
-                                </div>
+                            {% if culture.date_recolte_prevue <= today %}
+                            <div class="mt-3 text-center">
+                                <span class="badge bg-danger w-100 py-2" style="font-size: 0.9rem;">⚠️ Prête à être récoltée !</span>
                             </div>
-
-                            <!-- Détails -->
-                            <hr class="my-2">
-                            <div class="culture-details small">
-                                <div class="row g-1">
-                                    <div class="col-6">
-                                        <span class="text-muted">🌱 Semis</span>
-                                        <div>
-                                            {% if culture.date_semis %}
-                                                {{ culture.date_semis|date:"d/m/Y" }}
-                                            {% else %}
-                                                <span class="text-muted">Non défini</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted">🌿 Plantation</span>
-                                        <div>
-                                            {% if culture.date_plantation %}
-                                                {{ culture.date_plantation|date:"d/m/Y" }}
-                                            {% else %}
-                                                <span class="text-muted">Non défini</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-1 mt-1">
-                                    <div class="col-6">
-                                        <span class="text-muted">🌾 Récolte</span>
-                                        <div>
-                                            {% if culture.date_recolte_prevue %}
-                                                {{ culture.date_recolte_prevue|date:"d/m/Y" }}
-                                                {% if culture.date_recolte_prevue < today %}
-                                                    <span class="badge bg-danger">⚠️ Prête !</span>
-                                                {% endif %}
-                                            {% else %}
-                                                <span class="text-muted">Non défini</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted">⏳ Jours en terre</span>
-                                        <div><strong>{{ culture.jours_pousse }} jours</strong></div>
-                                    </div>
-                                </div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -112,18 +73,13 @@
         </div>
     {% else %}
         <!-- Message si aucune culture -->
-        <div class="text-center py-5">
-            <div style="font-size: 4rem;">🌾</div>
-            <h5 class="mt-3">Aucune culture plantée sur cette parcelle</h5>
-            <p class="text-muted">
-                Commencez par planter des cultures depuis l'onglet
-                <a href="#" class="text-success" onclick="switchTab('calendrier')">Calendrier</a>
-                ou depuis
-                <a href="#" class="text-success" onclick="switchTab('mes-semis')">Mes semis</a>
-            </p>
+        <div class="text-center py-5 bento-empty">
+            <div style="font-size: 5rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));">🌾</div>
+            <h4 class="mt-4 fw-bold text-muted">Votre parcelle attend ses premières graines</h4>
+            <p class="text-muted mb-4">Commencez par planter des cultures pour voir leur progression ici.</p>
             {% if selected_figure %}
-                <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="btn btn-success">
-                    <i class="bi bi-plus-circle"></i> Ajouter une culture
+                <a href="{% url 'vegetables_fruits:edit_figure' selected_figure.id %}" class="btn btn-success btn-lg px-5 rounded-pill shadow-sm">
+                    <i class="bi bi-plus-circle me-2"></i> Ajouter une culture
                 </a>
             {% endif %}
         </div>
@@ -131,54 +87,103 @@
 </div>
 
 <style>
-    .planification-container {
-        padding: 5px 0;
+    /* =========================================
+       BENTO GRID CSS
+       ========================================= */
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
     }
 
-    .planification-header {
-        background: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        border: 1px solid #e9ecef;
+    .bento-item {
+        transition: transform 0.2s ease;
     }
 
-    .culture-card {
-        border: 1px solid #28a745 !important;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        background: #f8fff8;
-    }
-
-    .culture-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    }
-
-    .culture-emoji {
-        font-size: 2rem;
-        line-height: 1;
-    }
-
-    .culture-details span.text-muted {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-</style>
-
-<script>
-    function switchTab(tabName) {
-        const tabMap = {
-            'calendrier': 'calendrier-tab',
-            'mes-semis': 'mes-semis-tab'
-        };
-
-        const tabId = tabMap[tabName];
-        if (tabId) {
-            const tab = document.getElementById(tabId);
-            if (tab) {
-                tab.click();
-            }
+    /* La carte "Wide" prend deux colonnes sur les grands écrans */
+    @media (min-width: 768px) {
+        .bento-wide {
+            grid-column: span 2;
         }
     }
-</script>
+
+    .bento-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 20px;
+        height: 100%;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .bento-card:hover {
+        box-shadow: 0 10px 30px rgba(40, 167, 69, 0.1);
+        border-color: #c3e6cb;
+        transform: translateY(-3px);
+    }
+
+    .bento-emoji {
+        font-size: 2.5rem;
+        background: #f8f9fa;
+        border-radius: 16px;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .bento-badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 5px;
+    }
+
+    .bento-details {
+        background: #fcfcfc;
+        border-radius: 16px;
+        padding: 15px;
+        border: 1px solid #f0f0f0;
+    }
+
+    /* Jauge circulaire CSS pur */
+    .progress-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: conic-gradient(#28a745 calc(var(--percent) * 1%), #e9ecef 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .progress-circle::before {
+        content: "";
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .progress-circle span {
+        position: relative;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #28a745;
+    }
+
+    .bento-empty {
+        background: radial-gradient(circle, #f8fff8 0%, #ffffff 100%);
+        border-radius: 24px;
+        border: 2px dashed #c3e6cb;
+    }
+</style>

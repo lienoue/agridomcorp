@@ -14258,8 +14258,22 @@ def cultures_tabs(request, tab_name):
 
         # Construction du calendrier
         cal = calendar.monthcalendar(year, month)
-        mois_nom = calendar.month_name[month]
+        MOIS_FR = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre',
+                   'Novembre', 'Décembre']
+        mois_nom = MOIS_FR[month]
         jours_semaine = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+
+        afficher_region = True
+        if not selected_figure:
+            # On récupère la région de toutes les parcelles de l'utilisateur
+            parcelles_user = GeometricFigure.objects.filter(user=user, adresse_lat__isnull=False)
+            regions_detectees = set()
+            for p in parcelles_user:
+                r_info = get_region_utilisateur(user, p)
+                regions_detectees.add(r_info.get('region'))
+
+            if len(regions_detectees) > 1:
+                afficher_region = False  # Régions multiples, on n'affiche pas
 
         context = {
             'evenements': evenements,
@@ -14277,6 +14291,7 @@ def cultures_tabs(request, tab_name):
             'saison': saison,
             'conseils_par_mois': conseils_par_mois,
             'mois_actuel': today.month,
+            'afficher_region': afficher_region,
         }
         return render(request, 'vegetables_fruits/tabs/calendrier_tab.html', context)
 
@@ -14300,42 +14315,49 @@ def cultures_tabs(request, tab_name):
 
     # 🔹 Onglet "planification"
     elif tab_name == 'planification':
-        from datetime import date, timedelta
+        from datetime import date
         from .models import CalendrierUser, ChronologieCulture
 
         parcelle_id = request.GET.get('parcelle_id')
         selected_figure = None
 
+        # ✅ Si une parcelle spécifique est choisie
         if parcelle_id:
             try:
                 selected_figure = GeometricFigure.objects.get(id=parcelle_id, user=user)
+                figures_a_traiter = [selected_figure]
             except GeometricFigure.DoesNotExist:
                 pass
 
+        # ✅ Si "Toutes les parcelles" est sélectionné
         if not selected_figure:
-            selected_figure = GeometricFigure.objects.filter(user=user).first()
+            figures_a_traiter = GeometricFigure.objects.filter(user=user)
 
         cultures_parcelle = []
         today = date.today()
 
-        if selected_figure and selected_figure.crops:
-            for crop in selected_figure.crops:
+        # On boucle sur la ou les parcelles
+        for figure in figures_a_traiter:
+            if not figure.crops:
+                continue
+
+            for crop in figure.crops:
                 nom_culture = crop.get('name') or crop.get('nom')
                 if not nom_culture:
                     continue
 
                 culture_obj = Culture.objects.filter(nom__icontains=nom_culture).first()
 
-                # ✅ Récupérer les dates depuis CalendrierUser
+                # ✅ Récupérer les dates depuis CalendrierUser POUR CETTE PARCELLE
                 calendrier = CalendrierUser.objects.filter(
                     utilisateur=user,
-                    figure=selected_figure,
+                    figure=figure,
                     culture__icontains=nom_culture
                 ).first()
 
-                # ✅ Récupérer la chronologie si elle existe
+                # ✅ Récupérer la chronologie POUR CETTE PARCELLE
                 chrono = ChronologieCulture.objects.filter(
-                    figure=selected_figure,
+                    figure=figure,
                     culture_nom__icontains=nom_culture,
                     statut__in=['seme', 'levee', 'croissance', 'floraison', 'fructification', 'pret']
                 ).first()
@@ -14375,23 +14397,24 @@ def cultures_tabs(request, tab_name):
                     progression = 0
                     statut = 'Non planifié'
 
-                # ✅ Construire culture_data
+                # ✅ Construire culture_data (avec le nom de la parcelle !)
                 culture_data = {
                     'nom': culture_obj.nom if culture_obj else nom_culture,
                     'emoji': crop.get('emoji', '🌱'),
                     'statut': statut,
-                    'jours_pousse': calc['duree_jours'] if calc else None,  # ← injecté depuis calc
-                    'type_cycle': calc['type_cycle'] if calc else None,  # ← bonus informatif
+                    'jours_pousse': calc['duree_jours'] if calc else None,
+                    'type_cycle': calc['type_cycle'] if calc else None,
                     'date_semis': date_semis,
                     'date_plantation': date_plantation,
                     'date_recolte_prevue': date_recolte_prevue,
                     'progression': progression,
+                    'parcelle_nom': figure.name,  # ✅ NOUVEAU : Le nom de la parcelle
                 }
                 cultures_parcelle.append(culture_data)
 
         context = {
             'cultures': cultures_parcelle,
-            'selected_figure': selected_figure,
+            'selected_figure': selected_figure,  # Sera None si "Toutes les parcelles"
             'has_cultures': len(cultures_parcelle) > 0,
             'today': today,
         }

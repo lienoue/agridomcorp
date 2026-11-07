@@ -2,94 +2,271 @@
 {% load culture_filters %}
 
 <div class="mes-semis-tab">
-    <h4 style="color: #2d6a4f; margin-bottom: 15px;">🌱 Mes semis et plantations</h4>
-    <p class="text-muted">Retrouvez toutes vos cultures planifiées.</p>
+    <!-- En-tête épuré -->
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h3 class="fw-bold mb-1" style="color: #1b4332; letter-spacing: -1px;">Mon Jardin</h3>
+            <p class="text-muted mb-0">Toutes vos graines et plantations, au même endroit.</p>
+        </div>
+        <a href="{% url 'vegetables_fruits:planification_semis' %}" class="btn btn-outline-success rounded-pill px-4" style="font-weight: 600;">
+            + Nouveau
+        </a>
+    </div>
 
     {% if selected_figure %}
-    <div class="alert alert-info" style="padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">
-        🌾 Parcelle sélectionnée : <strong>{{ selected_figure.name }}</strong>
+    <div class="alert d-flex align-items-center mb-4 rounded-4" style="background: #e8f5e9; border: 1px solid #c3e6cb; color: #155724;">
+        <i class="bi bi-geo-alt-fill fs-4 me-3"></i>
+        <div>Vous regardez la parcelle : <strong>{{ selected_figure.name }}</strong></div>
     </div>
     {% endif %}
 
     {% if semis %}
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>🌱 Culture</th>
-                    <th>📅 Date</th>
-                    <th>📍 Parcelle</th>
-                    <th>📋 Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for semis_item in semis %}
-                <tr>
-                    <td>
-                        <!-- ✅ MODIFIER L'ICÔNE ET LE NOM -->
-                        {% if semis_item.culture|est_arbre %}
-                            <span style="font-size: 1.2rem;">🌳</span>
-                            <strong>{{ semis_item.culture }}</strong>
-                            <span class="badge bg-success" style="font-size: 0.7rem;">Plantation</span>
-                        {% else %}
-                            <span style="font-size: 1.2rem;">🌱</span>
-                            <strong>{{ semis_item.culture }}</strong>
-                            <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">Semis</span>
-                        {% endif %}
-                    </td>
+    <!-- Grille Masonry / Bento -->
+    <div class="semis-masonry">
+        {% for semis_item in semis %}
 
-                    <!-- ✅ MODIFIER LA DATE (le champ en base s'appelle toujours date_semis) -->
-                    <td>
+        <!-- La carte change de style selon si c'est un arbre ou un semis -->
+        <div class="semis-card {% if semis_item.culture|est_arbre %}card-tree{% else %}card-seed{% endif %}">
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="semis-icon">
+                    {% if semis_item.culture|est_arbre %}🌳{% else %}🌱{% endif %}
+                </div>
+                <div class="text-end">
+                    <span class="semis-type">
+                        {% if semis_item.culture|est_arbre %}PLANTATION{% else %}SEMIS{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <h4 class="semis-title">{{ semis_item.culture }}</h4>
+
+            <div class="semis-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Date</span>
+                    <span class="meta-value">
                         {% if semis_item.date_semis %}
-                            {{ semis_item.date_semis|date:"d/m/Y" }}
+                            {{ semis_item.date_semis|date:"d M Y" }}
                         {% elif semis_item.date_plantation %}
-                            {{ semis_item.date_plantation|date:"d/m/Y" }}
+                            {{ semis_item.date_plantation|date:"d M Y" }}
                         {% else %}
                             -
                         {% endif %}
-                    </td>
-
-                    <td>
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Parcelle</span>
+                    <span class="meta-value">
                         {% if semis_item.figure %}
-                        <a href="{% url 'vegetables_fruits:figure_detail' semis_item.figure.id %}" style="color: #2d6a4f;">
-                            {{ semis_item.figure.name }}
-                        </a>
-                        {% else %}
-                        <span class="text-muted">Non spécifié</span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                            <a href="{% url 'vegetables_fruits:edit_figure' semis_item.figure.id %}?culture={{ semis_item.culture }}"
-                               class="btn btn-sm btn-outline-success">
-                                ✏️ Modifier
+                            <a href="{% url 'vegetables_fruits:figure_detail' semis_item.figure.id %}" class="parcelle-link">
+                                <span class="dot"></span> {{ semis_item.figure.name }}
                             </a>
-                            <button onclick="supprimerSemis({{ semis_item.id }})"
-                                    class="btn btn-sm btn-outline-danger">
-                                🗑️ Supprimer
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Actions flottantes au survol -->
+            <div class="semis-actions">
+                <a href="{% url 'vegetables_fruits:edit_figure' semis_item.figure.id %}?culture={{ semis_item.culture }}" class="action-btn edit-btn" title="Modifier">
+                    <i class="bi bi-pencil-fill"></i>
+                </a>
+                <button onclick="supprimerSemis({{ semis_item.id }})" class="action-btn delete-btn" title="Supprimer">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
     </div>
     {% else %}
-    <div style="text-align:center; padding: 40px; color:#6c757d;">
-        <span style="font-size: 2rem;">🌱</span>
-        <p>Vous n'avez pas encore de semis planifiés.</p>
-        <a href="{% url 'vegetables_fruits:planification_semis' %}" class="btn btn-success btn-sm">
-            📋 Planifier un semis
+    <!-- État vide -->
+    <div class="text-center py-5 empty-state">
+        <div class="empty-icon">🪴</div>
+        <h5 class="mt-4 fw-bold">Votre jardin est encore vierge</h5>
+        <p class="text-muted">Planifiez vos premières cultures pour les voir apparaître ici.</p>
+        <a href="{% url 'vegetables_fruits:planification_semis' %}" class="btn btn-success rounded-pill px-5 mt-3">
+            Commencer à planter
         </a>
     </div>
     {% endif %}
 </div>
 
+<style>
+    /* =========================================
+       LE DESIGN ORGANIQUE / BENTO
+       ========================================= */
+    .semis-masonry {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .semis-card {
+        border-radius: 24px;
+        padding: 25px;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Style pour les Semis (Légumes, fleurs) */
+    .card-seed {
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    /* Style pour les Plantations (Arbres) - Un peu plus "boisé" */
+    .card-tree {
+        background: linear-gradient(135deg, #f4f9f4 0%, #ffffff 100%);
+        border: 1px solid #c3e6cb;
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.08);
+    }
+
+    .semis-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(40, 167, 69, 0.15);
+        z-index: 10;
+    }
+
+    .semis-icon {
+        font-size: 2.5rem;
+        background: #f8f9fa;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    .semis-type {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #6c757d;
+        background: #f1f3f5;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .card-tree .semis-type {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .semis-title {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #212529;
+        margin-bottom: 20px;
+    }
+
+    .semis-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .meta-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed #e9ecef;
+        padding-bottom: 8px;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #adb5bd;
+        font-weight: 600;
+    }
+
+    .meta-value {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .parcelle-link {
+        color: #28a745;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .parcelle-link .dot {
+        width: 8px;
+        height: 8px;
+        background: #28a745;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* Actions (apparaissent au survol) */
+    .semis-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
+
+    .semis-card:hover .semis-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .action-btn {
+        flex: 1;
+        text-align: center;
+        padding: 8px;
+        border-radius: 12px;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+    }
+
+    .edit-btn {
+        background: #e8f5e9;
+        color: #28a745;
+    }
+    .edit-btn:hover { background: #c3e6cb; }
+
+    .delete-btn {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+    .delete-btn:hover { background: #f5c6cb; }
+
+    /* État vide */
+    .empty-state {
+        background: #f8f9fa;
+        border-radius: 30px;
+        border: 2px dashed #dee2e6;
+    }
+    .empty-icon {
+        font-size: 5rem;
+        opacity: 0.8;
+    }
+</style>
+
 <script>
 function supprimerSemis(semisId) {
-    if (confirm("Supprimer ce semis ?")) {
+    if (confirm("Voulez-vous vraiment supprimer ce semis de votre journal ?")) {
         fetch(`/api/supprimer-semis/${semisId}/`, {
             method: 'DELETE',
             headers: {
@@ -106,7 +283,7 @@ function supprimerSemis(semisId) {
         })
         .catch(error => {
             console.error('Erreur:', error);
-            alert("Erreur lors de la suppression");
+            alert("Erreur de communication");
         });
     }
 }
