@@ -57,6 +57,10 @@ urlpatterns = [
     path('password-reset/complete/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
 
+    # ✅ SEO : Fiches publiques
+    path('culture/<str:nom_culture>/', views.fiche_culture_publique, name='fiche_culture_publique'),
+
+
     # Profil
     path('profile/', views.profile, name='profile'),
     path('mes-donnees/', views.exporter_mes_donnees, name='exporter_mes_donnees'),

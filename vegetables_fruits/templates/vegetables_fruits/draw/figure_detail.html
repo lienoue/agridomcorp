@@ -283,6 +283,13 @@
                         <span class="crop-badge">{% if crop.details.type == 'fruit' %}🍎{% else %}🥕{% endif %}</span>
                         <div class="crop-emoji">{{ crop.emoji }}</div>
                         <div class="crop-name">{{ crop.name }}</div>
+                        <!-- ✅ Nouveau bouton pour la fiche publique -->
+                        <a href="{% url 'vegetables_fruits:fiche_culture_publique' crop.name|slugify %}"
+                           class="btn btn-sm btn-outline-primary w-100 mt-2"
+                           style="font-size: 0.75rem; border-radius: 8px; padding: 4px;"
+                           target="_blank">
+                            🌍 Fiche publique
+                        </a>
                         <div class="crop-size">
                             {% if crop.details.hauteur %}📏 {{ crop.details.hauteur }}<br>{% endif %}
                             {% if crop.details.espacement %}🌱 {{ crop.details.espacement }}{% endif %}
@@ -882,6 +889,10 @@
             card.addEventListener('click', function(e) {
                 // Ne pas déclencher si on a cliqué sur le bouton "Conseils"
                 if (e.target.closest('button')) return;
+
+                if (e.target.closest('a')) {
+                    return;
+                }
 
                 e.stopPropagation();
                 const cropName = this.querySelector('.crop-name').innerText;

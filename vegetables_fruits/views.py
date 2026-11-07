@@ -18867,3 +18867,37 @@ def envoyer_notification_push(titre, message, user_ids=None):
         headers=headers
     )
     return response.json()
+
+
+def fiche_culture_publique(request, nom_culture):
+    """
+    Page publique d'une culture (accessible sans connexion).
+    Optimisée pour le SEO.
+    """
+    from urllib.parse import unquote
+    from django.http import Http404
+
+    # On décode le nom (ex: "pomme-de-terre" -> "Pomme de terre")
+    nom_propre = unquote(nom_culture).replace('-', ' ').capitalize()
+
+    # 1. Récupérer les infos via nos services existants
+    infos = get_conseils_culture(nom_propre)
+
+    # Si on ne trouve rien du tout (ni dans le dico, ni en base)
+    if not infos or infos.get('est_generique'):
+        raise Http404("Cette culture n'existe pas dans notre base.")
+
+    # 2. Chercher des variétés en base pour enrichir la page
+    from .models import Culture
+    varietes = []
+    culture_obj = Culture.objects.filter(nom__icontains=nom_propre).first()
+    if culture_obj:
+        varietes = culture_obj.varietes.all()[:6]
+
+    context = {
+        'nom_culture': nom_propre,
+        'infos': infos,
+        'varietes': varietes,
+    }
+
+    return render(request, 'public/fiche_culture.html', context)
