@@ -18876,28 +18876,57 @@ def fiche_culture_publique(request, nom_culture):
     """
     from urllib.parse import unquote
     from django.http import Http404
+    from .models import Culture, Fruit, Vegetable
+    from .data.cycles_cultures import get_cycle
 
-    # On décode le nom (ex: "pomme-de-terre" -> "Pomme de terre")
-    nom_propre = unquote(nom_culture).replace('-', ' ').capitalize()
+    # 1. Nettoyage du nom (ex: "peche" -> "Peche")
+    nom_propre = unquote(nom_culture).replace('-', ' ').strip()
 
-    # 1. Récupérer les infos via nos services existants
+    # 2. On vérifie si la culture existe quelque part (dans nos modèles ou dans le dico de cycles)
+    culture_obj = Culture.objects.filter(nom__iexact=nom_propre).first()
+    fruit_obj = Fruit.objects.filter(nom__iexact=nom_propre).first()
+    veg_obj = Vegetable.objects.filter(nom__iexact=nom_propre).first()
+    cycle = get_cycle(nom_propre)
+
+    # Si on ne trouve ABSOLUMENT RIEN, on renvoie une 404
+    if not (culture_obj or fruit_obj or veg_obj or cycle):
+        raise Http404(f"La culture '{nom_propre}' n'existe pas dans notre base.")
+
+    # 3. On récupère les infos (qui géreront les accents et les correspondances)
     infos = get_conseils_culture(nom_propre)
 
-    # Si on ne trouve rien du tout (ni dans le dico, ni en base)
-    if not infos or infos.get('est_generique'):
-        raise Http404("Cette culture n'existe pas dans notre base.")
+    # Si get_conseils_culture échoue mais qu'on a trouvé un objet en base, on lui donne un nom
+    if not infos:
+        nom_affiche = (culture_obj or fruit_obj or veg_obj).nom
+        infos = {'nom': nom_affiche, 'est_generique': True}
+    else:
+        nom_affiche = infos.get('nom', nom_propre)
 
-    # 2. Chercher des variétés en base pour enrichir la page
-    from .models import Culture
+    # 4. Chercher des variétés en base
     varietes = []
-    culture_obj = Culture.objects.filter(nom__icontains=nom_propre).first()
     if culture_obj:
         varietes = culture_obj.varietes.all()[:6]
+    elif fruit_obj:
+        varietes = fruit_obj.varietes_m2m.all()[:6]
+    elif veg_obj:
+        varietes = veg_obj.varietes_m2m.all()[:6]
+
+    # 5. Récupérer le bon emoji (priorité : celui de la culture en base, sinon celui du cycle)
+    emoji_culture = '🌱'
+    if fruit_obj and hasattr(fruit_obj, 'get_emoji'):
+        emoji_culture = fruit_obj.get_emoji()
+    elif veg_obj and hasattr(veg_obj, 'get_emoji'):
+        emoji_culture = veg_obj.get_emoji()
+    elif cycle and 'emoji' in cycle:
+        emoji_culture = cycle['emoji']
+    elif infos and 'emoji' in infos:
+        emoji_culture = infos['emoji']
 
     context = {
-        'nom_culture': nom_propre,
+        'nom_culture': nom_affiche,
         'infos': infos,
         'varietes': varietes,
+        'emoji_culture': emoji_culture,
     }
 
     return render(request, 'public/fiche_culture.html', context)
