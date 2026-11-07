@@ -812,7 +812,7 @@ class ChronologieCulture(models.Model):
             jours_total = (self.date_recolte_prevue - self.date_semis).days
             jours_ecoules = (aujourdhui - self.date_semis).days
             if jours_total > 0:
-                self.progression = min(95, max(1, int((jours_ecoules / jours_total) * 100)))
+                self.progression = min(95, max(0, int((jours_ecoules / jours_total) * 100)))
 
             # ✅ Logique des statuts
             if self.type_cycle == 'plantation':
