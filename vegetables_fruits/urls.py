@@ -1,6 +1,8 @@
 from django.urls import path, include
 from django.conf import settings
 from . import views
+from django.views.generic import TemplateView
+
 
 app_name = 'vegetables_fruits'
 
@@ -8,6 +10,10 @@ urlpatterns = [
     # =========================================================
     # ✅ NOUVELLES PAGES FUSIONNÉES
     # =========================================================
+    path('OneSignalSDKWorker.js', TemplateView.as_view(
+        template_name='OneSignalSDKWorker.js',
+        content_type='application/javascript'
+    ), name='onesignal_worker'),
 
     # 1. Page Cultures (3 onglets)
     path('cultures/', views.cultures, name='cultures'),

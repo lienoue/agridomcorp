@@ -18836,3 +18836,34 @@ def generer_image_partage(request, chrono_id):
     buffer.seek(0)
 
     return HttpResponse(buffer, content_type="image/png")
+
+
+def envoyer_notification_push(titre, message, user_ids=None):
+    """
+    Envoie une notification push via OneSignal.
+    Si user_ids est None, envoie à tous les abonnés.
+    """
+    headers = {
+        "Authorization": f"Basic {settings.ONESIGNAL_REST_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "app_id": settings.ONESIGNAL_APP_ID,
+        "headings": {"fr": titre},
+        "contents": {"fr": message},
+        "url": "https://ton-site.com/cultures/",  # Lien au clic
+    }
+
+    # Si on cible des utilisateurs précis (via leur External ID)
+    if user_ids:
+        payload["include_external_user_ids"] = [str(uid) for uid in user_ids]
+    else:
+        payload["included_segments"] = ["All"]  # Tous les abonnés
+
+    response = requests.post(
+        "https://onesignal.com/api/v1/notifications",
+        json=payload,
+        headers=headers
+    )
+    return response.json()

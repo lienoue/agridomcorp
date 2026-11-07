@@ -7,6 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}Agriculture 2.0 - Cultivez votre passion{% endblock %}</title>
 
+    <!-- ✅ ONESIGNAL SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "068ed7ee-15e7-4679-900f-aa65fe9f8cb1",
+          allowLocalhostAsSecureOrigin: true, // Autorise le test en local
+          notifyButton: {
+            enable: true, // Affiche la petite cloche en bas à droite
+          },
+        });
+
+        // ✅ Identifier l'utilisateur connecté auprès de OneSignal
+        {% if user.is_authenticated %}
+          await OneSignal.login("{{ user.id }}");
+        {% endif %}
+      });
+    </script>
+
     <!-- PWA -->
     <link rel="manifest" href="{% static 'vegetables_fruits/manifest.json' %}">
     <link rel="apple-touch-icon" href="{% static 'vegetables_fruits/images/AgridomCorp.png' %}">
