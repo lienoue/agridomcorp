@@ -592,6 +592,9 @@
                             <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Récolter ?')">🧺 Récolter</button>
                         </form>
                         {% endif %}
+                        <button onclick="partagerRecolte({{ chrono.id }}, '{{ chrono.culture_nom|escapejs }}')" class="btn btn-sm btn-outline-primary ms-2">
+                            📸 Partager
+                        </button>
                     </div>
                     <div class="timeline-culture">
                         {% for etape in chrono.get_etapes_timeline %}
@@ -968,6 +971,35 @@
             body.style.display = 'block';
             arrow.textContent = '▲';
             header.style.background = '#e8f5e9'; // Vert clair quand ouvert
+        }
+    }
+
+    async function partagerRecolte(chronoId, cultureNom) {
+        // 1. Vérifier si l'API Web Share est disponible (Mobile)
+        if (navigator.share) {
+            try {
+                // On récupère l'image générée par Django
+                const response = await fetch(`/partage/recolte/${chronoId}/`);
+                const blob = await response.blob();
+
+                // On crée un fichier à partager
+                const file = new File([blob], `recolte_${cultureNom}.png`, { type: 'image/png' });
+
+                // On lance le partage natif
+                await navigator.share({
+                    title: `Ma récolte de ${cultureNom} !`,
+                    text: `Je viens de récolter mes ${cultureNom} sur Agriculture 2.0 ! 🌱`,
+                    files: [file]
+                });
+            } catch (error) {
+                console.error('Erreur de partage:', error);
+                // Fallback : ouvrir l'image dans un nouvel onglet pour téléchargement manuel
+                window.open(`/partage/recolte/${chronoId}/`, '_blank');
+            }
+        } else {
+            // 2. Fallback pour PC (téléchargement de l'image)
+            window.open(`/partage/recolte/${chronoId}/`, '_blank');
+            alert("L'image a été générée ! Vous pouvez la télécharger et la partager sur vos réseaux.");
         }
     }
     // ==================== INITIALISATION ====================

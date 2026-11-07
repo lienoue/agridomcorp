@@ -18511,6 +18511,8 @@ def supprimer_mon_compte(request):
         )
         return redirect('vegetables_fruits:index')
 
+
+
     # ============================================================
     # 4. GET — Afficher la page de confirmation
     # ============================================================
@@ -18621,3 +18623,120 @@ def demander_devis_ecole(request):
 def entreprises_ecoles(request):
     """Page dédiée aux établissements scolaires et enseignants."""
     return render(request, 'vegetables_fruits/entreprises_ecoles.html')
+
+
+from PIL import Image, ImageDraw, ImageFont
+from django.http import HttpResponse
+import io
+import os
+from django.conf import settings
+
+
+@login_required
+def generer_image_partage(request, chrono_id):
+    chrono = get_object_or_404(ChronologieCulture, id=chrono_id, figure__user=request.user)
+
+    TAILLE = 1080
+    image = Image.new('RGB', (TAILLE, TAILLE), color='#f4f9f4')
+    draw = ImageDraw.Draw(image)
+
+    # Dégradé
+    for i in range(TAILLE):
+        ratio = i / TAILLE
+        r = int(244 - (244 - 200) * ratio)
+        g = int(249 - (249 - 230) * ratio)
+        b = int(244 - (244 - 210) * ratio)
+        draw.line([(0, i), (TAILLE, i)], fill=(r, g, b))
+
+    # ============================================================
+    # 1. CHARGEMENT DES POLICES (On le fait EN PREMIER !)
+    # ============================================================
+    try:
+        font_titre = ImageFont.truetype("arial.ttf", 80)
+        font_emoji = ImageFont.truetype("seguiemj.ttf", 250)
+        font_texte = ImageFont.truetype("arial.ttf", 50)
+        font_small = ImageFont.truetype("arial.ttf", 30)
+    except IOError:
+        font_titre = ImageFont.load_default()
+        font_emoji = ImageFont.load_default()
+        font_texte = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+
+    # ============================================================
+    # 2. AJOUT DU LOGO EN HAUT À GAUCHE
+    # ============================================================
+    logo_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'icons', 'AgriDomCorp.png')
+
+    if os.path.exists(logo_path):
+        try:
+            logo = Image.open(logo_path).convert("RGBA")
+            logo.thumbnail((100, 100), Image.LANCZOS)
+
+            # Transformation du fond blanc en transparence
+            datas = logo.getdata()
+            newData = []
+            for item in datas:
+                if item[0] > 240 and item[1] > 240 and item[2] > 240:
+                    newData.append((255, 255, 255, 0))
+                else:
+                    newData.append(item)
+            logo.putdata(newData)
+
+            image.paste(logo, (50, 40), logo)
+        except Exception as e:
+            print(f"❌ Erreur lors du chargement du logo : {e}")
+    else:
+        print(f"❌ Fichier logo introuvable au chemin : {logo_path}")
+
+    # Texte à côté du logo (Maintenant on peut l'utiliser !)
+    draw.text((170, 60), "Agriculture 2.0", fill="#28a745", font=font_texte)
+
+    # ============================================================
+    # 3. CONTENU CENTRAL
+    # ============================================================
+    emoji_text = chrono.culture_emoji or '🌱'
+    try:
+        bbox = draw.textbbox((0, 0), emoji_text, font=font_emoji)
+        emoji_w = bbox[2] - bbox[0]
+        draw.text(((TAILLE - emoji_w) / 2, 250), emoji_text, font=font_emoji)
+    except Exception:
+        draw.ellipse([(TAILLE / 2 - 100, 250), (TAILLE / 2 + 100, 450)], fill="#28a745")
+
+    # Titre
+    titre = chrono.culture_nom.upper()
+    bbox = draw.textbbox((0, 0), titre, font=font_titre)
+    titre_w = bbox[2] - bbox[0]
+    draw.text(((TAILLE - titre_w) / 2, 550), titre, fill="#1b4332", font=font_titre)
+
+    # Statut
+    statut_text = "Récolté avec succès !" if chrono.statut == 'recolte' else "Prêt à être récolté !"
+    bbox = draw.textbbox((0, 0), statut_text, font=font_texte)
+    statut_w = bbox[2] - bbox[0]
+    draw.text(((TAILLE - statut_w) / 2, 660), statut_text, fill="#495057", font=font_texte)
+
+    # Jours de patience
+    if chrono.date_semis and chrono.date_recolte_effective:
+        jours = (chrono.date_recolte_effective - chrono.date_semis).days
+    elif chrono.date_semis and chrono.date_recolte_prevue:
+        jours = (chrono.date_recolte_prevue - chrono.date_semis).days
+    else:
+        jours = 0
+
+    stats_text = f"Après {jours} jours de patience"
+    bbox = draw.textbbox((0, 0), stats_text, font=font_texte)
+    stats_w = bbox[2] - bbox[0]
+    draw.text(((TAILLE - stats_w) / 2, 730), stats_text, fill="#28a745", font=font_texte)
+
+    # Footer
+    date_str = chrono.date_recolte_effective.strftime(
+        "%d/%m/%Y") if chrono.date_recolte_effective else chrono.date_recolte_prevue.strftime("%d/%m/%Y")
+    footer = f"Parcelle: {chrono.figure.name} | {date_str}"
+    bbox = draw.textbbox((0, 0), footer, font=font_small)
+    footer_w = bbox[2] - bbox[0]
+    draw.text(((TAILLE - footer_w) / 2, 900), footer, fill="#6c757d", font=font_small)
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type="image/png")

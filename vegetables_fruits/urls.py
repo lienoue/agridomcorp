@@ -70,6 +70,7 @@ urlpatterns = [
     path('save-figure/', views.save_figure, name='save_figure'),
     path('save-terrain-figure/', views.save_terrain_figure, name='save_terrain_figure'),
     path('limite-parcelles/', views.limite_parcelles, name='limite_parcelles'),
+    path('partage/recolte/<int:chrono_id>/', views.generer_image_partage, name='generer_image_partage'),
 
     # Cultures
     path('recolter-culture/', views.recolter_culture, name='recolter_culture'),
