@@ -165,6 +165,7 @@ urlpatterns = [
     path('abonnement/reactiver/', views.reactiver_abonnement, name='reactiver_abonnement'),
     path('devis-ecole/', views.demander_devis_ecole, name='demander_devis_ecole'),
     path('ecoles/', views.entreprises_ecoles, name='entreprises_ecoles'),
+    path('utiliser-mois-offerts/', views.utiliser_mois_offerts, name='utiliser_mois_offerts'),
 
     # Gamification
     path('quiz/', views.quiz, name='quiz'),

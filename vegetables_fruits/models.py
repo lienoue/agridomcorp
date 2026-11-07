@@ -23,6 +23,28 @@ class CustomUser(AbstractUser):
     is_enseignant = models.BooleanField(default=False)
     essai_gratuit_utilise = models.BooleanField(default=False)
     stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
+    # ✅ NOUVEAUX CHAMPS POUR LE PARRAINAGE
+    code_parrainage = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    parrain = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='filleuls',
+        verbose_name="Parrainé par"
+    )
+
+    def save(self, *args, **kwargs):
+        # ✅ Générer automatiquement un code de parrainage unique à la création
+        if not self.code_parrainage:
+            import random
+            import string
+            # On prend les 4 premières lettres du pseudo + 4 chiffres
+            base_code = self.username[:4].upper() if self.username else "AGRI"
+            chiffres = ''.join(random.choices(string.digits, k=4))
+            self.code_parrainage = f"{base_code}{chiffres}"
+        super().save(*args, **kwargs)
+
     tutoriel_termine = models.BooleanField(default=False)
 
     # ✅ MODÉRATION FORUM
@@ -1230,6 +1252,7 @@ class Abonnement(models.Model):
     # Stripe
     stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
     stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    mois_premium_offerts = models.IntegerField(default=0, help_text="Mois de Premium offerts via parrainage")
 
     # Dates
     date_debut = models.DateTimeField(auto_now_add=True)

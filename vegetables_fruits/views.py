@@ -52,6 +52,24 @@ from .models import (
 )
 from .services_dates import calculer_date_recolte, est_perenne
 
+
+
+
+def peut_parrainer(user):
+    """
+    Vérifie si l'utilisateur a le droit de parrainer.
+    Il doit avoir un abonnement Basique, Premium ou Enseignant actif.
+    """
+    try:
+        abonnement = user.abonnement
+        if abonnement.est_actif and abonnement.plan.nom in ['BASIQUE', 'PREMIUM', 'ENSEIGNANT']:
+            return True
+    except Abonnement.DoesNotExist:
+        pass
+    return False
+
+
+
 # ✅ Mapping des départements/régions Mapbox vers les régions de la base
 REGION_MAPPING = {
     # ==================== FRANCE ====================
@@ -1817,6 +1835,23 @@ def creation_compte(request):
                         user.is_enseignant = True
                         messages.success(request,
                                          "✅ Bienvenue enseignant ! Vous pouvez maintenant créer des classes et gérer vos élèves.")
+
+                    # ✅ GESTION DU PARRAINAGE
+                    code_parrain_saisi = form.cleaned_data.get('code_parrain')
+                    if code_parrain_saisi:
+                        try:
+                            parrain = CustomUser.objects.get(code_parrainage=code_parrain_saisi.upper().strip())
+
+                            # ✅ NOUVEAU : On vérifie si le parrain a un abonnement payant
+                            if peut_parrainer(parrain):
+                                user.parrain = parrain
+                            else:
+                                messages.warning(request,
+                                                 "⚠️ Ce code de parrainage n'est pas valide (le parrain n'a pas d'abonnement actif).")
+
+                        except CustomUser.DoesNotExist:
+                            messages.warning(request,
+                                             "⚠️ Le code de parrainage est invalide, mais votre compte a été créé.")
 
                     user.save()
 
@@ -4400,15 +4435,12 @@ def stripe_portal(request):
 def stripe_webhook(request):
     """
     Webhook Stripe : reçoit les événements de paiement.
-
-    ⚠️ IMPORTANT : les objets Stripe (metadata, invoice, etc.) ne supportent PAS
-    la méthode .get() comme les dictionnaires Python. Il faut convertir en dict()
-    ou utiliser la syntaxe obj['key'] avec vérification 'in'.
     """
     import stripe
     from django.conf import settings
-    from .models import Abonnement, PlanTarification, CustomUser
+    from .models import Abonnement, PlanTarification, CustomUser, Facture
     from django.utils import timezone
+    from datetime import datetime
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -4435,7 +4467,6 @@ def stripe_webhook(request):
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
 
-        # ✅ Convertir les metadata Stripe en dict Python
         if session.metadata:
             try:
                 metadata = session.metadata.to_dict()
@@ -4456,7 +4487,6 @@ def stripe_webhook(request):
             user = CustomUser.objects.get(id=user_id)
             plan = PlanTarification.objects.get(id=plan_id)
 
-            # ✅ ÉTAPE 1 : Récupérer ou créer l'abonnement (OneToOneField)
             abonnement, created = Abonnement.objects.get_or_create(
                 utilisateur=user,
                 defaults={
@@ -4470,7 +4500,6 @@ def stripe_webhook(request):
             )
 
             if not created:
-                # ✅ Mise à jour de l'abonnement existant
                 abonnement.plan = plan
                 abonnement.statut = 'ACTIF'
                 abonnement.frequence = frequence
@@ -4483,7 +4512,6 @@ def stripe_webhook(request):
             else:
                 logger.info(f" ✅ Abo {plan.nom} créé pour {user.username}")
 
-            # ✅ ÉTAPE 2 : Log si autorisation parentale utilisée
             if 'autorisation_id' in metadata:
                 logger.debug(f" 🔒 Autorisation parentale utilisée (id={metadata['autorisation_id']})")
 
@@ -4495,12 +4523,10 @@ def stripe_webhook(request):
             return HttpResponse(status=500)
 
     # ============================================================
-    # ✅ ÉVÉNEMENT : Facture payée
+    # ✅ ÉVÉNEMENT : Facture payée (GESTION DU PARRAINAGE ICI)
     # ============================================================
     elif event['type'] == 'invoice.paid':
         invoice = event['data']['object']
-
-        # ✅ Récupérer le subscription_id en toute sécurité
         subscription_id = invoice['subscription'] if 'subscription' in invoice else None
 
         if subscription_id:
@@ -4509,7 +4535,43 @@ def stripe_webhook(request):
                 abonnement.date_prochain_paiement = timezone.now() + timezone.timedelta(days=30)
                 abonnement.statut = 'ACTIF'
                 abonnement.save()
-                logger.info(f" 💰 Facture payée pour {abonnement.utilisateur.username}")
+
+                utilisateur = abonnement.utilisateur
+
+                # ------------------------------------------------------------
+                # ✅ LOGIQUE DE PARRAINAGE
+                # ------------------------------------------------------------
+                # On vérifie si c'est le tout premier paiement (aucune facture payée avant)
+                est_premier_paiement = not Facture.objects.filter(
+                    utilisateur=utilisateur,
+                    statut='PAYEE'
+                ).exists()
+
+                if est_premier_paiement and utilisateur.parrain:
+                    parrain = utilisateur.parrain
+
+                    # On crédite le parrain de 1 mois
+                    abonnement_parrain, _ = Abonnement.objects.get_or_create(utilisateur=parrain)
+                    abonnement_parrain.mois_premium_offerts += 1
+                    abonnement_parrain.save()
+
+                    logger.info(
+                        f" 🎁 PARRAINAGE : {parrain.username} a gagné 1 mois Premium grâce à {utilisateur.username} !")
+
+                # ✅ Enregistrement de la facture en base (indispensable pour le calcul du "premier paiement")
+                Facture.objects.update_or_create(
+                    stripe_invoice_id=invoice['id'],
+                    defaults={
+                        'utilisateur': utilisateur,
+                        'abonnement': abonnement,
+                        'montant_ht': invoice['subtotal'] / 100,
+                        'montant_ttc': invoice['total'] / 100,
+                        'statut': 'PAYEE',
+                        'date_paiement': timezone.now(),
+                    }
+                )
+                logger.info(f" 💰 Facture payée et enregistrée pour {utilisateur.username}")
+
             except Abonnement.DoesNotExist:
                 logger.warning(f" ⚠️ Abonnement {subscription_id} introuvable")
         else:
@@ -4572,11 +4634,9 @@ def stripe_webhook(request):
         subscription = event['data']['object']
         subscription_id = subscription['id'] if 'id' in subscription else None
         statut_stripe = subscription['status'] if 'status' in subscription else None
-        # ✅ Nouvelle API Stripe : cancel_at + canceled_at
         cancel_at = subscription['cancel_at'] if 'cancel_at' in subscription else None
         canceled_at = subscription['canceled_at'] if 'canceled_at' in subscription else None
 
-        # ✅ Récupérer current_period_end depuis items (nouvelle API)
         current_period_end = None
         if 'items' in subscription and 'data' in subscription['items']:
             items_data = subscription['items']['data']
@@ -4585,13 +4645,10 @@ def stripe_webhook(request):
                 if 'current_period_end' in first_item:
                     current_period_end = first_item['current_period_end']
 
-        # ✅ Détecter la résiliation programmée
-        # Elle est active si cancel_at est défini ET canceled_at est défini
         if cancel_at and canceled_at:
             resiliation_programmee = True
             date_fin_prevue_ts = cancel_at
         elif cancel_at and not canceled_at:
-            # cancel_at seul = programmée plus tard
             resiliation_programmee = True
             date_fin_prevue_ts = cancel_at
         else:
@@ -4602,7 +4659,6 @@ def stripe_webhook(request):
             try:
                 abonnement = Abonnement.objects.get(stripe_subscription_id=subscription_id)
 
-                # ✅ Statut
                 if statut_stripe == 'active':
                     abonnement.statut = 'ACTIF'
                 elif statut_stripe == 'past_due':
@@ -4618,7 +4674,6 @@ def stripe_webhook(request):
                     abonnement.statut = 'ANNULE'
                     abonnement.date_fin = timezone.now()
 
-                # ✅ Résiliation programmée
                 abonnement.resiliation_programmee = resiliation_programmee
 
                 if resiliation_programmee and date_fin_prevue_ts:
@@ -4639,7 +4694,6 @@ def stripe_webhook(request):
     # ============================================================
     return HttpResponse(status=200)
 
-
 def _handle_checkout_completed(session):
     """Traite une session de paiement complétée"""
     user_id = session.get('metadata', {}).get('user_id')
@@ -4649,6 +4703,48 @@ def _handle_checkout_completed(session):
             _activer_abonnement_depuis_session(user, session)
         except CustomUser.DoesNotExist:
             pass
+
+
+@login_required
+def utiliser_mois_offerts(request):
+    """Permet d'utiliser 1 mois de Premium offert via parrainage."""
+    try:
+        abonnement = request.user.abonnement
+    except Abonnement.DoesNotExist:
+        # Si l'utilisateur n'a pas d'abonnement en cours, on lui crée un abonnement Premium
+        plan_premium = PlanTarification.objects.filter(nom='PREMIUM').first()
+        if not plan_premium:
+            messages.error(request, "Erreur : Le plan Premium est introuvable.")
+            return redirect('vegetables_fruits:profile')
+
+        abonnement, created = Abonnement.objects.get_or_create(
+            utilisateur=request.user,
+            defaults={'plan': plan_premium, 'statut': 'ACTIF', 'frequence': 'MENSUEL'}
+        )
+
+    # Vérifier qu'il a bien des mois offerts
+    if abonnement.mois_premium_offerts > 0:
+        # On déduit 1 mois
+        abonnement.mois_premium_offerts -= 1
+
+        # On prolonge la date de fin (si elle existe) ou on la crée
+        from datetime import timedelta
+        from django.utils import timezone
+
+        if abonnement.date_fin:
+            abonnement.date_fin += timedelta(days=30)
+        else:
+            abonnement.date_fin = timezone.now() + timedelta(days=30)
+
+        abonnement.statut = 'ACTIF'
+        abonnement.save()
+
+        messages.success(request, "✨ Vous avez utilisé 1 mois de Premium offert !")
+    else:
+        messages.warning(request, "Vous n'avez pas de mois offert en attente.")
+
+    return redirect('vegetables_fruits:profile')
+
 
 
 def _handle_invoice_paid(invoice):

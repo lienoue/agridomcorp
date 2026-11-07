@@ -42,6 +42,13 @@ class CustomUserCreationForm(UserCreationForm):
         })
     )
 
+    code_parrain = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Code de parrainage (optionnel)",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: KAMD1234'})
+    )
+
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'bio', 'location', 'birth_date', 'is_enseignant')

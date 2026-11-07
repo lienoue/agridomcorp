@@ -32,7 +32,15 @@
                                     </label>
                                 </div>
                             {% else %}
-                                {{ field }}
+                                {# ✅ Rendu normal pour les autres champs, avec un style spécial pour le code parrain #}
+                                {% if field.name == 'code_parrain' %}
+                                    <div style="position: relative;">
+                                        {{ field }}
+                                        <span style="position: absolute; right: 15px; top: 12px; font-size: 1.2rem;">🎁</span>
+                                    </div>
+                                {% else %}
+                                    {{ field }}
+                                {% endif %}
                             {% endif %}
 
                             {% if field.help_text and field.name != 'est_dans_classe' %}
@@ -68,7 +76,7 @@
                     {% endif %}
                 {% endfor %}
 
-                <button type="submit" class="btn btn-signup" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(135deg, #ff6b35, #ffb347); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+                <button type="submit" class="btn btn-signup" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(135deg, #ff6b35, #ffb347); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px;">
                     🚀 S'inscrire
                 </button>
             </form>
@@ -106,6 +114,17 @@
         box-shadow: 0 0 0 3px rgba(64,145,108,0.2);
         outline: none;
         background: white;
+    }
+
+    /* ✅ Style spécifique pour le champ code_parrain */
+    #id_code_parrain {
+        border-color: #ffb347 !important;
+        background: #fffcf5 !important;
+        padding-right: 45px !important; /* Pour laisser la place à l'emoji */
+    }
+    #id_code_parrain:focus {
+        border-color: #ff6b35 !important;
+        box-shadow: 0 0 0 3px rgba(255,107,53,0.2) !important;
     }
 
     /* ✅ Style pour la checkbox */

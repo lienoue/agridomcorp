@@ -180,6 +180,67 @@
         </div>
     </div>
 
+    <!-- ===== SECTION PARRAINAGE ===== -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning" style="background: linear-gradient(135deg, #fffdf5, #ffffff);">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0 fw-bold">
+                        🎁 Invitez un ami
+                    </h5>
+                </div>
+                <div class="card-body text-center py-4">
+
+                    {# On vérifie si l'utilisateur a un abonnement payant actif #}
+                    {% if user.abonnement and user.abonnement.est_actif and user.abonnement.plan.nom != 'GRATUIT' %}
+
+                        <p class="text-muted mb-3">
+                            Partagez votre code. Dès que votre ami s'abonne, vous gagnez <strong>1 mois de Premium offert</strong> !
+                        </p>
+
+                        <!-- Affichage du code -->
+                        <div class="d-inline-flex align-items-center bg-white border border-warning rounded-pill px-4 py-2 mb-3 shadow-sm">
+                            <span class="fs-4 fw-bold text-dark me-3" id="monCodeParrainage">{{ user.code_parrainage }}</span>
+                            <button onclick="copierCode()" class="btn btn-warning btn-sm rounded-circle" style="width: 35px; height: 35px; padding: 0;" title="Copier">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+
+                        <div>
+                            <small class="text-muted d-block mb-2">
+                                <i class="bi bi-info-circle"></i>
+                                {% if user.abonnement.mois_premium_offerts > 0 %}
+                                    Vous avez <strong>{{ user.abonnement.mois_premium_offerts }} mois</strong> offert(s) en attente !
+                                {% else %}
+                                    Aucun mois offert pour l'instant.
+                                {% endif %}
+                            </small>
+
+                            {% if user.abonnement.mois_premium_offerts > 0 %}
+                                <a href="{% url 'vegetables_fruits:utiliser_mois_offerts' %}" class="btn btn-outline-success btn-sm mt-2">
+                                    ✨ Utiliser mes mois offerts
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    {% else %}
+
+                        <!-- Message pour les comptes gratuits -->
+                        <div style="font-size: 3rem;" class="mb-2">🔒</div>
+                        <h5 class="fw-bold">Réservé aux abonnés</h5>
+                        <p class="text-muted mb-4">
+                            Le programme de parrainage est un avantage exclusif pour les membres Premium.<br>
+                            Passez à un abonnement payant pour inviter vos amis et gagner des mois gratuits.
+                        </p>
+                        <a href="{% url 'vegetables_fruits:tarification' %}" class="btn btn-success px-4 rounded-pill">
+                            💎 Découvrir les offres
+                        </a>
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- ===== SECTION ABONNEMENT ===== -->
     <div class="row mt-2">
         <div class="col-12">
@@ -604,3 +665,24 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 {% endblock %}
+
+
+<script>
+    function copierCode() {
+        const code = document.getElementById('monCodeParrainage').innerText;
+        if (code && code !== "Génération...") {
+            navigator.clipboard.writeText(code).then(() => {
+                // Un petit effet visuel de succès
+                const btn = event.target.closest('button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                btn.classList.replace('btn-warning', 'btn-success');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.replace('btn-success', 'btn-warning');
+                }, 2000);
+            });
+        }
+    }
+</script>
