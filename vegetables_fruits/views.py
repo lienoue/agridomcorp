@@ -2888,6 +2888,10 @@ def figure_detail(request, figure_id):
         else:
             enriched = enrichir_culture_depuis_obj(crop, None, None)
 
+        # ✅ AJOUTER CES LIGNES :
+        from .services_dates import est_perenne
+        enriched['est_arbre'] = est_perenne(crop.get('name'))
+
         # ✅ Gère les détails
         if enriched.get('details'):
             enriched['details_json'] = json.dumps(enriched['details'], ensure_ascii=False)
@@ -2912,6 +2916,26 @@ def figure_detail(request, figure_id):
 
             # On ajoute la liste des conseils contextuels
             enriched['conseils']['conseils_contextuels'] = get_conseils_contextuels(climat, saison)
+
+        # ✅ Si c'est une variété (qui n'a pas de détails), on va chercher les infos de la culture parente
+        if enriched.get('details') is None:
+            from .models import Variete
+            # On cherche si le nom correspond à une variété en base
+            variete = Variete.objects.filter(nom__iexact=enriched.get('name')).select_related('culture').first()
+            if variete and variete.culture:
+                # On remplace le nom par celui de la culture parente pour la recherche des détails
+                nom_parent = variete.culture.nom
+
+                # On cherche l'objet Fruit ou Vegetable correspondant au parent
+                fruit_parent = Fruit.objects.filter(nom__iexact=nom_parent).first()
+                veg_parent = Vegetable.objects.filter(nom__iexact=nom_parent).first()
+
+                if fruit_parent:
+                    enriched['details'] = enrichir_culture_depuis_obj(crop, fruit_parent, 'fruit')['details']
+                    enriched['details_json'] = json.dumps(enriched['details'], ensure_ascii=False)
+                elif veg_parent:
+                    enriched['details'] = enrichir_culture_depuis_obj(crop, veg_parent, 'vegetable')['details']
+                    enriched['details_json'] = json.dumps(enriched['details'], ensure_ascii=False)
 
         enriched_crops.append(enriched)
 

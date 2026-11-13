@@ -702,6 +702,16 @@
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
+
+    // ✅ On prépare une liste des cultures qui sont des arbres depuis Django
+    const arbresCultures = [
+        {% for crop in enriched_crops %}
+            {% if crop.est_arbre %}
+                "{{ crop.name|escapejs }}",
+            {% endif %}
+        {% endfor %}
+    ];
+
     // ==================== ACCORDÉONS ====================
     function toggleAccordion(header) {
         const body = header.nextElementSibling;
@@ -907,25 +917,83 @@
     }
 
     function showCropAdvice(cropName, cropEmoji, details) {
-        let html = `<div style="text-align: center;"><div style="font-size: 4rem;">${cropEmoji}</div><h3 style="margin: 10px 0; color: #28a745;">${cropName}</h3>`;
-        if (details && Object.keys(details).length > 0) {
-            html += `<div class="advice-section" style="background: #f0f9f0;"><strong>🌱 Semis</strong><br>`;
-            if (details.semis_interieur) html += `🏠 Intérieur: ${details.semis_interieur}<br>`;
-            if (details.semis_exterieur) html += `🌳 Extérieur: ${details.semis_exterieur}<br>`;
-            if (details.jours_levée) html += `⏱️ Levée: ${details.jours_levée} jours<br>`;
-            html += `</div>`;
-        } else {
-            html += `<div class="advice-section"><p>Aucune info détaillée.</p></div>`;
+        // ✅ DÉTECTION AUTOMATIQUE : Si on a une profondeur de semis, c'est un semis. Sinon, si on a une hauteur, c'est un arbre.
+        let estArbre = false;
+        if (details) {
+            if (details.hauteur && !details.profondeur_semis) {
+                estArbre = true;
+            } else if (details.besoin_pollinisateur === true || details.pollinisation_type) {
+                estArbre = true;
+            }
         }
-        html += `<button onclick="this.closest('div').parentElement.remove(); this.closest('div').previousSibling.remove();" style="background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px;">Fermer</button></div>`;
 
+        const titreSection = estArbre ? '🌳 Plantation' : '🌱 Semis';
+
+        let html = `<div style="text-align: center;">
+                <div style="font-size: 4rem;">${cropEmoji}</div>
+                <h3 style="margin: 10px 0; color: #28a745;">${cropName}</h3>`;
+
+        if (details && Object.keys(details).length > 0) {
+
+            if (estArbre) {
+                // ✅ AFFICHAGE SPÉCIFIQUE POUR LES ARBRES
+                html += `<div class="advice-section" style="background: #f0f9f0; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; font-size: 0.9rem;">
+                            <strong style="display: block; margin-bottom: 10px; color: #155724;">🌳 Informations de plantation</strong>`;
+
+                if (details.hauteur || details.largeur) {
+                    html += `<div style="margin-bottom: 8px;">📏 <strong>Taille :</strong> ${details.hauteur || '?'} x ${details.largeur || '?'}</div>`;
+                }
+                if (details.espacement) {
+                    html += `<div style="margin-bottom: 8px;">🌱 <strong>Espacement :</strong> ${details.espacement}</div>`;
+                }
+                if (details.pollinisation_type) {
+                    html += `<div style="margin-bottom: 8px;">🐝 <strong>Pollinisation :</strong> ${details.pollinisation_type}</div>`;
+                }
+                if (details.besoin_pollinisateur === true) {
+                    html += `<div style="margin-bottom: 8px;">🤝 <strong>Pollinisateur requis :</strong> ${details.pollinisateurs_conseilles || 'Oui'}</div>`;
+                }
+                if (details.periode_floraison) {
+                    html += `<div style="margin-bottom: 8px;">🌸 <strong>Floraison :</strong> ${details.periode_floraison}</div>`;
+                }
+                if (details.recolte) {
+                    html += `<div style="margin-bottom: 8px;">🧺 <strong>Récolte :</strong> ${details.recolte}</div>`;
+                }
+
+                html += `</div>`;
+            } else {
+                // ✅ AFFICHAGE CLASSIQUE POUR LES SEMIS
+                html += `<div class="advice-section" style="background: #f0f9f0; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left;">
+                            <strong style="display: block; margin-bottom: 10px; color: #155724;">🌱 Informations de semis</strong>`;
+
+                if (details.semis_interieur) html += `<div style="margin-bottom: 5px;">🏠 <strong>Intérieur :</strong> ${details.semis_interieur}</div>`;
+                if (details.semis_exterieur) html += `<div style="margin-bottom: 5px;">🌳 <strong>Extérieur :</strong> ${details.semis_exterieur}</div>`;
+                if (details.jours_levée) html += `<div style="margin-bottom: 5px;">⏱️ <strong>Levée :</strong> ${details.jours_levée} jours</div>`;
+                if (details.profondeur_semis) html += `<div style="margin-bottom: 5px;">📏 <strong>Profondeur :</strong> ${details.profondeur_semis}</div>`;
+
+                html += `</div>`;
+            }
+        } else {
+            html += `<div class="advice-section" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px;"><p>Aucune information détaillée disponible.</p></div>`;
+        }
+
+        // 3. Bouton Fermer (avec les classes qu'on a ajoutées pour l'overlay)
+        html += `<div style="text-align: center; margin-top: 20px;">
+                    <button onclick="this.closest('.custom-popup').remove(); document.querySelector('.custom-overlay').remove();" style="background: #28a745; color: white; border: none; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold;">Fermer</button>
+                </div></div>`;
+
+        // 4. Création de l'overlay et de la popup
         const overlay = document.createElement('div');
+        overlay.className = 'custom-overlay';
         overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;';
+
         const popup = document.createElement('div');
+        popup.className = 'custom-popup';
         popup.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 15px; z-index: 1000; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;';
         popup.innerHTML = html;
+
         document.body.appendChild(overlay);
         document.body.appendChild(popup);
+
         overlay.onclick = function() { overlay.remove(); popup.remove(); };
     }
 
