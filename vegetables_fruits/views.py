@@ -5256,7 +5256,6 @@ def ajouter_fleur(request, figure_id):
         # ==================== FLEURS MÉDITERRANÉENNES (3) ====================
         {'nom': 'Ciste', 'emoji': '🌸'},
         {'nom': 'Lavande papillon', 'emoji': '💜'},
-        {'nom': 'Romarin', 'emoji': '🌿'},  # Déjà dans aromatiques
 
         # ==================== FLEURS TROPICALES & EXOTIQUES (12) ====================
         {'nom': 'Hibiscus', 'emoji': '🌺'},
@@ -5290,6 +5289,40 @@ def ajouter_fleur(request, figure_id):
         {'nom': 'Fève', 'emoji': '🌸'},
         {'nom': 'Aubergine', 'emoji': '🌸'},
         {'nom': 'Tomate', 'emoji': '🌸'},
+
+        # ==================== NOUVELLES FLEURS DU MONDE ====================
+        # Tempérées
+        {'nom': 'Camélia', 'emoji': '🌺'},
+        {'nom': 'Pieris', 'emoji': '🌸'},
+        {'nom': 'Digitale', 'emoji': '💜'},
+        {'nom': 'Myosotis', 'emoji': '💙'},
+        {'nom': 'Pensée', 'emoji': '🌸'},
+        {'nom': 'Glaïeul', 'emoji': '🌸'},
+
+        # Méditerranéennes
+        {'nom': 'Agapanthe', 'emoji': '💙'},
+
+        # Tropicales
+        {'nom': 'Duranta', 'emoji': '💜'},
+        {'nom': 'Croton', 'emoji': '🍂'},
+
+        # Désertiques
+        {'nom': 'Cactus', 'emoji': '🌵'},
+        {'nom': 'Agave', 'emoji': '🌵'},
+        {'nom': 'Aloe Vera', 'emoji': '🌿'},
+        {'nom': 'Figuier de Barbarie', 'emoji': '🌵'},
+        {'nom': 'Delosperma', 'emoji': '💜'},
+        {'nom': 'Gazania', 'emoji': '🌼'},
+        {'nom': 'Mesembryanthemum', 'emoji': '🌸'},
+
+        # Montagnardes / Continentales
+        {'nom': 'Edelweiss', 'emoji': '⭐'},
+        {'nom': 'Gentiane', 'emoji': '💙'},
+        {'nom': 'Rhododendron', 'emoji': '🌸'},
+        {'nom': 'Azalée', 'emoji': '🌸'},
+        {'nom': 'Ancolie', 'emoji': '💜'},
+        {'nom': 'Campanule', 'emoji': '💙'},
+        {'nom': 'Aster', 'emoji': '💜'},
     ]
 
     if request.method == 'POST':
@@ -5533,6 +5566,40 @@ def get_fleurs_suggerées(cultures, climat):
         'jasmin': ['Lavande', 'Romarin', 'Sauge'],
         'tournesol': ['Bourrache', 'Souci', 'Œillet d\'Inde'],
 
+        # ==================== NOUVELLES FLEURS DU MONDE ====================
+        # Cultures tempérées
+        'pommier': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia', 'Digitale'],
+        'poirier': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia'],
+        'cerisier': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia'],
+        'prunier': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia'],
+        'abricotier': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia'],
+        'pêcher': ['Camélia', 'Lilas', 'Pivoine', 'Buddleia'],
+
+        # Cultures méditerranéennes
+        'olivier': ['Ciste', 'Agapanthe', 'Bougainvillier', 'Lavande'],
+        'vigne': ['Ciste', 'Agapanthe', 'Bougainvillier'],
+
+        # Cultures tropicales
+        'manguier': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Allamanda', 'Ixora'],
+        'avocatier': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Allamanda'],
+        'bananier': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Heliconia'],
+        'papayer': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Allamanda'],
+        'cacaoyer': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Ixora'],
+        'caféier': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Ixora'],
+        'vanillier': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Passiflore'],
+        'ananas': ['Hibiscus', 'Frangipanier', 'Plumeria', 'Bougainvillier'],
+
+        # Cultures désertiques
+        'dattier': ['Cactus', 'Agave', 'Aloe Vera', 'Figuier de Barbarie', 'Gazania'],
+        'figuier': ['Cactus', 'Agave', 'Aloe Vera', 'Figuier de Barbarie'],
+        'grenadier': ['Cactus', 'Agave', 'Aloe Vera', 'Figuier de Barbarie'],
+        'amandier': ['Cactus', 'Agave', 'Aloe Vera', 'Figuier de Barbarie'],
+
+        # Cultures montagnardes
+        'pomme de terre': ['Edelweiss', 'Gentiane', 'Rhododendron', 'Azalée', 'Ancolie'],
+        'chou': ['Edelweiss', 'Gentiane', 'Rhododendron', 'Azalée', 'Ancolie'],
+        'carotte': ['Edelweiss', 'Gentiane', 'Rhododendron', 'Azalée', 'Ancolie'],
+
         # ==================== CULTURES TROPICALES ====================
         'cacao': ['Hibiscus', 'Bougainvillier', 'Passiflore'],
         'café': ['Hibiscus', 'Bougainvillier', 'Passiflore'],
@@ -5567,14 +5634,21 @@ def get_fleurs_suggerées(cultures, climat):
     # FLEURS ADAPTÉES AU CLIMAT (MONDIAL) #
     # ============================================================ #
     climat_fleurs = {
-        'mediterraneen': ['Lavande', 'Romarin', 'Thym', 'Sauge', 'Ciste', 'Bourrache', 'Souci'],
-        'tempere': ['Souci', 'Œillet d\'Inde', 'Tournesol', 'Bourrache', 'Cosmos', 'Lavande'],
-        'continental': ['Souci', 'Œillet d\'Inde', 'Tournesol', 'Cosmos', 'Lavande'],
-        'oceanique': ['Souci', 'Œillet d\'Inde', 'Bourrache', 'Hortensia', 'Lavande'],
-        'tropical': ['Hibiscus', 'Bougainvillier', 'Passiflore', 'Lantana', 'Plumeria', 'Frangipanier'],
-        'desertique': ['Lavande', 'Romarin', 'Thym', 'Sauge', 'Ciste'],
-        'montagnard': ['Pivoine', 'Tournesol', 'Souci', 'Lavande'],
-        'subtropical': ['Hibiscus', 'Bougainvillier', 'Passiflore', 'Lantana', 'Plumeria'],
+        'mediterraneen': ['Lavande', 'Romarin', 'Thym', 'Sauge', 'Ciste', 'Agapanthe', 'Bougainvillier', 'Bourrache',
+                          'Souci'],
+        'tempere': ['Souci', 'Œillet d\'Inde', 'Tournesol', 'Bourrache', 'Cosmos', 'Lavande', 'Camélia', 'Lilas',
+                    'Pivoine', 'Buddleia', 'Digitale'],
+        'continental': ['Souci', 'Œillet d\'Inde', 'Tournesol', 'Cosmos', 'Lavande', 'Edelweiss', 'Gentiane',
+                        'Rhododendron', 'Azalée', 'Ancolie'],
+        'oceanique': ['Souci', 'Œillet d\'Inde', 'Bourrache', 'Hortensia', 'Lavande', 'Camélia', 'Lilas', 'Pivoine'],
+        'tropical': ['Hibiscus', 'Bougainvillier', 'Passiflore', 'Lantana', 'Plumeria', 'Frangipanier', 'Allamanda',
+                     'Ixora', 'Heliconia', 'Strelitzia', 'Protea'],
+        'desertique': ['Lavande', 'Romarin', 'Thym', 'Sauge', 'Ciste', 'Cactus', 'Agave', 'Aloe Vera',
+                       'Figuier de Barbarie', 'Gazania'],
+        'montagnard': ['Pivoine', 'Tournesol', 'Souci', 'Lavande', 'Edelweiss', 'Gentiane', 'Rhododendron', 'Azalée',
+                       'Ancolie'],
+        'subtropical': ['Hibiscus', 'Bougainvillier', 'Passiflore', 'Lantana', 'Plumeria', 'Frangipanier', 'Allamanda',
+                        'Ixora'],
         'arctique': ['Pivoine', 'Tournesol', 'Souci'],
         'subpolaire': ['Pivoine', 'Tournesol', 'Souci'],
     }

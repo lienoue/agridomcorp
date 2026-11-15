@@ -239,6 +239,60 @@ CYCLES_CULTURES = {
     'frangipanier': {'type': 'perenne', 'est_arbre_ui': True, 'debut_production_annees': 3, 'pleine_production_annees': 5, 'emoji': '🌸', 'mois_plantation': (3, 6)},
 
     # ============================================================
+    # 🌸 FLEURS DU MONDE (Ajouts manquants - Ornementales & Pollinisatrices)
+    # ============================================================
+
+    # --- CLIMAT TEMPÉRÉ / EUROPÉEN ---
+    'camélia':         {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌺', 'mois_plantation': (9, 11)},
+    'camellia':        {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌺', 'mois_plantation': (9, 11)},
+    'pieris':          {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌸', 'mois_plantation': (3, 5)},
+    'lilas':           {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '💜', 'mois_plantation': (10, 3)},
+    'digitale':        {'type': 'bisannuelle', 'duree_jours': 180, 'emoji': '💜', 'mois_plantation': (4, 6)},
+    'myosotis':        {'type': 'bisannuelle', 'duree_jours': 120, 'emoji': '💙', 'mois_plantation': (8, 9)},
+    'pensée':          {'type': 'bisannuelle', 'duree_jours': 150, 'emoji': '🌸', 'mois_plantation': (8, 9)},
+    'pensee':          {'type': 'bisannuelle', 'duree_jours': 150, 'emoji': '🌸', 'mois_plantation': (8, 9)},
+    'glaïeul':         {'type': 'annuelle', 'duree_jours': 100, 'emoji': '🌸', 'mois_plantation': (3, 5)},
+    'glaieul':         {'type': 'annuelle', 'duree_jours': 100, 'emoji': '🌸', 'mois_plantation': (3, 5)},
+
+    # --- CLIMAT MÉDITERRANÉEN ---
+    'ciste':           {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌸', 'mois_plantation': (10, 3)},
+    'agapanthe':       {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💙', 'mois_plantation': (3, 5)},
+    'bougainvillier':  {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌸', 'mois_plantation': (3, 5)},
+
+    # --- CLIMAT TROPICAL / SUBTROPICAL ---
+    'hibiscus':        {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌺', 'mois_plantation': (3, 6)},
+    'frangipanier':    {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'plumeria':        {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'allamanda':       {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💛', 'mois_plantation': (3, 6)},
+    'ixora':           {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'heliconia':       {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌺', 'mois_plantation': (3, 6)},
+    'gingembre ornemental': {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'strelitzia':      {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌺', 'mois_plantation': (3, 6)},
+    'protea':          {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌺', 'mois_plantation': (3, 6)},
+    'lantana':         {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌸', 'mois_plantation': (3, 6)},
+    'duranta':         {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (3, 6)},
+    'croton':          {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🍂', 'mois_plantation': (3, 6)},
+
+    # --- CLIMAT DÉSERTIQUE / ARIDE ---
+    'cactus':          {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌵', 'mois_plantation': (3, 6)},
+    'agave':           {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌵', 'mois_plantation': (3, 6)},
+    'aloe vera':       {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '🌿', 'mois_plantation': (3, 6)},
+    'figuier de barbarie': {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '🌵', 'mois_plantation': (3, 6)},
+    'delosperma':      {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (3, 6)},
+    'gazania':         {'type': 'annuelle', 'duree_jours': 90, 'emoji': '🌼', 'mois_plantation': (3, 5)},
+    'mesembryanthemum': {'type': 'annuelle', 'duree_jours': 80, 'emoji': '🌸', 'mois_plantation': (3, 5)},
+
+    # --- CLIMAT CONTINENTAL / MONTAGNARD ---
+    'edelweiss':       {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '⭐', 'mois_plantation': (4, 6)},
+    'gentiane':        {'type': 'perenne', 'debut_production_annees': 2, 'pleine_production_annees': 4, 'emoji': '💙', 'mois_plantation': (4, 6)},
+    'rhododendron':    {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌸', 'mois_plantation': (9, 11)},
+    'azalée':          {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌸', 'mois_plantation': (9, 11)},
+    'azalee':          {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 3, 'emoji': '🌸', 'mois_plantation': (9, 11)},
+    'ancolie':         {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (3, 5)},
+    'campanule':       {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💙', 'mois_plantation': (3, 5)},
+    'aster':           {'type': 'perenne', 'debut_production_annees': 1, 'pleine_production_annees': 2, 'emoji': '💜', 'mois_plantation': (3, 5)},
+
+    # ============================================================
     # 🥬 LÉGUMES-FRUITS (ANNUELLES)
     # ============================================================
     'tomate': {'type': 'annuelle', 'duree_jours': 90, 'duree_jours_min': 80, 'duree_jours_max': 110, 'emoji': '🍅', 'mois_plantation': (4, 5)},
