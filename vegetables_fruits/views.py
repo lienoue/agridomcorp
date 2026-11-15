@@ -2958,7 +2958,11 @@ def figure_detail(request, figure_id):
         logger.debug(f"🔍 Culture: '{nom}' - Planifiée: {est_planifiee} - Plantée: {est_plante}")
 
         if nom and not est_planifiee and not est_plante:
-            cultures_disponibles.append(crop)
+            # ✅ On fait une copie de la culture et on ajoute l'info "est_arbre"
+            from .services_dates import est_perenne
+            crop_copy = crop.copy()
+            crop_copy['est_arbre'] = est_perenne(nom)
+            cultures_disponibles.append(crop_copy)
             logger.debug(f" ✅ AJOUTÉE à disponibles")
         else:
             logger.debug(f" ❌ IGNORÉE")

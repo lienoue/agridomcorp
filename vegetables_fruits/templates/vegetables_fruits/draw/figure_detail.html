@@ -677,17 +677,34 @@
             <div class="col-md-6 col-lg-4">
                 <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
                     <strong>{{ crop.emoji }} {{ crop.name }}</strong>
-                    <div class="mt-2">
-                        <label class="small">Semis</label>
-                        <input type="date" class="form-control form-control-sm date-semis" data-crop="{{ crop.name }}">
-                    </div>
-                    <div class="mt-2">
-                        <label class="small">Plantation</label>
-                        <input type="date" class="form-control form-control-sm date-plantation" data-crop="{{ crop.name }}">
-                    </div>
-                    <select class="form-select form-select-sm mt-2 canal-notification" data-crop="{{ crop.name }}">
-                        <option value="email">📧 Email</option>
-                        <option value="sms">📱 SMS</option>
+
+                    <!-- ✅ CAS 1 : C'EST UN ARBRE (Plantation uniquement) -->
+                    {% if crop.est_arbre %}
+                        <div class="mt-2">
+                            <label class="small">🌳 Date de plantation</label>
+                            <input type="date" class="form-control form-control-sm date-semis" data-crop="{{ crop.name }}">
+                            <small class="text-muted" style="font-size: 0.7rem;">Mettez la date de plantation de l'arbre.</small>
+                        </div>
+                        <!-- On cache le champ plantation pour ne pas faire doublon -->
+                        <input type="hidden" class="date-plantation" data-crop="{{ crop.name }}" value="">
+
+                    <!-- ✅ CAS 2 : C'EST UNE CULTURE CLASSIQUE (Semis + Plantation) -->
+                    {% else %}
+                        <div class="mt-2">
+                            <label class="small">🌱 Date de semis</label>
+                            <input type="date" class="form-control form-control-sm date-semis" data-crop="{{ crop.name }}">
+                        </div>
+                        <div class="mt-2">
+                            <label class="small">🌿 Date de plantation</label>
+                            <input type="date" class="form-control form-control-sm date-plantation" data-crop="{{ crop.name }}">
+                            <small class="text-muted" style="font-size: 0.7rem;">Si vous avez repiqué la plante.</small>
+                        </div>
+                    {% endif %}
+
+                    <select class="form-select form-select-sm mt-3 canal-notification" data-crop="{{ crop.name }}">
+                        <option value="email">📧 Email uniquement</option>
+                        <option value="sms">📱 SMS uniquement</option>
+                        <option value="les_deux">📧📱 Email et SMS</option>
                     </select>
                 </div>
             </div>
