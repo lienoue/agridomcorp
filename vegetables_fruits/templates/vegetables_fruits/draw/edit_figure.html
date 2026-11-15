@@ -655,6 +655,63 @@ document.getElementById('edit-form').addEventListener('submit', async function(e
         // En cas d'erreur réseau, on n'empêche pas la plantation
         HTMLFormElement.prototype.submit.call(this);
     }
+
+    // ✅ FONCTION POUR VÉRIFIER LE COMPAGNONNAGE
+    async function verifierCompagnonnage(culturesPlacees, figureId) {
+        if (culturesPlacees.length < 2) return []; // Pas besoin de vérifier s'il n'y a qu'une culture
+
+        // On vérifie la dernière culture ajoutée par rapport aux autres
+        const derniereCulture = culturesPlacees[culturesPlacees.length - 1];
+
+        try {
+            const response = await fetch(`/api/verifier-plantation/?culture=${encodeURIComponent(derniereCulture)}&figure_id=${figureId}`);
+            const data = await response.json();
+
+            if (data.success && data.data.statut !== 'securise') {
+                // On retourne un objet compatible avec la modale
+                return [{
+                    name: derniereCulture,
+                    emoji: '🌱',
+                    fenetre: data.data.conseils, // On réutilise le champ 'fenetre' pour les conseils
+                    mois_actuel: data.data.message
+                }];
+            }
+        } catch (e) {
+            console.error("Erreur vérification compagnonnage:", e);
+        }
+        return [];
+    }
+
+    // ✅ INTERCEPTER LA SOUMISSION
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form-planifier'); // ⚠️ Adapte l'ID de ton formulaire de planification
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                // ⚠️ Récupère les cultures actuellement placées dans ton interface JS
+                // Par exemple, si tu as un tableau JS "crops" :
+                let culturesPlacees = [];
+                if (typeof crops !== 'undefined') {
+                    culturesPlacees = crops.map(c => c.name);
+                }
+
+                const figureId = {{ figure.id }};
+
+                // On vérifie le compagnonnage
+                const incompatibilites = await verifierCompagnonnage(culturesPlacees, figureId);
+
+                if (incompatibilites.length > 0) {
+                    // On affiche la modale existante
+                    afficherModaleHorsSaison(incompatibilites, form);
+                } else {
+                    // Si tout est OK, on soumet
+                    form.submit();
+                }
+            });
+        }
+    });
+
 });
 </script>
 {% endblock %}

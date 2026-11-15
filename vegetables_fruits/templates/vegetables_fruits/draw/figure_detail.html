@@ -286,6 +286,18 @@
                         <span class="crop-badge">{% if crop.details.type == 'fruit' %}🍎{% else %}🥕{% endif %}</span>
                         <div class="crop-emoji">{{ crop.emoji }}</div>
                         <div class="crop-name">{{ crop.name }}</div>
+                        {# ✅ NOUVEAU : Badge de compagnonnage cliquable #}
+                        {% if crop.associations %}
+                            {% if crop.associations.statut == 'dangereux' %}
+                                <span class="badge bg-danger" style="font-size:0.6rem; margin-bottom:4px; cursor:pointer;" onclick="event.stopPropagation(); afficherConseilsCompagnonnage('{{ crop.name|escapejs }}', '{{ crop.associations.message|escapejs }}', '{{ crop.associations.conseils|escapejs }}');">🚨 Danger</span>
+                            {% elif crop.associations.statut == 'deconseille' %}
+                                <span class="badge bg-warning text-dark" style="font-size:0.6rem; margin-bottom:4px; cursor:pointer;" onclick="event.stopPropagation(); afficherConseilsCompagnonnage('{{ crop.name|escapejs }}', '{{ crop.associations.message|escapejs }}', '{{ crop.associations.conseils|escapejs }}');">⚠️ Attention</span>
+                            {% elif crop.associations.statut == 'a_risque' %}
+                                <span class="badge bg-info text-dark" style="font-size:0.6rem; margin-bottom:4px; cursor:pointer;" onclick="event.stopPropagation(); afficherConseilsCompagnonnage('{{ crop.name|escapejs }}', '{{ crop.associations.message|escapejs }}', '{{ crop.associations.conseils|escapejs }}');">🦠 Maladie</span>
+                            {% elif crop.associations.statut == 'securise' %}
+                                <span class="badge bg-success" style="font-size:0.6rem; margin-bottom:4px; cursor:pointer;" onclick="event.stopPropagation(); afficherConseilsCompagnonnage('{{ crop.name|escapejs }}', '{{ crop.associations.message|escapejs }}', '{{ crop.associations.conseils|escapejs }}');">✅ Bon voisinage</span>
+                            {% endif %}
+                        {% endif %}
                         <!-- ✅ Nouveau bouton pour la fiche publique -->
                         <a href="{% url 'vegetables_fruits:fiche_culture_publique' crop.name|slugify %}"
                            class="btn btn-sm btn-outline-primary w-100 mt-2"
@@ -1171,5 +1183,37 @@
             });
         }
     });
+    function afficherConseilsCompagnonnage(cropName, message, conseils) {
+        let html = `<div style="text-align: center;">
+                <h3 style="margin: 10px 0; color: #1b4332;">🌱 Compagnonnage</h3>
+                <h4 style="color: #28a745; font-weight: bold;">${cropName}</h4>
+                <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; margin-top: 15px; font-weight: 600;">
+                    ${message}
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left; white-space: pre-line;">
+                    ${conseils}
+                </div>
+            </div>`;
+
+        // Bouton fermer
+        html += `<div style="text-align: center; margin-top: 20px;">
+                    <button onclick="this.closest('.custom-popup').remove(); document.querySelector('.custom-overlay').remove();" style="background: #28a745; color: white; border: none; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold;">Fermer</button>
+                </div>`;
+
+        // Création de l'overlay et de la popup
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999;';
+
+        const popup = document.createElement('div');
+        popup.className = 'custom-popup';
+        popup.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 15px; z-index: 10000; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);';
+        popup.innerHTML = html;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(popup);
+
+        overlay.onclick = function() { overlay.remove(); popup.remove(); };
+    }
 </script>
 {% endblock %}

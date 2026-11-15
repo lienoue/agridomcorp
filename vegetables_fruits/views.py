@@ -2937,6 +2937,15 @@ def figure_detail(request, figure_id):
                     enriched['details'] = enrichir_culture_depuis_obj(crop, veg_parent, 'vegetable')['details']
                     enriched['details_json'] = json.dumps(enriched['details'], ensure_ascii=False)
 
+        # ✅ Calculer les associations de compagnonnage pour cette culture
+        try:
+            from .views import verifier_compatibilite_plantation
+            assoc = verifier_compatibilite_plantation(enriched['name'], figure.id)
+            enriched['associations'] = assoc
+        except Exception as e:
+            enriched['associations'] = None
+            logger.error(f"Erreur compagnonnage pour {enriched['name']}: {e}")
+
         enriched_crops.append(enriched)
 
     # ✅ Filtrer les cultures disponibles pour la planification
@@ -13398,35 +13407,22 @@ def api_marquer_meteo_lue(request, alerte_id):
 
 def verifier_compatibilite_plantation(culture_nom, figure_id, maladie_nom=None):
     """
-    Vérifie si une culture peut être plantée à proximité d'une culture malade
-
-    Paramètres :
-    - culture_nom : nom de la culture à planter
-    - figure_id : ID de la parcelle cible
-    - maladie_nom : nom de la maladie (optionnel)
-
-    Retourne :
-    {
-        'compatible': bool,
-        'sensible': bool,
-        'statut': str, # 'securise', 'a_risque', 'deconseille', 'dangereux'
-        'message': str,
-        'conseils': str,
-        'cultures_voisines': list,
-    }
+    Vérifie si une culture peut être plantée à proximité d'autres cultures (compagnonnage et maladies).
     """
-    from .models import GeometricFigure, MaladieCulture, AssociationCulture, Culture
+    from .models import GeometricFigure, MaladieCulture, AssociationCulture
+    from django.db.models import Q
 
     resultat = {
         'compatible': True,
         'sensible': False,
-        'statut': 'securise',
+        'statut': 'securise', # 'securise', 'a_risque', 'deconseille', 'dangereux'
         'message': '',
         'conseils': '',
         'cultures_voisines': [],
+        'incompatibilites': [],
+        'compatibilites': [],
     }
 
-    # Récupérer la figure
     try:
         figure = GeometricFigure.objects.get(id=figure_id)
     except GeometricFigure.DoesNotExist:
@@ -13434,114 +13430,79 @@ def verifier_compatibilite_plantation(culture_nom, figure_id, maladie_nom=None):
         resultat['message'] = "Parcelle non trouvée"
         return resultat
 
-    # Récupérer toutes les cultures de la parcelle
-    cultures_voisines = []
-    for crop in figure.crops:
-        if 'name' in crop:
-            cultures_voisines.append(crop['name'].lower())
+    cultures_voisines = [c['name'].lower() for c in figure.crops if 'name' in c]
 
     if not cultures_voisines:
-        resultat['statut'] = 'securise'
         resultat['message'] = "Aucune culture à proximité. Vous pouvez planter en toute sécurité."
         resultat['conseils'] = "🌱 Profitez-en pour commencer votre jardin !"
         return resultat
 
     resultat['cultures_voisines'] = cultures_voisines
 
-    # Vérifier les maladies transmissibles
+    # 1. Vérifier les maladies transmissibles
     maladies_sensibles = set()
-    for culture_voisine in cultures_voisines:
-        # Vérifier si la culture est sensible à la maladie
-        if maladie_nom:
-            maladies = MaladieCulture.objects.filter(
-                cultures_cible__icontains=culture_voisine
-            )
-            for maladie in maladies:
-                if maladie_nom.lower() in maladie.nom.lower():
-                    maladies_sensibles.add(culture_voisine)
+    if maladie_nom:
+        maladies = MaladieCulture.objects.filter(
+            cultures_cibles__icontains=culture_nom # ✅ Correction du nom du champ
+        )
+        for maladie in maladies:
+            if maladie_nom.lower() in maladie.nom.lower():
+                # On regarde si les voisines sont sensibles
+                for voisine in cultures_voisines:
+                    if voisine in str(maladie.cultures_cibles).lower():
+                        maladies_sensibles.add(voisine)
 
-    # Vérifier les compatibilités (compagnonnage)
+    # 2. Vérifier les compatibilités (compagnonnage)
     incompatibilites = set()
     compatibilites = set()
 
     for culture_voisine in cultures_voisines:
-        # Vérifier les associations
+        # On cherche dans les deux sens (culture1=cible, culture2=voisine OU culture1=voisine, culture2=cible)
         associations = AssociationCulture.objects.filter(
-            pays__in=['tous', 'france', 'europe']
+            (Q(culture1__iexact=culture_nom) & Q(culture2__iexact=culture_voisine)) |
+            (Q(culture2__iexact=culture_nom) & Q(culture1__iexact=culture_voisine))
         )
 
         for assoc in associations:
-            # Vérifier si la culture à planter est incompatible avec une culture voisine
-            if (assoc.culture1.lower() == culture_nom.lower() and
-                    assoc.culture2.lower() == culture_voisine.lower() and
-                    assoc.type_association == 'mauvaise'):
+            if assoc.type_association == 'mauvaise':
                 incompatibilites.add(culture_voisine)
-
-            # Vérifier si la culture à planter est compatible avec une culture voisine
-            if (assoc.culture1.lower() == culture_nom.lower() and
-                    assoc.culture2.lower() == culture_voisine.lower() and
-                    assoc.type_association == 'bonne'):
+            elif assoc.type_association == 'bonne':
                 compatibilites.add(culture_voisine)
 
-    # Déterminer le statut
+    resultat['incompatibilites'] = list(incompatibilites)
+    resultat['compatibilites'] = list(compatibilites)
+
     est_sensible = len(maladies_sensibles) > 0
     est_incompatible = len(incompatibilites) > 0
 
+    # 3. Déterminer le statut
     if est_sensible and est_incompatible:
         resultat['statut'] = 'dangereux'
         resultat['compatible'] = False
         resultat['sensible'] = True
-        resultat[
-            'message'] = "🚨 DANGEREUX ! Cette culture est incompatible avec les cultures voisines ET sensible à la maladie détectée."
+        resultat['message'] = "🚨 DANGEREUX ! Cette culture est incompatible avec ses voisines ET sensible à la maladie détectée."
         resultat['conseils'] = (
-            "❌ NE PLANTEZ PAS cette culture ici !\n"
-            " • Risque de contamination de la maladie\n"
-            " • Les cultures voisines sont incompatibles\n"
-            " • La culture sera affaiblie et malade\n\n"
-            "💡 Alternatives :\n"
-            " • Choisissez une autre parcelle\n"
-            " • Attendez la guérison des cultures malades\n"
-            " • Plantez une culture résistante"
+            f"❌ Mauvaises associations : {', '.join(incompatibilites)}\n"
+            f"🦠 Risque de maladie depuis : {', '.join(maladies_sensibles)}"
         )
     elif est_sensible:
         resultat['statut'] = 'a_risque'
-        resultat['compatible'] = True
         resultat['sensible'] = True
-        resultat[
-            'message'] = "⚠️ À RISQUE ! Cette culture est sensible à la maladie détectée sur les cultures voisines."
-        resultat['conseils'] = (
-            "🛡️ PRÉCAUTIONS À PRENDRE :\n"
-            " • Éloignez la culture des zones infectées\n"
-            " • Appliquez un traitement préventif\n"
-            " • Surveillez l'apparition de symptômes\n"
-            " • Évitez l'arrosage par aspersion\n\n"
-            f"🌿 Cultures sensibles à proximité : {', '.join(maladies_sensibles)}"
-        )
+        resultat['message'] = "⚠️ À RISQUE ! Cette culture est sensible à la maladie détectée sur les cultures voisines."
+        resultat['conseils'] = f"🦠 Surveillez les maladies venant de : {', '.join(maladies_sensibles)}"
     elif est_incompatible:
         resultat['statut'] = 'deconseille'
         resultat['compatible'] = False
-        resultat['sensible'] = False
-        resultat['message'] = "❌ DÉCONSEILLÉ ! Cette culture est incompatible avec les cultures voisines."
-        resultat['conseils'] = (
-            "🚫 ÉVITEZ DE PLANTER ICI :\n"
-            " • Les cultures voisines ne s'entendent pas bien\n"
-            " • Risque de croissance réduite\n"
-            " • Possible transmission de maladies\n\n"
-            f"🌿 Cultures incompatibles : {', '.join(incompatibilites)}\n\n"
-            f"🌱 Cultures compatibles : {', '.join(compatibilites) if compatibilites else 'Aucune trouvée'}"
-        )
+        resultat['message'] = "❌ DÉCONSEILLÉ ! Cette culture ne s'entend pas bien avec ses voisines."
+        resultat['conseils'] = f"🌿 Évitez de la planter à côté de : {', '.join(incompatibilites)}"
     else:
         resultat['statut'] = 'securise'
-        resultat['compatible'] = True
-        resultat['sensible'] = False
-        resultat['message'] = "✅ SÉCURISÉ ! Cette culture est compatible avec les cultures voisines."
-        resultat['conseils'] = (
-            "🌱 VOUS POUVEZ PLANTER :\n"
-            " • Cultures compatibles\n"
-            " • Pas de sensibilité à la maladie\n"
-            " • Bonne croissance assurée\n\n"
-            f"🌿 Cultures voisines : {', '.join(cultures_voisines)}"
-        )
+        if compatibilites:
+            resultat['message'] = "✅ SÉCURISÉ ! Cette culture est compatible avec ses voisines."
+            resultat['conseils'] = f"🌱 Excellentes associations : {', '.join(compatibilites)}"
+        else:
+            resultat['message'] = "✅ Aucune incompatibilité connue."
+            resultat['conseils'] = "🌱 Vous pouvez planter en toute sécurité."
 
     return resultat
 
