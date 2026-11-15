@@ -9708,32 +9708,45 @@ def _compute_stats(user, figure_id=None, periode='12m'):
 @login_required
 def statistiques_avancees(request):
     """Dashboard Premium : statistiques Bento."""
-    # ✅ Vérification d'accès
-    est_eleve = (
-        hasattr(request.user, 'profil_eleve')
-        and request.user.profil_eleve
-        and request.user.profil_eleve.classe is not None
-    )
 
-    if not est_eleve:
-        try:
-            abonnement = request.user.abonnement
-            if not abonnement.est_actif or abonnement.plan.nom not in ['PREMIUM', 'ENSEIGNANT']:
-                messages.warning(request, "🔒 Les statistiques avancées sont disponibles avec l'abonnement Premium.")
-                return redirect('vegetables_fruits:tarification')
-        except Abonnement.DoesNotExist:
-            messages.warning(request, "🔒 Les statistiques avancées sont disponibles avec l'abonnement Premium.")
-            return redirect('vegetables_fruits:tarification')
+    # ✅ 1. On identifie le profil de l'utilisateur
+    est_enseignant = request.user.is_enseignant
+    est_mineur = request.user.mode_junior or (
+                request.user.birth_date and (date.today() - request.user.birth_date).days // 365 < 18)
 
-    # ✅ Récupérer les parcelles pour le sélecteur
+    # ✅ 2. Règle stricte : si c'est un mineur, on le redirige
+    if est_mineur:
+        messages.info(request,
+                      "Les statistiques avancées sont réservées aux adultes. Retrouve tes progrès dans ton espace Junior !")
+        # On le renvoie vers son dashboard junior ou élève
+        if hasattr(request.user, 'profil_eleve') and request.user.profil_eleve and request.user.profil_eleve.classe:
+            return redirect('vegetables_fruits:dashboard_eleve')
+        return redirect('vegetables_fruits:dashboard_junior')
+
+    # ✅ 3. Vérification de l'abonnement (pour les adultes et enseignants)
+    acces = False
+    try:
+        abonnement = request.user.abonnement
+        if abonnement.est_actif and abonnement.plan.nom in ['PREMIUM', 'ENSEIGNANT']:
+            acces = True
+    except Abonnement.DoesNotExist:
+        pass
+
+    if not acces:
+        messages.warning(request,
+                         "🔒 Les statistiques avancées sont disponibles avec l'abonnement Premium ou Enseignant.")
+        return redirect('vegetables_fruits:tarification')
+
+    # ============================================================
+    # À partir d'ici, l'utilisateur a l'accès (le reste de ta vue ne change pas)
+    # ============================================================
+
     from .models import GeometricFigure
     figures = GeometricFigure.objects.filter(user=request.user).order_by('name')
 
-    # ✅ Params de filtre (URL)
     figure_id = request.GET.get('parcelle')
     periode = request.GET.get('periode', '12m')
 
-    # ✅ Cache 5 min
     cache_key = f"stats_bento_{request.user.id}_{figure_id or 'all'}_{periode}"
     data = cache.get(cache_key)
 
@@ -9745,8 +9758,8 @@ def statistiques_avancees(request):
         'figures': figures,
         'selected_figure_id': int(figure_id) if figure_id else None,
         'selected_periode': periode,
-        'data_json': data, # pour le rendu initial côté template
-        **data, # déverse aussi les clés pour accès direct
+        'data_json': data,
+        **data,
     }
 
     return render(request, 'vegetables_fruits/statistiques_avancees.html', context)

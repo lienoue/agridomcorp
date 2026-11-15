@@ -552,10 +552,12 @@
                             <li><a href="{% url 'vegetables_fruits:arbre_competences' %}">🌳 Mes compétences</a></li>
                             <li><a href="{% url 'vegetables_fruits:missions_hebdomadaires' %}">🎯 Missions</a></li>
                             {% endif %}
-                            {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' %}
-                                <li><a href="{% url 'vegetables_fruits:statistiques_avancees' %}">📊 Statistiques avancées</a></li>
-                            {% else %}
-                                <li><a href="{% url 'vegetables_fruits:tarification' %}" class="feature-locked">📊 Statistiques avancées <small>🔒 Premium</small></a></li>
+                            {% if not user.mode_junior %} {# ✅ On cache pour les mineurs #}
+                                {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' %}
+                                    <li><a href="{% url 'vegetables_fruits:statistiques_avancees' %}">📊 Statistiques avancées</a></li>
+                                {% else %}
+                                    <li><a href="{% url 'vegetables_fruits:tarification' %}" class="feature-locked">📊 Statistiques avancées <small>🔒 Premium</small></a></li>
+                                {% endif %}
                             {% endif %}
                             <li><a href="{% url 'vegetables_fruits:mes_rappels' %}">📧 Mes rappels</a></li>
                             <li class="dropdown-header">Déconnexion</li>
