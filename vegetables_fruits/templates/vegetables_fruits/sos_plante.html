@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SOS Plante - {{ figure.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================
+       STYLE GLOBAL "URGENCE"
+       ========================================= */
+    .sos-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .sos-header {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 24px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Effet visuel de fond */
+    .sos-header::before {
+        content: "🚑";
+        position: absolute;
+        font-size: 15rem;
+        opacity: 0.1;
+        right: -20px;
+        bottom: -40px;
+        transform: rotate(-15deg);
+    }
+
+    .sos-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        position: relative;
+    }
+
+    .sos-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        position: relative;
+    }
+
+    /* =========================================
+       CARTE DE FORMULAIRE (BENTO)
+       ========================================= */
+    .sos-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        margin-bottom: 25px;
+    }
+
+    .step-title {
+        font-weight: 800;
+        color: #1b4332;
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* =========================================
+       SYMPTÔMES (Style Boutons)
+       ========================================= */
+    .symptom-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .symptom-btn {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #495057;
+        user-select: none;
+    }
+
+    .symptom-btn:hover {
+        border-color: #dc3545;
+        background: #fff5f5;
+        transform: translateY(-2px);
+    }
+
+    /* Quand le checkbox est coché, on change le style du label */
+    .symptom-btn input[type="checkbox"] {
+        display: none; /* On cache la vraie checkbox */
+    }
+
+    .symptom-btn:has(input:checked) {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .symptom-btn .emoji {
+        font-size: 1.5rem;
+    }
+
+    /* =========================================
+       RÉSULTATS DU DIAGNOSTIC
+       ========================================= */
+    .diagnostic-result {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border-left: 6px solid #dc3545;
+        position: relative;
+    }
+
+    .diagnostic-result:first-child {
+        background: linear-gradient(135deg, #fff5f5, #ffffff);
+        border-left: 6px solid #dc3545;
+        box-shadow: 0 5px 20px rgba(220, 53, 69, 0.15);
+    }
+
+    .diagnostic-badge {
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 4px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .diagnostic-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .diagnostic-reason {
+        background: white;
+        border: 1px dashed #dc3545;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        color: #721c24;
+        font-size: 0.9rem;
+    }
+
+    .weather-analysis {
+        background: #e3f2fd;
+        color: #0d47a1;
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-sos {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        transition: all 0.3s;
+        box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-sos:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(220, 53, 69, 0.6);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="sos-container">
+
+        <!-- En-tête SOS -->
+        <div class="sos-header">
+            <h1>🚑 SOS Plante</h1>
+            <p>Parcelle : <strong>{{ figure.name }}</strong> | Un problème ? On vous aide à le diagnostiquer.</p>
+            <a href="{% url 'vegetables_fruits:figure_detail' figure.id %}" class="btn btn-light btn-sm mt-3 rounded-pill px-4">
+                ← Retour à la parcelle
+            </a>
+        </div>
+
+        {% if diagnostic %}
+            <!-- ============================================ -->
+            <!-- AFFICHAGE DU RÉSULTAT -->
+            <!-- ============================================ -->
+            <div class="sos-card">
+                <div class="step-title mb-4">
+                    <span style="font-size:2rem;">🔍</span>
+                    <span>Résultat de l'analyse pour vos {{ diagnostic.culture }}</span>
+                </div>
+
+                <!-- Analyse Météo -->
+                <div class="weather-analysis">
+                    <span style="font-size:1.5rem;">🌤️</span>
+                    <div>
+                        <strong>Analyse environnementale :</strong>
+                        {{ diagnostic.temperature }}°C, Humidité {{ diagnostic.humidite }}%
+                        {% if diagnostic.pluie_recente %} | 🌧️ Pluie récente (Risque fongique accru){% endif %}
+                    </div>
+                </div>
+
+                {% if diagnostic.resultats %}
+                    {% for res in diagnostic.resultats %}
+                    <div class="diagnostic-result">
+                        {% if forloop.first %}
+                        <div class="diagnostic-badge">⚠️ PROBABILITÉ MAX</div>
+                        {% endif %}
+
+                        <div class="diagnostic-title">
+                            {{ res.maladie.emoji }} {{ res.maladie.nom }}
+                        </div>
+
+                        <!-- Pourquoi ce diagnostic ? -->
+                        <div class="diagnostic-reason">
+                            <strong>Pourquoi ce diagnostic ?</strong>
+                            <ul class="mb-0 mt-1 pl-3">
+                                {% for raison in res.raisons %}
+                                    <li>{{ raison }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Infos de la maladie -->
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div style="background: white; padding: 15px; border-radius: 12px; height: 100%;">
+                                    <strong style="color: #28a745;">💊 Traitement préventif</strong>
+                                    <p class="small mb-0 mt-1">{{ res.maladie.traitement_preventif|default:"Non spécifié." }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div style="background: white; padding: 15px; border-radius: 12px; height: 100%;">
+                                    <strong style="color: #dc3545;">🚑 Traitement curatif</strong>
+                                    <p class="small mb-0 mt-1">{{ res.maladie.traitement_curatif|default:"Non spécifié." }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lien vers la fiche complète (CORRIGÉ) -->
+                        <div class="mt-3 text-end">
+                            <a href="{% url 'vegetables_fruits:gestion_maladies' %}?figure_id={{ figure.id }}&culture={{ diagnostic.culture }}" class="btn btn-outline-danger rounded-pill px-4">
+                                📖 Voir la fiche complète (Gestion des maladies)
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-success" style="border-radius: 15px;">
+                        <span style="font-size: 2rem;">🌱</span>
+                        <strong>Bonne nouvelle !</strong> Aucune maladie connue ne correspond exactement à ces symptômes avec la météo actuelle. Surveillez l'évolution.
+                    </div>
+                {% endif %}
+
+                <div class="text-center mt-5">
+                    <a href="{% url 'vegetables_fruits:sos_plante' figure.id %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        🔄 Refaire un diagnostic
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- ============================================ -->
+            <!-- FORMULAIRE DE DIAGNOSTIC -->
+            <!-- ============================================ -->
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Étape 1 : Culture -->
+                <div class="sos-card">
+                    <div class="step-title">
+                        <span class="badge bg-dark rounded-circle" style="width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;">1</span>
+                        Quelle culture est malade ?
+                    </div>
+                    <select name="culture" class="form-select form-select-lg" style="border-radius: 12px; border: 2px solid #e9ecef;" required>
+                        <option value="">-- Sélectionnez la culture --</option>
+                        {% for culture in cultures_parcelle %}
+                            <option value="{{ culture }}">{{ culture }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Étape 2 : Symptômes -->
+                <div class="sos-card">
+                    <div class="step-title">
+                        <span class="badge bg-dark rounded-circle" style="width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;">2</span>
+                        Quels symptômes observez-vous ?
+                    </div>
+                    <p class="text-muted small mb-4">Sélectionnez tout ce qui correspond à l'état de votre plante.</p>
+
+                    <div class="symptom-grid">
+                        {% for id, label in symptomes_disponibles %}
+                        <label class="symptom-btn">
+                            <input type="checkbox" name="symptomes" value="{{ id }}">
+                            <span class="emoji">
+                                {% if "brunes" in id %}🟤{% elif "blanches" in id %}⚪{% elif "jaunes" in id %}🟡{% elif "molles" in id %}🥀{% elif "trous" in id %}🕳️{% elif "pucerons" in id %}🐛{% elif "pourris" in id %}🍎{% else %}🦠{% endif %}
+                            </span>
+                            <span>{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Bouton Valider -->
+                <div class="text-center mt-5 mb-5">
+                    <button type="submit" class="btn btn-sos">
+                        🚑 Lancer le diagnostic
+                    </button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

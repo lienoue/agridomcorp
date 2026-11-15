@@ -249,6 +249,9 @@
                 <a href="{% url 'vegetables_fruits:edit_figure' figure.id %}" class="btn-action">✏️ Modifier</a>
                 {% if user.abonnement.plan.nom == 'PREMIUM' or user.abonnement.plan.nom == 'ENSEIGNANT' or user.abonnement.plan.nom == 'BASIQUE' or user.profil_eleve %}
                     <a href="{% url 'vegetables_fruits:ajouter_fleur' figure.id %}" class="btn-action btn-action-warning">🌼 Fleur pollinisatrice</a>
+                    <a href="{% url 'vegetables_fruits:sos_plante' figure.id %}" class="btn-action btn-action-danger" style="background: #dc3545; color: white;">
+                        🚑 SOS Plante
+                    </a>
                 {% endif %}
             </div>
         </div>

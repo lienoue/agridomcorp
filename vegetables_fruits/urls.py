@@ -107,6 +107,7 @@ urlpatterns = [
 
     # Gestion maladies
     path('gestion-maladies/', views.gestion_maladies, name='gestion_maladies'),
+    path('parcelle/<int:figure_id>/sos/', views.sos_plante, name='sos_plante'),
 
     # Rotation cultures
     path('rotation-cultures/', views.rotation_cultures, name='rotation_cultures'),

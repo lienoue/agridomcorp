@@ -12713,6 +12713,19 @@ def gestion_maladies(request):
 
     # ✅ Récupérer la parcelle sélectionnée (via GET)
     parcelle_id = request.GET.get('parcelle_id')
+
+    # ✅ NOUVEAU : Si on arrive depuis le SOS Plante, on a un figure_id
+    figure_id = request.GET.get('figure_id')
+    if figure_id and not parcelle_id:
+        try:
+            figure = GeometricFigure.objects.get(id=figure_id, user=user)
+            parcelle = Parcelle.objects.filter(figure=figure).first()
+            if parcelle:
+                parcelle_id = parcelle.id
+        except GeometricFigure.DoesNotExist:
+            pass
+
+
     selected_parcelle = None
     if parcelle_id:
         try:
@@ -19028,3 +19041,118 @@ def fiche_culture_publique(request, nom_culture):
     }
 
     return render(request, 'public/fiche_culture.html', context)
+
+
+@login_required
+def sos_plante(request, figure_id):
+    """
+    Assistant de diagnostic de maladie pour une parcelle.
+    """
+    from .models import MaladieCulture, GeometricFigure
+    from datetime import date
+
+    figure = get_object_or_404(GeometricFigure, id=figure_id, user=request.user)
+
+    # 1. Récupérer les cultures de la parcelle
+    cultures_parcelle = []
+    if figure.crops:
+        for crop in figure.crops:
+            if 'name' in crop:
+                cultures_parcelle.append(crop['name'])
+
+    # 2. Récupérer la météo récente
+    meteo_recente = None
+    temp_actuelle = 20
+    humidite_actuelle = 50
+    pluie_recente = False
+
+    if figure.adresse_lat and figure.adresse_lng:
+        meteo_recente = get_meteo_for_figure(figure)
+        if meteo_recente:
+            temp_actuelle = meteo_recente.get('temperature', 20)
+            humidite_actuelle = meteo_recente.get('humidity', 50)
+            pluie_recente = meteo_recente.get('rain', 0) > 0
+
+    # 3. Traitement du formulaire
+    diagnostic = None
+    if request.method == 'POST':
+        culture_cible = request.POST.get('culture')
+        symptomes = request.POST.getlist('symptomes')
+
+        if culture_cible and symptomes:
+            # ✅ ON FILTRE LES MALADIES PAR CULTURE
+            maladies_potentielles = MaladieCulture.objects.filter(
+                cultures_cibles__icontains=culture_cible
+            )
+
+            resultats = []
+            for maladie in maladies_potentielles:
+                score = 0
+                raisons = []
+
+                # 1. Croisement avec les symptômes (texte)
+                texte_maladie = f"{maladie.nom} {maladie.description}".lower()
+                for symptome in symptomes:
+                    mot_cle = symptome.replace('_', ' ').lower()
+                    if mot_cle in texte_maladie:
+                        score += 1
+                        raisons.append(f"Symptôme détecté : {symptome}")
+
+                # 2. Croisement avec la météo (Températures)
+                if maladie.temperature_min is not None and maladie.temperature_max is not None:
+                    if maladie.temperature_min <= temp_actuelle <= maladie.temperature_max:
+                        score += 2
+                        raisons.append(f"Température favorable ({temp_actuelle}°C)")
+
+                # 3. Croisement avec la météo (Humidité)
+                if maladie.humidite_min is not None and maladie.humidite_max is not None:
+                    if maladie.humidite_min <= humidite_actuelle <= maladie.humidite_max:
+                        score += 2
+                        raisons.append(f"Humidité favorable ({humidite_actuelle}%)")
+
+                # 4. Pluie (favorise les champignons)
+                if pluie_recente and (
+                        'champignon' in texte_maladie or 'mildiou' in texte_maladie or 'oïdium' in texte_maladie):
+                    score += 1
+                    raisons.append("Pluie récente (risque fongique accru)")
+
+                # Si le score est significatif, on garde la maladie
+                if score > 0:
+                    resultats.append({
+                        'maladie': maladie,
+                        'score': score,
+                        'raisons': raisons,
+                        'pourcentage': min(100, int((score / (len(symptomes) + 4)) * 100))  # Score max théorique
+                    })
+
+            resultats.sort(key=lambda x: x['score'], reverse=True)
+            diagnostic = {
+                'culture': culture_cible,
+                'resultats': resultats[:3],
+                'pluie_recente': pluie_recente,
+                'temperature': temp_actuelle,
+                'humidite': humidite_actuelle,
+            }
+
+    # Liste des symptômes
+    symptomes_disponibles = [
+        ("taches brunes", "Taches brunes sur les feuilles"),
+        ("taches blanches", "Taches blanches/poudreuses"),
+        ("feuilles jaunes", "Feuilles jaunes"),
+        ("feuilles molles", "Feuilles molles et flétries"),
+        ("trous feuilles", "Trous dans les feuilles"),
+        ("pucerons", "Pucerons visibles"),
+        ("fruits pourris", "Fruits tachés ou pourris"),
+        ("noircissement", "Noircissement de la tige"),
+    ]
+
+    context = {
+        'figure': figure,
+        'cultures_parcelle': cultures_parcelle,
+        'meteo_recente': meteo_recente,
+        'pluie_recente': pluie_recente,
+        'symptomes_disponibles': symptomes_disponibles,
+        'diagnostic': diagnostic,
+    }
+
+    return render(request, 'vegetables_fruits/sos_plante.html', context)
