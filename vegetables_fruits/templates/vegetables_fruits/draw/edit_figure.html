@@ -263,46 +263,65 @@
                         <label for="exposition" class="form-label fw-bold">
                             <i class="bi bi-sun-fill"></i> Exposition au soleil
                         </label>
-                        <select name="exposition" id="exposition" class="form-select">
-                            <option value="plein_soleil" {% if parcelle.exposition == 'plein_soleil' %}selected{% endif %}>
-                                ☀️ Plein soleil (6h+)
-                            </option>
-                            <option value="mi_ombre" {% if parcelle.exposition == 'mi_ombre' %}selected{% endif %}>
-                                🌤️ Mi-ombre (4-6h)
-                            </option>
-                            <option value="ombre" {% if parcelle.exposition == 'ombre' %}selected{% endif %}>
-                                🌥️ Ombre (<4h)
-                            </option>
-                            <option value="non_defini" {% if parcelle.exposition == 'non_defini' %}selected{% endif %}>
-                                ❓ Non défini
-                            </option>
-                        </select>
-                        <small class="text-muted">Choisissez l'exposition de votre parcelle</small>
+
+                        {% if figure.parcelle_set.first.exposition and figure.parcelle_set.first.exposition != 'non_defini' %}
+                            <select class="form-select" disabled>
+                                <option value="plein_soleil" {% if figure.parcelle_set.first.exposition == 'plein_soleil' %}selected{% endif %}>☀️ Plein soleil (6h+)</option>
+                                <option value="mi_ombre" {% if figure.parcelle_set.first.exposition == 'mi_ombre' %}selected{% endif %}>🌤️ Mi-ombre (4-6h)</option>
+                                <option value="ombre" {% if figure.parcelle_set.first.exposition == 'ombre' %}selected{% endif %}>🌥️ Ombre (<4h)</option>
+                            </select>
+                            <input type="hidden" name="exposition" value="{{ figure.parcelle_set.first.exposition }}">
+                            <small class="text-muted d-block mt-1">🔒 L'exposition a été définie lors de la création.</small>
+                        {% else %}
+                            <select name="exposition" id="exposition" class="form-select">
+                                <option value="plein_soleil">☀️ Plein soleil (6h+)</option>
+                                <option value="mi_ombre">🌤️ Mi-ombre (4-6h)</option>
+                                <option value="ombre">🌥️ Ombre (<4h)</option>
+                                <option value="non_defini" selected>❓ Non défini</option>
+                            </select>
+                            <small class="text-muted">Choisissez l'exposition de votre parcelle</small>
+                        {% endif %}
                     </div>
+
 
                     <!-- TYPE DE SOL -->
                     <div class="form-group">
                         <label class="form-label fw-bold">🌍 Type de sol</label>
-                        <div class="mb-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sol_mode" id="sol_manuel" value="manuel" checked onchange="toggleSolMode()">
-                                <label class="form-check-label" for="sol_manuel">Je connais mon sol</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sol_mode" id="sol_auto" value="auto" onchange="toggleSolMode()">
-                                <label class="form-check-label" for="sol_auto">Estimez-le pour moi (via ma région)</label>
-                            </div>
-                        </div>
 
-                        <select name="type_sol" id="type_sol" class="form-control">
-                            <option value="">-- Sélectionnez --</option>
-                            <option value="argileux">Argileux (terre qui colle)</option>
-                            <option value="sableux">Sableux (terre qui sable)</option>
-                            <option value="limoneux">Limoneux (terre légère et fertile)</option>
-                            <option value="humifère">Humifère (terre noire, riche en humus)</option>
-                            <option value="calcaire">Calcaire (terre blanchâtre)</option>
-                            <option value="autre">Autre / Je ne sais pas</option>
-                        </select>
+                        {% if figure.parcelle_set.first.type_sol %}
+                            <select class="form-control" disabled>
+                                <option value="argileux" {% if figure.parcelle_set.first.type_sol == 'argileux' %}selected{% endif %}>Argileux</option>
+                                <option value="sableux" {% if figure.parcelle_set.first.type_sol == 'sableux' %}selected{% endif %}>Sableux</option>
+                                <option value="limoneux" {% if figure.parcelle_set.first.type_sol == 'limoneux' %}selected{% endif %}>Limoneux</option>
+                                <option value="humifère" {% if figure.parcelle_set.first.type_sol == 'humifère' %}selected{% endif %}>Humifère</option>
+                                <option value="calcaire" {% if figure.parcelle_set.first.type_sol == 'calcaire' %}selected{% endif %}>Calcaire</option>
+                                <option value="autre" {% if figure.parcelle_set.first.type_sol == 'autre' %}selected{% endif %}>Autre</option>
+                            </select>
+                            <input type="hidden" name="type_sol" value="{{ figure.parcelle_set.first.type_sol }}">
+                            <small class="text-muted d-block mt-1">🔒 Le type de sol a été défini lors de la création et ne peut plus être modifié.</small>
+                        {% else %}
+                            <!-- Ton formulaire normal (radios + select) -->
+                            <div class="mb-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="sol_mode" id="sol_manuel" value="manuel" checked onchange="toggleSolMode()">
+                                    <label class="form-check-label" for="sol_manuel">Je connais mon sol</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="sol_mode" id="sol_auto" value="auto" onchange="toggleSolMode()">
+                                    <label class="form-check-label" for="sol_auto">Estimez-le (via ma région)</label>
+                                </div>
+                            </div>
+
+                            <select name="type_sol" id="type_sol" class="form-control">
+                                <option value="">-- Sélectionnez --</option>
+                                <option value="argileux">Argileux (terre qui colle)</option>
+                                <option value="sableux">Sableux (terre qui sable)</option>
+                                <option value="limoneux">Limoneux (terre légère et fertile)</option>
+                                <option value="humifère">Humifère (terre noire, riche en humus)</option>
+                                <option value="calcaire">Calcaire (terre blanchâtre)</option>
+                                <option value="autre">Autre / Je ne sais pas</option>
+                            </select>
+                        {% endif %}
                     </div>
 
                     <div style="margin: 15px 0;">
@@ -472,16 +491,9 @@ function setupSelectors() {
 }
 
 function placeCulture(lat, lng) {
-    console.log('=== placeCulture appelée ===');
-    console.log('lat:', lat, 'lng:', lng);
-    console.log('selectedCrop:', appState.selectedCrop);
-
     if (!appState.selectedCrop) {
-        console.log('❌ selectedCrop est null');
         return;
     }
-
-    console.log('✅ selectedCrop OK:', appState.selectedCrop);
 
     const crop = {
         placement_id: Date.now(),
@@ -493,10 +505,7 @@ function placeCulture(lat, lng) {
         date_placement: new Date().toISOString()
     };
 
-    console.log('✅ crop créé:', crop);
-
     appState.crops.push(crop);
-    console.log('✅ crops après ajout:', appState.crops);
 
     addMarker(crop);
     updateList();
@@ -580,10 +589,8 @@ function toggleSolMode() {
     if (selectSol) {
         if (manuel) {
             selectSol.style.display = 'block';
-            selectSol.disabled = false;
         } else {
             selectSol.style.display = 'none';
-            selectSol.disabled = false;
             selectSol.value = '';
         }
     }
@@ -622,6 +629,7 @@ document.getElementById('edit-form').addEventListener('submit', async function(e
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const figureId = {{ figure.id }};
 
+        // 1. Vérification des cultures hors saison
         const resp = await fetch('{% url "vegetables_fruits:api_verifier_saison" %}', {
             method: 'POST',
             headers: {
@@ -629,89 +637,49 @@ document.getElementById('edit-form').addEventListener('submit', async function(e
                 'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({
-                crops: nouvellesCultures, // <-- On n'envoie QUE les nouvelles
+                crops: nouvellesCultures,
                 figure_id: figureId,
             }),
         });
 
-        if (!resp.ok) {
-            console.warn('⚠️ Erreur API vérif saison, on continue quand même');
-            HTMLFormElement.prototype.submit.call(this);
-            return;
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.hors_saison && data.hors_saison.length > 0) {
+                afficherModaleHorsSaison(data.hors_saison, this);
+                return;
+            }
         }
 
-        const data = await resp.json();
+        // 2. Vérification du compagnonnage (si pas de souci de saison)
+        // On vérifie la dernière culture ajoutée par rapport aux existantes
+        if (nouvellesCultures.length > 0) {
+            const derniereCulture = nouvellesCultures[nouvellesCultures.length - 1].name;
+            const respComp = await fetch(`/api/verifier-plantation/?culture=${encodeURIComponent(derniereCulture)}&figure_id=${figureId}`);
 
-        if (data.hors_saison && data.hors_saison.length > 0) {
-            // Afficher la modale
-            afficherModaleHorsSaison(data.hors_saison, this);
-        } else {
-            // Aucune hors saison → envoi direct
-            HTMLFormElement.prototype.submit.call(this);
+            if (respComp.ok) {
+                const dataComp = await respComp.json();
+                if (dataComp.success && dataComp.data.statut !== 'securise') {
+                    // On utilise la même modale mais avec les infos du compagnonnage
+                    const alerteComp = [{
+                        name: derniereCulture,
+                        emoji: '🌱',
+                        fenetre: dataComp.data.conseils,
+                        mois_actuel: dataComp.data.message
+                    }];
+                    afficherModaleHorsSaison(alerteComp, this);
+                    return;
+                }
+            }
         }
+
+        // Si tout est OK, on soumet
+        HTMLFormElement.prototype.submit.call(this);
 
     } catch (err) {
-        console.error('❌ Erreur vérif saison:', err);
+        console.error('❌ Erreur vérifications:', err);
         // En cas d'erreur réseau, on n'empêche pas la plantation
         HTMLFormElement.prototype.submit.call(this);
     }
-
-    // ✅ FONCTION POUR VÉRIFIER LE COMPAGNONNAGE
-    async function verifierCompagnonnage(culturesPlacees, figureId) {
-        if (culturesPlacees.length < 2) return []; // Pas besoin de vérifier s'il n'y a qu'une culture
-
-        // On vérifie la dernière culture ajoutée par rapport aux autres
-        const derniereCulture = culturesPlacees[culturesPlacees.length - 1];
-
-        try {
-            const response = await fetch(`/api/verifier-plantation/?culture=${encodeURIComponent(derniereCulture)}&figure_id=${figureId}`);
-            const data = await response.json();
-
-            if (data.success && data.data.statut !== 'securise') {
-                // On retourne un objet compatible avec la modale
-                return [{
-                    name: derniereCulture,
-                    emoji: '🌱',
-                    fenetre: data.data.conseils, // On réutilise le champ 'fenetre' pour les conseils
-                    mois_actuel: data.data.message
-                }];
-            }
-        } catch (e) {
-            console.error("Erreur vérification compagnonnage:", e);
-        }
-        return [];
-    }
-
-    // ✅ INTERCEPTER LA SOUMISSION
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('form-planifier'); // ⚠️ Adapte l'ID de ton formulaire de planification
-        if (form) {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                // ⚠️ Récupère les cultures actuellement placées dans ton interface JS
-                // Par exemple, si tu as un tableau JS "crops" :
-                let culturesPlacees = [];
-                if (typeof crops !== 'undefined') {
-                    culturesPlacees = crops.map(c => c.name);
-                }
-
-                const figureId = {{ figure.id }};
-
-                // On vérifie le compagnonnage
-                const incompatibilites = await verifierCompagnonnage(culturesPlacees, figureId);
-
-                if (incompatibilites.length > 0) {
-                    // On affiche la modale existante
-                    afficherModaleHorsSaison(incompatibilites, form);
-                } else {
-                    // Si tout est OK, on soumet
-                    form.submit();
-                }
-            });
-        }
-    });
-
 });
 </script>
 {% endblock %}

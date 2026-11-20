@@ -52,6 +52,8 @@
     .pricing-card .features li.highlight .feature-name { color: #28a745; font-weight: 600; }
     .pricing-card .features li.exclusif { background: #e8f4fd; border-radius: 8px; padding: 8px 12px; margin: 4px 0; border-left: 3px solid #17a2b8; }
     .pricing-card .features li.exclusif .feature-name { color: #17a2b8; font-weight: 600; }
+    .pricing-card .features li.badge-new { background: #fff3cd; border-radius: 8px; padding: 8px 12px; margin: 4px 0; border-left: 3px solid #ffc107; }
+    .pricing-card .features li.badge-new .feature-name { color: #856404; font-weight: 700; }
 
     .pricing-card .btn-cta { display: block; text-align: center; padding: 12px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s; text-decoration: none; margin-top: 10px; }
     .pricing-card .btn-cta.btn-primary { background: #2d6a4f; color: white; }
@@ -124,8 +126,8 @@
                 </li>
                 <li>
                     <span class="icon">✅</span>
-                    <span class="feature-name">Mes semis personnels</span>
-                    <span class="tooltip-text">Suivi personnalisé de vos semis</span>
+                    <span class="feature-name">Fiches publiques des cultures</span>
+                    <span class="tooltip-text">Accès aux guides de culture (tomate, cerisier...)</span>
                 </li>
 
                 <li class="section-title">Apprentissage</li>
@@ -155,43 +157,23 @@
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name">Besoins en eau</span>
-                    <span class="tooltip-text">Calcul des besoins hydriques de vos cultures</span>
+                    <span class="feature-name disabled">Besoins en eau</span>
+                    <span class="tooltip-text">Calcul des besoins hydriques de vos cultures (dès Basique)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Alertes météo avancées</span>
-                    <span class="tooltip-text">Alertes par culture avec seuils personnalisés (Premium)</span>
+                    <span class="feature-name disabled">Forum adulte</span>
+                    <span class="tooltip-text">Échanges entre jardiniers adultes (dès Basique)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Conseiller Sol</span>
-                    <span class="tooltip-text">Analyse personnalisée de votre sol (Premium)</span>
+                    <span class="feature-name disabled">Parrainage</span>
+                    <span class="tooltip-text">Invitez des amis et gagnez du Premium (dès Basique)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Plan de fertilisation</span>
-                    <span class="tooltip-text">Plan d'engrais adapté à vos cultures (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Gestion des maladies</span>
-                    <span class="tooltip-text">Détection par symptômes (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Bilan carbone</span>
-                    <span class="tooltip-text">Empreinte carbone de votre jardin (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Statistiques avancées</span>
-                    <span class="tooltip-text">Graphiques et analyses détaillées (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Rotation des cultures</span>
-                    <span class="tooltip-text">Plan de rotation sur 4 ans (Premium)</span>
+                    <span class="feature-name disabled">SOS Plante (Diagnostic)</span>
+                    <span class="tooltip-text">Diagnostic interactif des maladies (Premium)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
@@ -200,18 +182,8 @@
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Dashboard climat</span>
-                    <span class="tooltip-text">Vue consolidée climat + eau + carbone (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Prévisions météo 7 jours</span>
-                    <span class="tooltip-text">Prévisions détaillées sur 7 jours (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Forum adulte</span>
-                    <span class="tooltip-text">Échanges entre jardiniers adultes (dès Basique)</span>
+                    <span class="feature-name disabled">Statistiques avancées</span>
+                    <span class="tooltip-text">Graphiques et analyses détaillées (Premium)</span>
                 </li>
             </ul>
             <a href="{% url 'vegetables_fruits:signup' %}" class="btn-cta btn-outline">S'inscrire</a>
@@ -281,30 +253,28 @@
                     <span class="tooltip-text">Suivez vos observations, météo et photos</span>
                 </li>
 
-                <li class="section-title">Alertes</li>
-                <li>
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Alertes météo avancées</span>
-                    <span class="tooltip-text">Alertes gel, canicule, pluie, vent par culture</span>
-                </li>
-
                 <li class="section-title">Communauté</li>
                 <li class="highlight">
                     <span class="icon">✅</span>
                     <span class="feature-name">Forum adulte (5 sujets/mois, 50 msg/mois)</span>
                     <span class="tooltip-text">Échanges entre jardiniers adultes</span>
                 </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Parrainage (1 mois offert)</span>
+                    <span class="tooltip-text">Invitez des amis et gagnez du Premium</span>
+                </li>
 
                 <li class="section-title">Non inclus</li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Conseiller Sol</span>
-                    <span class="tooltip-text">Analyse personnalisée de votre sol (Premium)</span>
+                    <span class="feature-name disabled">SOS Plante (Diagnostic)</span>
+                    <span class="tooltip-text">Diagnostic interactif des maladies (Premium)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Plan de fertilisation</span>
-                    <span class="tooltip-text">Plan d'engrais adapté (Premium)</span>
+                    <span class="feature-name disabled">Conseiller Sol</span>
+                    <span class="tooltip-text">Analyse personnalisée de votre sol (Premium)</span>
                 </li>
                 <li>
                     <span class="icon">❌</span>
@@ -323,13 +293,8 @@
                 </li>
                 <li>
                     <span class="icon">❌</span>
-                    <span class="feature-name disabled">Dashboard climat</span>
-                    <span class="tooltip-text">Vue consolidée (Premium)</span>
-                </li>
-                <li>
-                    <span class="icon">❌</span>
-                    <span class="feature-name disabled">Prévisions météo 7 jours</span>
-                    <span class="tooltip-text">Prévisions long terme (Premium)</span>
+                    <span class="feature-name disabled">Statistiques avancées</span>
+                    <span class="tooltip-text">Graphiques et analyses (Premium)</span>
                 </li>
             </ul>
             <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan=basique" class="btn-cta btn-primary">Commencer</a>
@@ -355,12 +320,7 @@
                 </li>
                 <li>
                     <span class="icon">✅</span>
-                    <span class="feature-name">Météo par parcelle</span>
-                    <span class="tooltip-text">Météo actuelle pour chaque parcelle</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Prévisions météo 7 jours</span>
+                    <span class="feature-name">Météo + Prévisions 7 jours</span>
                     <span class="tooltip-text">Prévisions détaillées sur 7 jours</span>
                 </li>
                 <li>
@@ -397,6 +357,14 @@
                     <span class="feature-name">Journal de bord illimité</span>
                     <span class="tooltip-text">Notes et photos illimitées</span>
                 </li>
+
+                <!-- ✅ SOS PLANTE AJOUTÉ ICI -->
+                <li class="badge-new">
+                    <span class="icon">🚑</span>
+                    <span class="feature-name">SOS Plante (Diagnostic)</span>
+                    <span class="tooltip-text">Assistant interactif pour diagnostiquer les maladies</span>
+                </li>
+
                 <li class="highlight">
                     <span class="icon">✅</span>
                     <span class="feature-name">Conseiller Sol</span>
@@ -427,11 +395,6 @@
                     <span class="feature-name">Statistiques avancées</span>
                     <span class="tooltip-text">Graphiques et analyses détaillées</span>
                 </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Planification des semis</span>
-                    <span class="tooltip-text">Planification avancée des semis</span>
-                </li>
 
                 <li class="section-title">Environnement</li>
                 <li class="highlight">
@@ -444,29 +407,17 @@
                     <span class="feature-name">Dashboard climat</span>
                     <span class="tooltip-text">Vue consolidée climat + eau + carbone</span>
                 </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Autosuffisance</span>
-                    <span class="tooltip-text">Suivi de votre autonomie alimentaire</span>
-                </li>
-
-                <li class="section-title">Alertes</li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Alertes météo avancées</span>
-                    <span class="tooltip-text">Alertes par culture avec seuils</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Alertes traitements</span>
-                    <span class="tooltip-text">Protection des cultures contre les maladies</span>
-                </li>
 
                 <li class="section-title">Communauté</li>
                 <li class="highlight">
                     <span class="icon">✅</span>
                     <span class="feature-name">Forum adulte illimité</span>
                     <span class="tooltip-text">Sujets et messages illimités</span>
+                </li>
+                <li class="highlight">
+                    <span class="icon">✅</span>
+                    <span class="feature-name">Parrainage (1 mois offert)</span>
+                    <span class="tooltip-text">Invitez des amis et gagnez du Premium</span>
                 </li>
             </ul>
             <a href="{% url 'vegetables_fruits:create_checkout_session' %}?plan=premium" class="btn-cta btn-primary">Commencer</a>
@@ -514,11 +465,6 @@
                 </li>
                 <li class="exclusif">
                     <span class="icon">✅</span>
-                    <span class="feature-name">Mode Junior pour élèves</span>
-                    <span class="tooltip-text">Interface adaptée pour les mineurs</span>
-                </li>
-                <li class="exclusif">
-                    <span class="icon">✅</span>
                     <span class="feature-name">Défis de classe</span>
                     <span class="tooltip-text">Défis collectifs avec récompenses</span>
                 </li>
@@ -529,90 +475,25 @@
                 </li>
                 <li class="exclusif">
                     <span class="icon">✅</span>
-                    <span class="feature-name">Galerie photos de classe</span>
-                    <span class="tooltip-text">Partagez les photos des jardins</span>
-                </li>
-                <li class="exclusif">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Classement national</span>
-                    <span class="tooltip-text">Comparez votre classe avec les autres</span>
-                </li>
-                <li class="exclusif">
-                    <span class="icon">✅</span>
                     <span class="feature-name">Export CSV / PDF</span>
                     <span class="tooltip-text">Rapports de classe en CSV et PDF</span>
-                </li>
-                <li class="exclusif">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Statistiques élèves</span>
-                    <span class="tooltip-text">Bilan carbone et stats de chaque élève</span>
                 </li>
 
                 <li class="section-title">Toutes les fonctions Premium</li>
                 <li class="highlight">
                     <span class="icon">✅</span>
-                    <span class="feature-name">Météo + Prévisions 7 jours</span>
-                    <span class="tooltip-text">Prévisions météo détaillées</span>
+                    <span class="feature-name">SOS Plante & Compagnonnage</span>
+                    <span class="tooltip-text">Outils experts de diagnostic</span>
                 </li>
                 <li class="highlight">
                     <span class="icon">✅</span>
-                    <span class="feature-name">Journal de bord illimité</span>
-                    <span class="tooltip-text">Notes et photos illimitées</span>
+                    <span class="feature-name">Forum adulte illimité</span>
+                    <span class="tooltip-text">Accès complet aux discussions</span>
                 </li>
                 <li class="highlight">
                     <span class="icon">✅</span>
-                    <span class="feature-name">Alertes météo avancées</span>
-                    <span class="tooltip-text">Alertes par culture avec seuils</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Alertes traitements</span>
-                    <span class="tooltip-text">Protection des cultures</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Conseiller Sol</span>
-                    <span class="tooltip-text">Analyse personnalisée de votre sol</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Plan de fertilisation</span>
-                    <span class="tooltip-text">Plan d'engrais adapté</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Gestion des maladies</span>
-                    <span class="tooltip-text">Détection par symptômes</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Bilan carbone</span>
-                    <span class="tooltip-text">Empreinte carbone du jardin</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Rotation des cultures</span>
-                    <span class="tooltip-text">Plan de rotation sur 4 ans</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Compagnonnage</span>
-                    <span class="tooltip-text">Associations bénéfiques</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Statistiques avancées</span>
-                    <span class="tooltip-text">Graphiques et analyses</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Dashboard climat</span>
-                    <span class="tooltip-text">Vue consolidée</span>
-                </li>
-                <li class="highlight">
-                    <span class="icon">✅</span>
-                    <span class="feature-name">Planification des semis</span>
-                    <span class="tooltip-text">Planification avancée</span>
+                    <span class="feature-name">Parrainage (1 mois offert)</span>
+                    <span class="tooltip-text">Invitez des amis et gagnez du Premium</span>
                 </li>
             </ul>
 
@@ -626,7 +507,6 @@
                     <small style="color:#28a745;">💡 Premium complet inclus !</small>
                 </div>
             {% else %}
-                <!-- ✅ LE NOUVEAU BOUTON DEVIS ICI -->
                 <button type="button" class="btn-cta btn-primary" onclick="ouvrirModaleDevis()">
                     📄 Demander un devis
                 </button>
